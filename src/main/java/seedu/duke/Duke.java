@@ -119,8 +119,11 @@ public class Duke {
                 System.out.println("Updated stock for " + product + ". New quantity: " + existing.quantity);
             } else {
                 stockList.add(new Stock(product, price, quantity));
-                String formattedPrice = (price == (long) price) ? String.format("%d", (long) price) : String.format("%.2f", price);
-                System.out.println("Creates stock for a new product " + product + " with quantity " + quantity + " and cost $" + formattedPrice + " each.");
+                String formattedPrice = (price == (long) price)
+                        ? String.format("%d", (long) price)
+                        : String.format("%.2f", price);
+                System.out.println("Creates stock for a new product " + product
+                        + " with quantity " + quantity + " and cost $" + formattedPrice + " each.");
             }
         } catch (NumberFormatException e) {
             System.out.println("Amount and quantity must be numbers.");
@@ -170,7 +173,8 @@ public class Duke {
         if (defaultBehavior) {
             System.out.println("Removes 1 unit (default behaviour) of " + product);
         } else {
-            System.out.println("Removes " + quantityToRemove + (quantityToRemove == 1 ? " unit of " : " units of ") + product);
+            String unitLabel = quantityToRemove == 1 ? " unit of " : " units of ";
+            System.out.println("Removes " + quantityToRemove + unitLabel + product);
         }
     }
 
