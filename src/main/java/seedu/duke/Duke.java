@@ -2,12 +2,22 @@ package seedu.duke;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import seedu.duke.command.Command;
 
+
+/**
+ * Entry point of the system.
+ *
+ * Runs the read-parse-execute loop: a line is read from the user, turned into a
+ * {@link Command} by the {@link Parser}, and executed against the {@link ProductList}.
+ */
 public class Duke {
     private static ArrayList<Stock> stockList = new ArrayList<>();
 
     /**
-     * Main entry-point for the java.duke.Duke application.
+     * Starts the system and runs until the user exits or input ends.
+     *
+     * @param args command line arguments, which the system does not use
      */
     public static void main(String[] args) {
         String banner = " ____        _        \n"
@@ -25,8 +35,12 @@ public class Duke {
         
         System.out.println("Hello from Duke!");
         System.out.println("What can I do for you?");
+      
+        Ui ui = new Ui();
+        Parser parser = new Parser();
+        ProductList products = new ProductList();
 
-        while (isRunning) {
+        while (isRunning && scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
             if (command.isEmpty()) {
                 continue;
@@ -60,7 +74,14 @@ public class Duke {
             } else if (keyword.equals("bye")) {
                 isRunning = false;
             } else {
-                System.out.println("Unknown command.");
+                try {
+                Command command = parser.parse(input);
+                command.execute(products, ui);
+                isExit = command.isExit();
+              } catch (SystemException e) {
+                // A mistake in one command should never end the session.
+                ui.showError(e.getMessage());
+              }
             }
         }
         scanner.close();
