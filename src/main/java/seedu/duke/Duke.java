@@ -78,10 +78,10 @@ public class Duke {
                     Command parsedCommand = parser.parse(command);
                     parsedCommand.execute(products, ui);
                     isRunning = !parsedCommand.isExit();
-              } catch (SystemException e) {
-                // A mistake in one command should never end the session.
+                } catch (SystemException e) {
+                    // A mistake in one command should never end the session.
                     ui.showError(e.getMessage());
-              }
+                }
             }
         }
         scanner.close();
