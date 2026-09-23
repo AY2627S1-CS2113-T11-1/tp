@@ -75,9 +75,9 @@ public class Duke {
                 isRunning = false;
             } else {
                 try {
-                Command command = parser.parse(input);
-                command.execute(products, ui);
-                isExit = command.isExit();
+                Command parsedCommand = parser.parse(command);
+                parsedCommand.execute(products, ui);
+                isRunning = !parsedCommand.isExit();
               } catch (SystemException e) {
                 // A mistake in one command should never end the session.
                 ui.showError(e.getMessage());
