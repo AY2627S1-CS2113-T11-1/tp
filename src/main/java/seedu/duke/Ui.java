@@ -124,6 +124,32 @@ public class Ui {
         printOrderTable(order, "Qty");
     }
     /**
+     * Shows every order as a table: number, customer, units bought, total and status.
+     *
+     * @param orders the orders to display, oldest first
+     */
+    public void showOrders(List<Order> orders) {
+        printIndent("Orders (" + orders.size() + "):");
+        if (orders.isEmpty()) {
+            printIndent("Nothing here yet. Create one with: order add c/CUSTOMER p/PRODUCT q/QUANTITY");
+            return;
+        }
+
+        List<String[]> rows = new ArrayList<>();
+        for (Order order : orders) {
+            int units = 0;
+            for (OrderItem item : order.getItems()) {
+                units += item.getQuantity();
+            }
+            rows.add(new String[] {String.valueOf(order.getId()), order.getCustomer(), String.valueOf(units),
+                formatMoney(order.getTotal()), order.isCancelled() ? "Cancelled" : "Active"});
+        }
+        String[] headers = {"No.", "Customer", "Units", "Total", "Status"};
+        boolean[] isLeftAligned = {false, true, false, false, true};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
+    /**
      * Prints an order's lines as a table with Product, quantity, Unit price and Subtotal columns,
      * followed by a total row.
      *

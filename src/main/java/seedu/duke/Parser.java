@@ -1,5 +1,13 @@
 package seedu.duke;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;

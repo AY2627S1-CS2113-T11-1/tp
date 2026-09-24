@@ -32,6 +32,7 @@ public class Duke {
         ui.printDivider();
         Parser parser = new Parser();
         ProductList products = new ProductList();
+        OrderList orders = new OrderList();
 
         while (isRunning && scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
