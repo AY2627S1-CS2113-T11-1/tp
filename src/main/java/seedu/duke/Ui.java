@@ -123,6 +123,20 @@ public class Ui {
         printIndent("Order " + order.getId() + " created for " + order.getCustomer() + ".");
         printOrderTable(order, "Qty");
     }
+
+    /**
+     * Shows the confirmation for a cancelled order: a table of the stock put back, then the amount
+     * removed from recorded sales.
+     *
+     * @param order the order that was just cancelled
+     */
+    public void showOrderCancelled(Order order) {
+        printIndent("Order " + order.getId() + " for " + order.getCustomer() + " cancelled.");
+        printIndent("Stock restored:");
+        printOrderTable(order, "Restored");
+        printIndent("Amount excluded from recorded sales: " + formatMoney(order.getTotal()));
+    }
+
     /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *

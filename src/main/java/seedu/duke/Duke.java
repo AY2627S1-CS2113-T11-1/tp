@@ -251,12 +251,12 @@ public class Duke {
     }
 
     private static void handleListStock() {
-        System.out.println("+----------------+----------+");
-        System.out.println("| Product        |      Qty |");
-        System.out.println("+----------------+----------+");
+        System.out.println("    +----------------+----------+");
+        System.out.println("    | Product        |      Qty |");
+        System.out.println("    +----------------+----------+");
         for (Stock stock : stockList) {
-            System.out.printf("| %-14s | %8d |\n", stock.product, stock.quantity);
+            System.out.printf("    | %-14s | %8d |\n", stock.product, stock.quantity);
         }
-        System.out.println("+----------------+----------+");
+        System.out.println("    +----------------+----------+");
     }
 }
