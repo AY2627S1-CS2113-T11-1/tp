@@ -2,6 +2,7 @@ package seedu.duke;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,6 +18,13 @@ public class Ui {
      * Column layout of one catalogue line: name padded to 18 characters, then price padded to 8.
      */
     private static final String PRODUCT_LINE_FORMAT = "   %-18s%-8sstock %d";
+    private static final String INDENT = "    ";
+    private static final String DIVIDER = INDENT + "_".repeat(60);
+    private static final String banner = "       ____        _        \n"
+            + "      |  _ \\ _   _| | _____ \n"
+            + "      | | | | | | | |/ / _ \\\n"
+            + "      | |_| | |_| |   <  __/\n"
+            + "      |____/ \\__,_|_|\\_\\___|\n";
 
     private final Scanner scanner;
     private final PrintStream out;
@@ -55,11 +63,25 @@ public class Ui {
     }
 
     public void showWelcome() {
-        out.println("Welcome to the management system.");
-        out.println("Type a command, or \"bye\" to exit.");
+        printBanner();
+        printIndent("Welcome to the management system.");
+        printIndent("Type a command, or \"bye\" to exit.");
+    }
+
+    private void printBanner() {
+        out.println(banner);
+    }
+
+    public void printDivider() {
+        out.println(DIVIDER);
+    }
+
+    private void printIndent(String line) {
+        out.println(INDENT + line);
     }
 
     public void showGoodbye() {
+        printDivider();
         out.println("Goodbye!");
     }
 
@@ -69,9 +91,9 @@ public class Ui {
      * @param product the product that was just added
      */
     public void showProductAdded(Product product) {
-        out.println("Added product " + product.getName());
-        out.println("Price: " + product.getPriceString());
-        out.println("Stock: " + product.getStock());
+        printIndent("Added product " + product.getName());
+        printIndent("Price: " + product.getPriceString());
+        printIndent("Stock: " + product.getStock());
     }
 
     /**
@@ -80,18 +102,117 @@ public class Ui {
      * @param products the products to display, already sorted by the caller
      */
     public void showProducts(List<Product> products) {
-        out.println("Products (" + products.size() + "):");
+        printIndent("Products (" + products.size() + "):");
         if (products.isEmpty()) {
-            out.println("   Nothing here yet. Add one with: product add p/PRODUCT a/AMOUNT");
+            printIndent("Nothing here yet. Add one with: product add p/PRODUCT a/AMOUNT");
         } else {
             for (Product product : products) {
-                out.println(String.format(PRODUCT_LINE_FORMAT,
+                printIndent(String.format(PRODUCT_LINE_FORMAT,
                         product.getName(), product.getPriceString(), product.getStock()));
             }
         }
     }
 
+    /**
+     * Shows the confirmation for a newly created order as a table: one row per product, then a
+     * total row.
+     *
+     * @param order the order that was just created
+     */
+    public void showOrderCreated(Order order) {
+        printIndent("Order " + order.getId() + " created for " + order.getCustomer() + ".");
+        printOrderTable(order, "Qty");
+    }
+    /**
+     * Prints an order's lines as a table with Product, quantity, Unit price and Subtotal columns,
+     * followed by a total row.
+     *
+     * @param order          the order to print
+     * @param quantityHeader the heading of the quantity column, e.g. "Qty" or "Restored"
+     */
+    private void printOrderTable(Order order, String quantityHeader) {
+        List<String[]> rows = new ArrayList<>();
+        int totalUnits = 0;
+        for (OrderItem item : order.getItems()) {
+            rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
+                formatMoney(item.getUnitPrice()), formatMoney(item.getSubtotal())});
+            totalUnits += item.getQuantity();
+        }
+        String[] headers = {"Product", quantityHeader, "Unit price", "Subtotal"};
+        String[] totalRow = {"Total", String.valueOf(totalUnits), "", formatMoney(order.getTotal())};
+        boolean[] isLeftAligned = {true, false, false, false};
+        printTable(headers, rows, totalRow, isLeftAligned);
+    }
+
+    /**
+     * Prints a bordered table.
+     *
+     * Column widths are worked out from the longest value in each column, so long names or large
+     * amounts widen the table instead of pushing columns out of line. Numbers are right-aligned so
+     * that the decimal points of amounts line up.
+     *
+     * @param headers       the column headings
+     * @param rows          the body rows, each with one cell per column
+     * @param footer        a final row set off by a border, such as a total, or null for none
+     * @param isLeftAligned for each column, true to left-align it (text), false to right-align (numbers)
+     */
+    private void printTable(String[] headers, List<String[]> rows, String[] footer, boolean[] isLeftAligned) {
+        int[] widths = new int[headers.length];
+        for (int column = 0; column < headers.length; column++) {
+            widths[column] = headers[column].length();
+            for (String[] row : rows) {
+                widths[column] = Math.max(widths[column], row[column].length());
+            }
+            if (footer != null) {
+                widths[column] = Math.max(widths[column], footer[column].length());
+            }
+        }
+
+        String border = tableBorder(widths);
+        printIndent(border);
+        printIndent(tableRow(headers, widths, isLeftAligned));
+        printIndent(border);
+        for (String[] row : rows) {
+            printIndent(tableRow(row, widths, isLeftAligned));
+        }
+        printIndent(border);
+        if (footer != null) {
+            printIndent(tableRow(footer, widths, isLeftAligned));
+            printIndent(border);
+        }
+    }
+
+    /**
+     * Returns a border line such as "+---------+-----+", sized to the given column widths.
+     */
+    private static String tableBorder(int[] widths) {
+        StringBuilder border = new StringBuilder("+");
+        for (int width : widths) {
+            border.append("-".repeat(width + 2)).append("+");
+        }
+        return border.toString();
+    }
+
+    /**
+     * Returns one table row, padding each cell to its column width on the side given by its alignment.
+     */
+    private static String tableRow(String[] cells, int[] widths, boolean[] isLeftAligned) {
+        StringBuilder row = new StringBuilder("|");
+        for (int column = 0; column < cells.length; column++) {
+            String alignment = isLeftAligned[column] ? "-" : "";
+            row.append(" ").append(String.format("%" + alignment + widths[column] + "s", cells[column])).append(" |");
+        }
+        return row.toString();
+    }
+
     public void showError(String message) {
-        out.println("Sorry! " + message);
+        printIndent("Sorry! " + message);
+    }
+
+    /**
+     * Returns an amount in dollars with two decimals, e.g. "$6.38".
+     */
+    private static String formatMoney(double amount) {
+        return String.format("$%.2f", amount);
     }
 }

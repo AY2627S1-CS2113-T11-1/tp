@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.OrderList;
 import seedu.duke.ProductList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
@@ -12,13 +13,17 @@ import seedu.duke.Ui;
  */
 public abstract class Command {
     /**
-     * Executes this command against the catalogue, reporting the outcome through the UI.
+     * Executes this command against the system's data, reporting the outcome through the UI.
+     *
+     * Every command receives all the data lists, even ones it does not use, so that the main loop
+     * can run any command the same way.
      *
      * @param products the catalogue the command acts on
+     * @param orders   the orders the command acts on
      * @param ui       the UI used to show the outcome
      * @throws SystemException if the command cannot be carried out, e.g. a duplicate product
      */
-    public abstract void execute(ProductList products, Ui ui) throws SystemException;
+    public abstract void execute(ProductList products, OrderList orders, Ui ui) throws SystemException;
 
     /**
      * Returns true if the system should exit after running this command.
