@@ -58,6 +58,9 @@ public class Parser {
         String[] words = input.split("\\s+", 3);
         String noun = words[0].toLowerCase();
 
+        if (noun.equals("generate")) {
+            return new ReceiptParser().parse(input);
+        }
         if (noun.equals("product")) {
             return parseProductCommand(words);
         }

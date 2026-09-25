@@ -278,6 +278,24 @@ public class Ui {
         return row.toString();
     }
 
+    /**
+     * Shows a separate receipt for each eligible order using the existing order table layout.
+     *
+     * @param customer the requested customer name
+     * @param receipts confirmed, non-cancelled orders for this customer, oldest first
+     */
+    public void showReceipts(String customer, List<Order> receipts) {
+        printIndent("Receipts for " + customer + " (" + receipts.size() + "):");
+        if (receipts.isEmpty()) {
+            printIndent("No paid, non-cancelled orders found for this customer.");
+            return;
+        }
+        for (Order order : receipts) {
+            printIndent("Receipt for order " + order.getId() + " - " + order.getCustomer());
+            printOrderTable(order, "Qty");
+        }
+    }
+
     public void showError(String message) {
         printIndent("Sorry! " + message);
     }
