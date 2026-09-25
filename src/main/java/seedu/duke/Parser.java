@@ -12,6 +12,7 @@ import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListProductCommand;
+import seedu.duke.command.ListSalesCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -63,6 +64,9 @@ public class Parser {
         if (noun.equals("order")) {
             return parseOrderCommand(words);
         }
+        if (noun.equals("sales")) {
+            return parseSalesCommand(words);
+        }
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
@@ -113,6 +117,28 @@ public class Parser {
             return parseAddOrder(arguments);
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
+    }
+
+    /**
+     * Returns the sales command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing, unknown, or has extra arguments
+     */
+    private Command parseSalesCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with sales? Try: sales list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"sales list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListSalesCommand();
+        }
+        throw new SystemException("I don't know how to \"sales " + words[1] + "\". Try: list");
     }
 
     /**

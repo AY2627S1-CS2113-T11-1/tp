@@ -125,6 +125,28 @@ class UiTest {
     }
 
     @Test
+    public void showSales_cancelledOrderIsExcluded_printsConfirmedSalesAndTotal() throws SystemException {
+        OrderList orders = new OrderList();
+        Order cancelledSale = orders.create("Jonas Low", sampleOrder().getItems());
+        cancelledSale.cancel();
+        orders.create("Mei", List.of(
+                new OrderItem(new Product("Organic Coffee Beans", 12.00), 10)));
+
+        ui.showSales(orders.getConfirmedSales());
+
+        assertEquals(List.of(
+                "Sales (1):",
+                "+-------+----------+-------+---------+",
+                "|   No. | Customer | Units |   Total |",
+                "+-------+----------+-------+---------+",
+                "|     2 | Mei      |    10 | $120.00 |",
+                "+-------+----------+-------+---------+",
+                "| Total |          |       | $120.00 |",
+                "+-------+----------+-------+---------+",
+                "Total sales: $120.00"), outputLines());
+    }
+
+    @Test
     public void showOrders_noOrders_printsZeroCountAndHint() {
         ui.showOrders(List.of());
 

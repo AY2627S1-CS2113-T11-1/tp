@@ -15,6 +15,13 @@
 
 {Give detailed description of each feature}
 
+### View confirmed sales: `sales list`
+Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
+are excluded from recorded sales. The final row and summary show the total amount recorded from the
+confirmed sales.
+
+Format: `sales list`
+
 ### Adding a todo: `todo`
 Adds a new item to the list of todo items.
 

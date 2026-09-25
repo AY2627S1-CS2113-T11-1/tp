@@ -26,4 +26,14 @@ class OrderListTest {
         assertThrows(UnsupportedOperationException.class, () -> orders.getAll().clear());
         assertEquals(1, orders.size());
     }
+
+    @Test
+    public void getConfirmedSales_excludesCancelledOrders() throws SystemException {
+        OrderList orders = new OrderList();
+        Order confirmed = orders.create("Jonas Low", List.of());
+        Order cancelled = orders.create("Mei", List.of());
+        cancelled.cancel();
+
+        assertEquals(List.of(confirmed), orders.getConfirmedSales());
+    }
 }
