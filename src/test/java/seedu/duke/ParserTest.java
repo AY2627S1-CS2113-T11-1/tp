@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ListProductCommand;
 
@@ -166,5 +167,21 @@ class ParserTest {
     @Test
     public void parse_orderZeroQuantity_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/0"));
+    }
+
+    @Test
+    public void parse_cancelOrder_returnsCancelCommandWithNumber() throws SystemException {
+        CancelOrderCommand cancel = assertInstanceOf(CancelOrderCommand.class, parser.parse("order cancel 1"));
+        assertEquals(1, cancel.getOrderId());
+    }
+
+    @Test
+    public void parse_cancelOrderNonNumeric_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order cancel one"));
+    }
+
+    @Test
+    public void parse_cancelOrderMissingNumber_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order cancel"));
     }
 }

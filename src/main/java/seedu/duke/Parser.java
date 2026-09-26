@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListProductCommand;
@@ -34,6 +35,7 @@ public class Parser {
     private static final String QUANTITY_PREFIX = "q/";
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
+    private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
@@ -111,6 +113,9 @@ public class Parser {
 
         if (verb.equals("add")) {
             return parseAddOrder(arguments);
+        }
+        if (verb.equals("cancel")) {
+            return parseCancelOrder(arguments);
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
     }
@@ -221,6 +226,30 @@ public class Parser {
         }
         return quantity;
     }
+
+    /**
+     * Returns a cancel-order command built from the arguments of {@code order cancel}.
+     *
+     * @param arguments the text after "order cancel", e.g. "1"
+     * @throws SystemException if the arguments are not a single positive whole number
+     */
+    private Command parseCancelOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw new SystemException("Which order should I cancel? " + ORDER_CANCEL_FORMAT);
+        }
+        int orderId;
+        try {
+            orderId = Integer.parseInt(arguments);
+        } catch (NumberFormatException e) {
+            throw new SystemException("The order number must be a whole number such as 1, but I got: \""
+                    + arguments + "\". " + ORDER_CANCEL_FORMAT);
+        }
+        if (orderId < 1) {
+            throw new SystemException("Order numbers start at 1, but I got: " + arguments);
+        }
+        return new CancelOrderCommand(orderId);
+    }
+
     /**
      * Returns an add command built from the arguments of {@code product add}.
      *
