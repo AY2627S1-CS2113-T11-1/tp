@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ListProductCommand;
@@ -111,5 +114,57 @@ class ParserTest {
     @Test
     public void parse_emptyInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("   "));
+    }
+
+    @Test
+    public void parse_orderWithTwoItems_returnsAddOrderCommandWithItemsInOrder() throws SystemException {
+        Command command = parser.parse("order add c/Jonas Low p/Apple q/3 p/Carrot q/1");
+
+        AddOrderCommand orderCommand = assertInstanceOf(AddOrderCommand.class, command);
+        assertEquals("Jonas Low", orderCommand.getCustomer());
+        assertEquals(List.of(new AddOrderCommand.RequestedItem("Apple", 3),
+                new AddOrderCommand.RequestedItem("Carrot", 1)), orderCommand.getRequestedItems());
+    }
+
+    @Test
+    public void parse_orderProductNameWithSpaces_keepsNameWhole() throws SystemException {
+        AddOrderCommand orderCommand = assertInstanceOf(AddOrderCommand.class,
+                parser.parse("order add c/Jonas p/Oat Milk q/2"));
+        assertEquals("Oat Milk", orderCommand.getRequestedItems().get(0).productName());
+    }
+
+    @Test
+    public void parse_orderWithoutItems_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas Low"));
+    }
+
+    @Test
+    public void parse_orderWithoutCustomer_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add p/Apple q/3"));
+    }
+
+    @Test
+    public void parse_orderProductMissingQuantity_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/3 p/Carrot"));
+    }
+
+    @Test
+    public void parse_orderQuantityBeforeProduct_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas q/3 p/Apple"));
+    }
+
+    @Test
+    public void parse_orderSameProductTwice_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/1 p/apple q/2"));
+    }
+
+    @Test
+    public void parse_orderDecimalQuantity_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/1.5"));
+    }
+
+    @Test
+    public void parse_orderZeroQuantity_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/0"));
     }
 }

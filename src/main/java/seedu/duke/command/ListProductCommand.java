@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.OrderList;
 import seedu.duke.ProductList;
 import seedu.duke.Ui;
 
@@ -10,7 +11,7 @@ import seedu.duke.Ui;
  */
 public class ListProductCommand extends Command {
     @Override
-    public void execute(ProductList products, Ui ui) {
+    public void execute(ProductList products, OrderList orders, Ui ui) {
         ui.showProducts(products.getSortedByName());
     }
 }
