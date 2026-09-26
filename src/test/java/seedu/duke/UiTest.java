@@ -29,7 +29,7 @@ class UiTest {
     public void showProductAdded_newProduct_printsNamePriceAndZeroStock() {
         ui.showProductAdded(new Product("Oat Milk", 3.50));
 
-        assertEquals(List.of("Added product Oat Milk", "Price: $3.50", "Stock: 0"), outputLines());
+        assertEquals(indentedLines("Added product Oat Milk", "Price: $3.50", "Stock: 0"), outputLines());
     }
 
     @Test
@@ -42,7 +42,7 @@ class UiTest {
 
         ui.showProducts(List.of(oatMilk, paperBag, coffeeBeans));
 
-        assertEquals(List.of(
+        assertEquals(indentedLines(
                 "Products (3):",
                 "   Oat Milk          $3.50   stock 24",
                 "   Paper Bag         $0.10   stock 200",
@@ -53,7 +53,7 @@ class UiTest {
     public void showProducts_emptyCatalogue_printsZeroCountAndHint() {
         ui.showProducts(List.of());
 
-        assertEquals("Products (0):", outputLines().get(0));
+        assertEquals("    Products (0):", outputLines().get(0));
         assertEquals(2, outputLines().size());
     }
 
@@ -66,7 +66,7 @@ class UiTest {
     public void showOrderCreated_twoItems_printsAlignedTable() {
         ui.showOrderCreated(sampleOrder());
 
-        assertEquals(List.of(
+        assertEquals(indentedLines(
                 "Order 1 created for Jonas Low.",
                 "+---------+-----+------------+----------+",
                 "| Product | Qty | Unit price | Subtotal |",
@@ -84,7 +84,7 @@ class UiTest {
                 new OrderItem(new Product("Organic Coffee Beans", 12.00), 10))));
 
         List<String> lines = outputLines();
-        assertEquals("| Organic Coffee Beans |  10 |     $12.00 |  $120.00 |", lines.get(4));
+        assertEquals("    | Organic Coffee Beans |  10 |     $12.00 |  $120.00 |", lines.get(4));
         assertEquals(lines.get(1).length(), lines.get(4).length());
     }
 
@@ -92,7 +92,7 @@ class UiTest {
     public void showOrderCancelled_twoItems_printsRestoredTableAndAmount() {
         ui.showOrderCancelled(sampleOrder());
 
-        assertEquals(List.of(
+        assertEquals(indentedLines(
                 "Order 1 for Jonas Low cancelled.",
                 "Stock restored:",
                 "+---------+----------+------------+----------+",
@@ -114,7 +114,7 @@ class UiTest {
 
         ui.showOrders(List.of(cancelled, active));
 
-        assertEquals(List.of(
+        assertEquals(indentedLines(
                 "Orders (2):",
                 "+-----+-----------+-------+---------+-----------+",
                 "| No. | Customer  | Units |   Total | Status    |",
@@ -128,7 +128,7 @@ class UiTest {
     public void showOrders_noOrders_printsZeroCountAndHint() {
         ui.showOrders(List.of());
 
-        assertEquals("Orders (0):", outputLines().get(0));
+        assertEquals("    Orders (0):", outputLines().get(0));
         assertEquals(2, outputLines().size());
     }
 
@@ -139,6 +139,13 @@ class UiTest {
         return new Order(1, "Jonas Low", List.of(
                 new OrderItem(new Product("Apple", 1.50), 3),
                 new OrderItem(new Product("Carrot", 1.88), 1)));
+    }
+
+    /**
+     * Adds the UI's four-space margin to expected lines while preserving table and column spacing.
+     */
+    private static List<String> indentedLines(String... lines) {
+        return java.util.Arrays.stream(lines).map(line -> "    " + line).toList();
     }
 
     /**
