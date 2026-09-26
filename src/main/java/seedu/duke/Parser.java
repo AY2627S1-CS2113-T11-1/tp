@@ -12,6 +12,7 @@ import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
+import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
 
 /**
@@ -116,6 +117,12 @@ public class Parser {
         }
         if (verb.equals("cancel")) {
             return parseCancelOrder(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"order list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListOrderCommand();
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
     }
