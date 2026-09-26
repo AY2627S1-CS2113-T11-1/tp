@@ -13,6 +13,7 @@ import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
 
 class ParserTest {
@@ -183,5 +184,15 @@ class ParserTest {
     @Test
     public void parse_cancelOrderMissingNumber_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order cancel"));
+    }
+
+    @Test
+    public void parse_orderList_returnsListOrderCommand() throws SystemException {
+        assertInstanceOf(ListOrderCommand.class, parser.parse("Order LIST"));
+    }
+
+    @Test
+    public void parse_orderListWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order list 1"));
     }
 }
