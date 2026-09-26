@@ -164,6 +164,40 @@ public class Ui {
     }
 
     /**
+     * Shows confirmed sales and the total amount recorded from them.
+     *
+     * Cancelled orders are filtered by {@link OrderList} before this method is called, so every
+     * row shown contributes to the total.
+     *
+     * @param sales the confirmed sales to display, oldest first
+     */
+    public void showSales(List<Order> sales) {
+        printIndent("Sales (" + sales.size() + "):");
+        if (sales.isEmpty()) {
+            printIndent("Nothing here yet. Confirm an order with: order add c/CUSTOMER p/PRODUCT q/QUANTITY");
+            printIndent("Total sales: $0.00");
+            return;
+        }
+
+        List<String[]> rows = new ArrayList<>();
+        double totalSales = 0;
+        for (Order sale : sales) {
+            int units = 0;
+            for (OrderItem item : sale.getItems()) {
+                units += item.getQuantity();
+            }
+            totalSales += sale.getTotal();
+            rows.add(new String[] {String.valueOf(sale.getId()), sale.getCustomer(), String.valueOf(units),
+                formatMoney(sale.getTotal())});
+        }
+        String[] headers = {"No.", "Customer", "Units", "Total"};
+        String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
+        boolean[] isLeftAligned = {false, true, false, false};
+        printTable(headers, rows, totalRow, isLeftAligned);
+        printIndent("Total sales: " + formatMoney(totalSales));
+    }
+
+    /**
      * Prints an order's lines as a table with Product, quantity, Unit price and Subtotal columns,
      * followed by a total row.
      *

@@ -50,6 +50,22 @@ public class OrderList {
         return Collections.unmodifiableList(orders);
     }
 
+    /**
+     * Returns orders that still count as confirmed sales.
+     *
+     * Cancelled orders remain in {@link #getAll()} for order-history purposes, but are not included
+     * in sales figures because their amount has been excluded from recorded sales.
+     */
+    public List<Order> getConfirmedSales() {
+        List<Order> confirmedSales = new ArrayList<>();
+        for (Order order : orders) {
+            if (!order.isCancelled()) {
+                confirmedSales.add(order);
+            }
+        }
+        return Collections.unmodifiableList(confirmedSales);
+    }
+
     public int size() {
         return orders.size();
     }
