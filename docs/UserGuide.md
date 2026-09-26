@@ -11,7 +11,7 @@
 1. Ensure that you have Java 25 or above installed.
 1. Down the latest version of `Duke` from [here](http://link.to/duke).
 
-## Features 
+## Features
 
 {Give detailed description of each feature}
 
@@ -29,6 +29,31 @@ Example of usage:
 
 `todo n/Refactor the User Guide to remove passive voice d/13/04/2020`
 
+### Adding an expense: `expense add`
+
+Records an operating expense.
+
+Format: `expense add p/PRODUCT a/AMOUNT`
+
+The amount must be an integer or floating-point number in dollars.
+
+Example:
+
+`expense add p/Bread a/100.50`
+
+### Listing expenses: `expense list`
+
+Lists all recorded expenses in the order they were added.
+
+Format: `expense list`
+
+Example output:
+
+```text
+1. Bread: $100.50
+2. Lettuce: $42.30
+```
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer? 
@@ -40,3 +65,5 @@ Example of usage:
 {Give a 'cheat sheet' of commands here}
 
 * Add todo `todo n/TODO_NAME d/DEADLINE`
+* Add expense `expense add p/PRODUCT a/AMOUNT`
+* List expenses `expense list`

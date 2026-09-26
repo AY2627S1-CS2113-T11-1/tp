@@ -1,23 +1,18 @@
 package seedu.duke.command;
 
-import seedu.duke.OrderList;
 import seedu.duke.ExpenseList;
+import seedu.duke.OrderList;
 import seedu.duke.ProductList;
 import seedu.duke.Ui;
 
 /**
- * Ends the session.
+ * Lists all operating expenses in insertion order.
  *
- * Corresponds to {@code bye}.
+ * Corresponds to {@code expense list}.
  */
-public class ExitCommand extends Command {
+public class ListExpenseCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) {
-        ui.showGoodbye();
-    }
-
-    @Override
-    public boolean isExit() {
-        return true;
+        ui.showExpenses(expenses.getExpenses());
     }
 }

@@ -8,11 +8,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListOrderCommand;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
 
 /**
@@ -30,6 +32,7 @@ public class Parser {
     private static final String NAME_PREFIX = "p/";
     private static final String PRICE_PREFIX = "a/";
     private static final String ADD_FORMAT = "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String EXPENSE_ADD_FORMAT = "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
 
     private static final String CUSTOMER_PREFIX = "c/";
@@ -63,13 +66,17 @@ public class Parser {
         if (noun.equals("product")) {
             return parseProductCommand(words);
         }
+        if (noun.equals("expense")) {
+            return parseExpenseCommand(words);
+        }
         if (noun.equals("order")) {
             return parseOrderCommand(words);
         }
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
-        throw new SystemException("I don't recognise \"" + words[0] + "\". Known commands: product, order, bye");
+        throw new SystemException("I don't recognise \"" + words[0]
+                + "\". Known commands: product, order, expense, bye");
     }
 
     /**
@@ -96,6 +103,32 @@ public class Parser {
             return new ListProductCommand();
         }
         throw new SystemException("I don't know how to \"product " + words[1] + "\". Try: add, or list");
+    }
+
+    /**
+     * Returns the expense command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing or its arguments are invalid
+     */
+    private Command parseExpenseCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with expenses? Try: expense add, or expense list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+
+        if (verb.equals("add")) {
+            return parseAddExpense(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"expense list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListExpenseCommand();
+        }
+        throw new SystemException("I don't know how to \"expense " + words[1] + "\". Try: add, or list");
     }
 
     /**
@@ -271,6 +304,22 @@ public class Parser {
             throw new SystemException("The product name cannot be empty. " + ADD_FORMAT);
         }
         return new AddProductCommand(name, parsePrice(priceText));
+    }
+
+    /**
+     * Returns an add-expense command built from the arguments of {@code expense add}.
+     *
+     * @param arguments the text after "expense add"
+     * @throws SystemException if the product name or amount is invalid
+     */
+    private Command parseAddExpense(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX);
+        String amountText = extractValue(arguments, PRICE_PREFIX);
+
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
+        }
+        return new AddExpenseCommand(productName, parsePrice(amountText));
     }
 
     /**
