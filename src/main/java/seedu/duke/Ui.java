@@ -77,7 +77,7 @@ public class Ui {
     }
 
     private void printIndent(String line) {
-        out.println(line);
+        out.println(INDENT + line);
     }
 
     public void showGoodbye() {
@@ -136,6 +136,7 @@ public class Ui {
         printOrderTable(order, "Restored");
         printIndent("Amount excluded from recorded sales: " + formatMoney(order.getTotal()));
     }
+
     /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *
