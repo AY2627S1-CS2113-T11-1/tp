@@ -75,7 +75,8 @@ public class Parser {
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
-        throw new SystemException("I don't recognise \"" + words[0] + "\". Known commands: product, order, bye");
+        throw new SystemException("I don't recognise \"" + words[0]
+                + "\". Known commands: product, order, expense, bye");
     }
 
     /**
