@@ -21,7 +21,7 @@ public class Expense {
             throw new IllegalArgumentException("Expense amount must be a non-negative number.");
         }
 
-        this.productName = productName;
+        this.productName = productName.trim();
         this.amount = amount;
     }
 
