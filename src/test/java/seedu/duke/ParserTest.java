@@ -10,10 +10,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ListOrderCommand;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
 
 class ParserTest {
@@ -86,6 +88,35 @@ class ParserTest {
     @Test
     public void parse_priceWithThreeDecimals_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("product add p/Oat Milk a/3.505"));
+    }
+
+    @Test
+    public void parse_validExpenseAdd_returnsAddExpenseCommand() throws SystemException {
+        AddExpenseCommand command = assertInstanceOf(AddExpenseCommand.class,
+                parser.parse("expense add p/Bread a/100.50"));
+
+        assertEquals("Bread", command.getProductName());
+        assertEquals(100.50, command.getAmount(), DELTA);
+    }
+
+    @Test
+    public void parse_expenseList_returnsListExpenseCommand() throws SystemException {
+        assertInstanceOf(ListExpenseCommand.class, parser.parse("expense list"));
+    }
+
+    @Test
+    public void parse_expenseMissingProduct_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add a/100.50"));
+    }
+
+    @Test
+    public void parse_expenseMissingAmount_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add p/Bread"));
+    }
+
+    @Test
+    public void parse_expenseListWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense list extra"));
     }
 
     @Test
