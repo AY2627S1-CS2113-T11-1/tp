@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
 import seedu.duke.SystemException;
@@ -19,18 +20,20 @@ import seedu.duke.Ui;
 
 class AddProductCommandTest {
     private ProductList products;
+    private OrderList orders;
     private Ui ui;
 
     @BeforeEach
     public void setUp() {
         products = new ProductList();
+        orders = new OrderList();
         ui = new Ui(new ByteArrayInputStream(new byte[0]),
                 new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
     }
 
     @Test
     public void execute_newProduct_addsProductAtZeroStock() throws SystemException {
-        new AddProductCommand("Oat Milk", 3.50).execute(products, ui);
+        new AddProductCommand("Oat Milk", 3.50).execute(products, orders, ui);
 
         Product added = products.findByName("Oat Milk");
         assertNotNull(added);
@@ -40,10 +43,10 @@ class AddProductCommandTest {
 
     @Test
     public void execute_duplicateProduct_throwsSystemException() throws SystemException {
-        new AddProductCommand("Oat Milk", 3.50).execute(products, ui);
+        new AddProductCommand("Oat Milk", 3.50).execute(products, orders, ui);
 
         AddProductCommand duplicate = new AddProductCommand("Oat Milk", 4.00);
-        assertThrows(SystemException.class, () -> duplicate.execute(products, ui));
+        assertThrows(SystemException.class, () -> duplicate.execute(products, orders, ui));
     }
 
     @Test
