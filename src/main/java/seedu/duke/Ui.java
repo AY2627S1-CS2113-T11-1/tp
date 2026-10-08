@@ -114,6 +114,19 @@ public class Ui {
     }
 
     /**
+     * Shows every recorded expense in insertion order.
+     *
+     * @param expenses the expenses to display
+     */
+    public void showExpenses(List<Expense> expenses) {
+        for (int i = 0; i < expenses.size(); i++) {
+            Expense expense = expenses.get(i);
+            printIndent(String.format("%d. %s: $%.2f", i + 1,
+                    expense.getProductName(), expense.getAmount()));
+        }
+    }
+
+    /**
      * Shows the confirmation for a newly created order as a table: one row per product, then a
      * total row.
      *
@@ -136,6 +149,7 @@ public class Ui {
         printOrderTable(order, "Restored");
         printIndent("Amount excluded from recorded sales: " + formatMoney(order.getTotal()));
     }
+
     /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *
