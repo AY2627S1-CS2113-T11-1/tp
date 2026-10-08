@@ -1,0 +1,9 @@
+// Plugin dependencies use repositories separate from the application's dependencies.
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'tp'
