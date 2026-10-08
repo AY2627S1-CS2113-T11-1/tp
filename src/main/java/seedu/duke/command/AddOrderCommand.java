@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import seedu.duke.Order;
+import seedu.duke.ExpenseList;
 import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
@@ -51,7 +52,8 @@ public class AddOrderCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, Ui ui) throws SystemException {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui)
+            throws SystemException {
         // Pass 1: check every line. Nothing is changed yet, so throwing here leaves no trace.
         List<Product> matchedProducts = new ArrayList<>();
         for (RequestedItem requested : requestedItems) {

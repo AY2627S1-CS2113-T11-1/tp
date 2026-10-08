@@ -8,9 +8,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
+import seedu.duke.command.ListOrderCommand;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
 import seedu.duke.command.ListSalesCommand;
 
@@ -29,12 +33,14 @@ public class Parser {
     private static final String NAME_PREFIX = "p/";
     private static final String PRICE_PREFIX = "a/";
     private static final String ADD_FORMAT = "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String EXPENSE_ADD_FORMAT = "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
 
     private static final String CUSTOMER_PREFIX = "c/";
     private static final String QUANTITY_PREFIX = "q/";
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
+    private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
@@ -61,6 +67,9 @@ public class Parser {
         if (noun.equals("product")) {
             return parseProductCommand(words);
         }
+        if (noun.equals("expense")) {
+            return parseExpenseCommand(words);
+        }
         if (noun.equals("order")) {
             return parseOrderCommand(words);
         }
@@ -70,7 +79,8 @@ public class Parser {
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
-        throw new SystemException("I don't recognise \"" + words[0] + "\". Known commands: product, order, bye");
+        throw new SystemException("I don't recognise \"" + words[0]
+                + "\". Known commands: product, order, expense, bye");
     }
 
     /**
@@ -100,6 +110,32 @@ public class Parser {
     }
 
     /**
+     * Returns the expense command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing or its arguments are invalid
+     */
+    private Command parseExpenseCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with expenses? Try: expense add, or expense list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+
+        if (verb.equals("add")) {
+            return parseAddExpense(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"expense list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListExpenseCommand();
+        }
+        throw new SystemException("I don't know how to \"expense " + words[1] + "\". Try: add, or list");
+    }
+
+    /**
      * Returns the order command described by the already split input words.
      *
      * @param words the input split into noun, verb, and arguments
@@ -115,6 +151,15 @@ public class Parser {
 
         if (verb.equals("add")) {
             return parseAddOrder(arguments);
+        }
+        if (verb.equals("cancel")) {
+            return parseCancelOrder(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"order list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListOrderCommand();
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
     }
@@ -247,6 +292,30 @@ public class Parser {
         }
         return quantity;
     }
+
+    /**
+     * Returns a cancel-order command built from the arguments of {@code order cancel}.
+     *
+     * @param arguments the text after "order cancel", e.g. "1"
+     * @throws SystemException if the arguments are not a single positive whole number
+     */
+    private Command parseCancelOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw new SystemException("Which order should I cancel? " + ORDER_CANCEL_FORMAT);
+        }
+        int orderId;
+        try {
+            orderId = Integer.parseInt(arguments);
+        } catch (NumberFormatException e) {
+            throw new SystemException("The order number must be a whole number such as 1, but I got: \""
+                    + arguments + "\". " + ORDER_CANCEL_FORMAT);
+        }
+        if (orderId < 1) {
+            throw new SystemException("Order numbers start at 1, but I got: " + arguments);
+        }
+        return new CancelOrderCommand(orderId);
+    }
+
     /**
      * Returns an add command built from the arguments of {@code product add}.
      *
@@ -261,6 +330,22 @@ public class Parser {
             throw new SystemException("The product name cannot be empty. " + ADD_FORMAT);
         }
         return new AddProductCommand(name, parsePrice(priceText));
+    }
+
+    /**
+     * Returns an add-expense command built from the arguments of {@code expense add}.
+     *
+     * @param arguments the text after "expense add"
+     * @throws SystemException if the product name or amount is invalid
+     */
+    private Command parseAddExpense(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX);
+        String amountText = extractValue(arguments, PRICE_PREFIX);
+
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
+        }
+        return new AddExpenseCommand(productName, parsePrice(amountText));
     }
 
     /**

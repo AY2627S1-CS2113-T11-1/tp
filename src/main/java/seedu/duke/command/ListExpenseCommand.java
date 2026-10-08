@@ -6,13 +6,13 @@ import seedu.duke.ProductList;
 import seedu.duke.Ui;
 
 /**
- * Lists every confirmed sale, excluding cancelled orders.
+ * Lists all operating expenses in insertion order.
  *
- * Corresponds to {@code sales list}.
+ * Corresponds to {@code expense list}.
  */
-public class ListSalesCommand extends Command {
+public class ListExpenseCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) {
-        ui.showSales(orders.getConfirmedSales());
+        ui.showExpenses(expenses.getExpenses());
     }
 }

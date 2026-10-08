@@ -1,6 +1,7 @@
 package seedu.duke.command;
 
 import seedu.duke.OrderList;
+import seedu.duke.ExpenseList;
 import seedu.duke.ProductList;
 import seedu.duke.Ui;
 
@@ -11,7 +12,7 @@ import seedu.duke.Ui;
  */
 public class ExitCommand extends Command {
     @Override
-    public void execute(ProductList products, OrderList orders, Ui ui) {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) {
         ui.showGoodbye();
     }
 

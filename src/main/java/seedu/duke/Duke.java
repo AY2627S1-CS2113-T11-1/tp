@@ -33,6 +33,7 @@ public class Duke {
         Parser parser = new Parser();
         ProductList products = new ProductList();
         OrderList orders = new OrderList();
+        ExpenseList expenses = new ExpenseList();
 
         while (isRunning && scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
@@ -84,7 +85,7 @@ public class Duke {
                 ui.printDivider();
                 try {
                     Command parsedCommand = parser.parse(command);
-                    parsedCommand.execute(products, orders, ui);
+                    parsedCommand.execute(products, orders, expenses, ui);
                     isRunning = !parsedCommand.isExit();
                 } catch (SystemException e) {
                     // A mistake in one command should never end the session.
@@ -251,12 +252,12 @@ public class Duke {
     }
 
     private static void handleListStock() {
-        System.out.println("+----------------+----------+");
-        System.out.println("| Product        |      Qty |");
-        System.out.println("+----------------+----------+");
+        System.out.println("    +----------------+----------+");
+        System.out.println("    | Product        |      Qty |");
+        System.out.println("    +----------------+----------+");
         for (Stock stock : stockList) {
-            System.out.printf("| %-14s | %8d |\n", stock.product, stock.quantity);
+            System.out.printf("    | %-14s | %8d |\n", stock.product, stock.quantity);
         }
-        System.out.println("+----------------+----------+");
+        System.out.println("    +----------------+----------+");
     }
 }

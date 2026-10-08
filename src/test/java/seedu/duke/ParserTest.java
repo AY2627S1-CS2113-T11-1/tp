@@ -10,8 +10,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.ListOrderCommand;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
 import seedu.duke.command.ListSalesCommand;
 
@@ -85,6 +89,35 @@ class ParserTest {
     @Test
     public void parse_priceWithThreeDecimals_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("product add p/Oat Milk a/3.505"));
+    }
+
+    @Test
+    public void parse_validExpenseAdd_returnsAddExpenseCommand() throws SystemException {
+        AddExpenseCommand command = assertInstanceOf(AddExpenseCommand.class,
+                parser.parse("expense add p/Bread a/100.50"));
+
+        assertEquals("Bread", command.getProductName());
+        assertEquals(100.50, command.getAmount(), DELTA);
+    }
+
+    @Test
+    public void parse_expenseList_returnsListExpenseCommand() throws SystemException {
+        assertInstanceOf(ListExpenseCommand.class, parser.parse("expense list"));
+    }
+
+    @Test
+    public void parse_expenseMissingProduct_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add a/100.50"));
+    }
+
+    @Test
+    public void parse_expenseMissingAmount_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add p/Bread"));
+    }
+
+    @Test
+    public void parse_expenseListWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense list extra"));
     }
 
     @Test
@@ -177,5 +210,31 @@ class ParserTest {
     @Test
     public void parse_orderZeroQuantity_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order add c/Jonas p/Apple q/0"));
+    }
+
+    @Test
+    public void parse_cancelOrder_returnsCancelCommandWithNumber() throws SystemException {
+        CancelOrderCommand cancel = assertInstanceOf(CancelOrderCommand.class, parser.parse("order cancel 1"));
+        assertEquals(1, cancel.getOrderId());
+    }
+
+    @Test
+    public void parse_cancelOrderNonNumeric_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order cancel one"));
+    }
+
+    @Test
+    public void parse_cancelOrderMissingNumber_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order cancel"));
+    }
+
+    @Test
+    public void parse_orderList_returnsListOrderCommand() throws SystemException {
+        assertInstanceOf(ListOrderCommand.class, parser.parse("Order LIST"));
+    }
+
+    @Test
+    public void parse_orderListWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order list 1"));
     }
 }
