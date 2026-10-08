@@ -77,7 +77,7 @@ public class Ui {
     }
 
     private void printIndent(String line) {
-        out.println(line);
+        out.println(INDENT + line);
     }
 
     public void showGoodbye() {

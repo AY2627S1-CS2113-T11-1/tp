@@ -50,14 +50,14 @@ class GenerateReceiptsTest {
 
         new Parser().parse("generate receipts c/Jonas Low").execute(new ProductList(), orders, ui);
         String receipts = output.toString(StandardCharsets.UTF_8);
-        String expected = "Receipts for Jonas Low (2):" + System.lineSeparator();
+        String expected = "    Receipts for Jonas Low (2):" + System.lineSeparator();
         for (Order order : List.of(first, last)) {
             ByteArrayOutputStream existingOutput = new ByteArrayOutputStream();
             uiFor(existingOutput).showOrderCreated(order);
             String existing = existingOutput.toString(StandardCharsets.UTF_8);
             String table = existing.substring(existing.indexOf(System.lineSeparator())
                     + System.lineSeparator().length());
-            expected += "Receipt for order " + order.getId() + " - Jonas Low" + System.lineSeparator() + table;
+            expected += "    Receipt for order " + order.getId() + " - Jonas Low" + System.lineSeparator() + table;
         }
         assertEquals(expected, receipts);
         assertTrue(receipts.contains("$3.00"));
