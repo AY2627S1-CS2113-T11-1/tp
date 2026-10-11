@@ -18,9 +18,6 @@ public class Duke {
      * @param args command line arguments, which the system does not use
      */
     public static void main(String[] args) {
-        //@@author BA-reused
-        //Reused from /ip/src/main/java/bryte/Bryte.java
-        //with minor modifications
         Scanner scanner = new Scanner(System.in);
         boolean isRunning = true;
 
@@ -54,29 +51,4 @@ public class Duke {
         }
         scanner.close();
     }
-
-    private static String parseField(String input, String prefix) {
-        String match = " " + prefix;
-        String paddedInput = " " + input;
-        int startIndex = paddedInput.indexOf(match);
-        if (startIndex == -1) {
-            return null;
-        }
-        startIndex += match.length();
-
-        int endIndex = paddedInput.length();
-        String[] otherPrefixes = {" p/", " a/", " q/"};
-        for (String other : otherPrefixes) {
-            if (other.equals(match)) {
-                continue;
-            }
-            int nextIndex = paddedInput.indexOf(other, startIndex);
-            if (nextIndex != -1 && nextIndex < endIndex) {
-                endIndex = nextIndex;
-            }
-        }
-
-        return paddedInput.substring(startIndex, endIndex).trim();
-    }
-
 }
