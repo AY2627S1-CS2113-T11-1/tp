@@ -80,6 +80,66 @@ public class Ui {
         out.println(INDENT + line);
     }
 
+    /**
+     * Shows the confirmation for updated stock.
+     *
+     * @param stock the stock entry that was updated
+     */
+    public void showStockUpdated(Stock stock) {
+        printIndent("Updated stock for " + stock.product + ". New quantity: " + stock.quantity);
+    }
+
+    /**
+     * Shows the confirmation for newly created stock.
+     *
+     * @param stock the stock entry that was created
+     */
+    public void showStockCreated(Stock stock) {
+        String formattedPrice = (stock.price == (long) stock.price)
+                ? String.format("%d", (long) stock.price)
+                : String.format("%.2f", stock.price);
+        printIndent("Creates stock for a new product " + stock.product
+                + " with quantity " + stock.quantity + " and cost $" + formattedPrice + " each.");
+    }
+
+    /**
+     * Shows a message indicating that the requested product was not found in stock.
+     */
+    public void showStockNotFound() {
+        printIndent("Product not found in stock.");
+    }
+
+    /**
+     * Shows confirmation for removed stock.
+     *
+     * @param productName the name of the product
+     * @param quantityRemoved the quantity removed
+     * @param defaultBehavior true if 1 unit was removed by default
+     */
+    public void showStockRemoved(String productName, int quantityRemoved, boolean defaultBehavior) {
+        if (defaultBehavior) {
+            printIndent("Removes 1 unit (default behaviour) of " + productName);
+        } else {
+            String unitLabel = quantityRemoved == 1 ? " unit of " : " units of ";
+            printIndent("Removes " + quantityRemoved + unitLabel + productName);
+        }
+    }
+
+    /**
+     * Shows every stock entry as a table with Product and Qty columns.
+     *
+     * @param stocks the stock entries to display
+     */
+    public void showStocks(List<Stock> stocks) {
+        String[] headers = {"Product", "Qty"};
+        List<String[]> rows = new ArrayList<>();
+        for (Stock stock : stocks) {
+            rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
+        }
+        boolean[] isLeftAligned = {true, false};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
     public void showGoodbye() {
         printDivider();
         out.println("Goodbye!");

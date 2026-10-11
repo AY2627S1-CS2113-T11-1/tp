@@ -16,6 +16,9 @@ import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
+import seedu.duke.command.AddStockCommand;
+import seedu.duke.command.RemoveStockCommand;
+import seedu.duke.command.ListStockCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -72,11 +75,14 @@ public class Parser {
         if (noun.equals("order")) {
             return parseOrderCommand(words);
         }
+        if (noun.equals("stock")) {
+            return parseStockCommand(words);
+        }
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, bye");
+                + "\". Known commands: product, order, expense, stock, bye");
     }
 
     /**
@@ -382,5 +388,83 @@ public class Parser {
             throw new SystemException("The price cannot be negative, but I got: " + priceText);
         }
         return price;
+    }
+
+    private Command parseStockCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with stock? Try: stock add, stock remove, or stock list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+
+        if (verb.equals("add")) {
+            return parseAddStock(arguments);
+        }
+        if (verb.equals("remove")) {
+            return parseRemoveStock(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"stock list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListStockCommand();
+        }
+        throw new SystemException("I don't know how to \"stock " + words[1] + "\". Try: add, remove, or list");
+    }
+
+    private Command parseAddStock(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX);
+        String amountText = extractValue(arguments, PRICE_PREFIX);
+        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
+        if (qtyPrefixIndex < 0) {
+            throw new SystemException("Missing " + QUANTITY_PREFIX
+                    + " in your command. Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
+        }
+        
+        int qStart = qtyPrefixIndex + QUANTITY_PREFIX.length();
+        int qEnd = arguments.length();
+        for (String otherPrefix : new String[]{NAME_PREFIX, PRICE_PREFIX}) {
+            int otherIndex = arguments.indexOf(otherPrefix, qStart);
+            if (otherIndex >= 0 && otherIndex < qEnd) {
+                qEnd = otherIndex;
+            }
+        }
+        String quantityText = arguments.substring(qStart, qEnd).trim();
+
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. "
+                    + "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
+        }
+        
+        double price = parsePrice(amountText);
+        int quantity = parseQuantity(quantityText);
+        return new AddStockCommand(productName, price, quantity);
+    }
+
+    private Command parseRemoveStock(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX);
+        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
+        
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. Format: stock remove p/PRODUCT [q/QUANTITY]");
+        }
+
+        if (qtyPrefixIndex < 0) {
+            return new RemoveStockCommand(productName, 1, true);
+        }
+        
+        int qStart = qtyPrefixIndex + QUANTITY_PREFIX.length();
+        int qEnd = arguments.length();
+        for (String otherPrefix : new String[]{NAME_PREFIX, PRICE_PREFIX}) {
+            int otherIndex = arguments.indexOf(otherPrefix, qStart);
+            if (otherIndex >= 0 && otherIndex < qEnd) {
+                qEnd = otherIndex;
+            }
+        }
+        String quantityText = arguments.substring(qStart, qEnd).trim();
+        int quantity = parseQuantity(quantityText);
+        
+        return new RemoveStockCommand(productName, quantity, false);
     }
 }
