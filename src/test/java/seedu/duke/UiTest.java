@@ -132,6 +132,51 @@ class UiTest {
         assertEquals(2, outputLines().size());
     }
 
+    @Test
+    public void showStocks_twoStocks_printsAlignedTable() {
+        Stock apple = new Stock("Apple", 1.50, 10);
+        Stock carrot = new Stock("Carrot", 1.88, 5);
+
+        ui.showStocks(List.of(apple, carrot));
+
+        assertEquals(indentedLines(
+                "+---------+-----+",
+                "| Product | Qty |",
+                "+---------+-----+",
+                "| Apple   |  10 |",
+                "| Carrot  |   5 |",
+                "+---------+-----+"), outputLines());
+    }
+
+    @Test
+    public void showStockCreated_wholeDollar_printsFormattedPrice() {
+        ui.showStockCreated(new Stock("Apple", 2.0, 10));
+
+        assertEquals(indentedLines(
+                "Creates stock for a new product Apple with quantity 10 and cost $2 each."), outputLines());
+    }
+
+    @Test
+    public void showStockUpdated_existingStock_printsNewQuantity() {
+        ui.showStockUpdated(new Stock("Apple", 2.0, 15));
+
+        assertEquals(indentedLines("Updated stock for Apple. New quantity: 15"), outputLines());
+    }
+
+    @Test
+    public void showStockRemoved_defaultBehavior_printsOneUnit() {
+        ui.showStockRemoved("Apple", 1, true);
+
+        assertEquals(indentedLines("Removes 1 unit (default behaviour) of Apple"), outputLines());
+    }
+
+    @Test
+    public void showStockRemoved_customQuantity_printsQuantity() {
+        ui.showStockRemoved("Apple", 5, false);
+
+        assertEquals(indentedLines("Removes 5 units of Apple"), outputLines());
+    }
+
     /**
      * Returns order 1 for Jonas Low: 3 apples at $1.50 and 1 carrot at $1.88, the UG example.
      */
