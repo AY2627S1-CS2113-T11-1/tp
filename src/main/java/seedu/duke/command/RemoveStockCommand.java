@@ -23,34 +23,24 @@ public class RemoveStockCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) 
             throws SystemException {
+        Product product = products.findByName(productName);
         Stock existing = stocks.findByProduct(productName);
-        if (existing == null) {
+        if (product == null && existing == null) {
             ui.showStockNotFound();
             return;
         }
 
-        refreshFromProduct(products, existing);
-        existing.quantity -= quantityToRemove;
-        if (existing.quantity < 0) {
-            existing.quantity = 0;
+        int currentStock = product != null ? product.getStock() : existing.quantity;
+        int newStock = Math.max(0, currentStock - quantityToRemove);
+
+        if (product != null) {
+            product.setStock(newStock);
         }
-        syncProductStock(products, existing);
+        if (existing != null) {
+            existing.quantity = newStock;
+        }
 
         ui.showStockRemoved(productName, quantityToRemove, defaultBehavior);
-    }
-
-    private void syncProductStock(ProductList products, Stock stock) {
-        Product product = products.findByName(stock.product);
-        if (product != null) {
-            product.setStock(stock.quantity);
-        }
-    }
-
-    private void refreshFromProduct(ProductList products, Stock stock) {
-        Product product = products.findByName(stock.product);
-        if (product != null) {
-            stock.quantity = product.getStock();
-        }
     }
 
     public String getProductName() {

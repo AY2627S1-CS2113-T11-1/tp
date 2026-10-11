@@ -142,7 +142,7 @@ public class Ui {
 
     public void showGoodbye() {
         printDivider();
-        out.println("Goodbye!");
+        printIndent("Goodbye!");
     }
 
     /**

@@ -23,32 +23,23 @@ public class AddStockCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) 
             throws SystemException {
+        Product product = products.findByName(productName);
+        if (product == null) {
+            throw new SystemException("Product \"" + productName + "\" does not exist in the catalogue. "
+                    + "Add it first with: product add p/" + productName + " a/PRICE");
+        }
+
+        product.setStock(product.getStock() + quantity);
+
         Stock existing = stocks.findByProduct(productName);
         if (existing != null) {
-            refreshFromProduct(products, existing);
-            existing.quantity += quantity;
+            existing.quantity = product.getStock();
             existing.price = price;
-            syncProductStock(products, existing);
             ui.showStockUpdated(existing);
         } else {
-            Stock created = new Stock(productName, price, quantity);
+            Stock created = new Stock(productName, price, product.getStock());
             stocks.add(created);
-            syncProductStock(products, created);
             ui.showStockCreated(created);
-        }
-    }
-
-    private void syncProductStock(ProductList products, Stock stock) {
-        Product product = products.findByName(stock.product);
-        if (product != null) {
-            product.setStock(stock.quantity);
-        }
-    }
-
-    private void refreshFromProduct(ProductList products, Stock stock) {
-        Product product = products.findByName(stock.product);
-        if (product != null) {
-            stock.quantity = product.getStock();
         }
     }
 
