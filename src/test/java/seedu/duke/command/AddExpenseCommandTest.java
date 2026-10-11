@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test;
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
 import seedu.duke.ProductList;
+import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
 class AddExpenseCommandTest {
     @Test
-    public void execute_validExpense_addsExpense() {
+    public void execute_validExpense_addsExpense() throws SystemException {
         ExpenseList expenses = new ExpenseList();
         AddExpenseCommand command = new AddExpenseCommand("Bread", 100.50);
 

@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.Expense;
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
@@ -35,7 +36,7 @@ public class AddExpenseCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) {
         expenses.add(new Expense(productName, amount));
     }
 }

@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class AddOrderCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui)
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
         // Pass 1: check every line. Nothing is changed yet, so throwing here leaves no trace.
         List<Product> matchedProducts = new ArrayList<>();
