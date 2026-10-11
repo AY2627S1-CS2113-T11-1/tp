@@ -43,6 +43,9 @@ public class Parser {
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
     private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
+    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY";
+    private static final String STOCK_REMOVE_FORMAT = "Format: stock remove p/PRODUCT [q/QUANTITY]";
+    private static final String[] STOCK_PREFIXES = {"p/", "a/", "q/"};
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
@@ -319,8 +322,8 @@ public class Parser {
      * @throws SystemException if the product name or amount is invalid
      */
     private Command parseAddExpense(String arguments) throws SystemException {
-        String productName = extractValue(arguments, NAME_PREFIX);
-        String amountText = extractValue(arguments, PRICE_PREFIX);
+        String productName = extractValue(arguments, NAME_PREFIX, PRODUCT_PREFIXES, EXPENSE_ADD_FORMAT);
+        String amountText = extractValue(arguments, PRICE_PREFIX, PRODUCT_PREFIXES, EXPENSE_ADD_FORMAT);
 
         if (productName.isEmpty()) {
             throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
@@ -339,14 +342,29 @@ public class Parser {
      * @throws SystemException if the prefix does not appear in the arguments
      */
     private String extractValue(String arguments, String prefix) throws SystemException {
+        return extractValue(arguments, prefix, PRODUCT_PREFIXES, ADD_FORMAT);
+    }
+
+    /**
+     * Returns the value that follows the given prefix, stopping at any prefix in {@code otherPrefixes}
+     * or the end of input.
+     *
+     * @param arguments     the argument text to search
+     * @param prefix        the prefix whose value is wanted, e.g. "p/"
+     * @param otherPrefixes array of all valid prefixes for this command
+     * @param formatHint    the usage hint to include if the prefix is missing
+     * @throws SystemException if the prefix does not appear in the arguments
+     */
+    private String extractValue(String arguments, String prefix, String[] otherPrefixes, String formatHint)
+            throws SystemException {
         int prefixIndex = arguments.indexOf(prefix);
         if (prefixIndex < 0) {
-            throw new SystemException("Missing " + prefix + " in your command. " + ADD_FORMAT);
+            throw new SystemException("Missing " + prefix + " in your command. " + formatHint);
         }
 
         int valueStart = prefixIndex + prefix.length();
         int valueEnd = arguments.length();
-        for (String otherPrefix : PRODUCT_PREFIXES) {
+        for (String otherPrefix : otherPrefixes) {
             if (otherPrefix.equals(prefix)) {
                 continue;
             }
@@ -414,57 +432,34 @@ public class Parser {
     }
 
     private Command parseAddStock(String arguments) throws SystemException {
-        String productName = extractValue(arguments, NAME_PREFIX);
-        String amountText = extractValue(arguments, PRICE_PREFIX);
-        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
-        if (qtyPrefixIndex < 0) {
-            throw new SystemException("Missing " + QUANTITY_PREFIX
-                    + " in your command. Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
-        }
-        
-        int qStart = qtyPrefixIndex + QUANTITY_PREFIX.length();
-        int qEnd = arguments.length();
-        for (String otherPrefix : new String[]{NAME_PREFIX, PRICE_PREFIX}) {
-            int otherIndex = arguments.indexOf(otherPrefix, qStart);
-            if (otherIndex >= 0 && otherIndex < qEnd) {
-                qEnd = otherIndex;
-            }
-        }
-        String quantityText = arguments.substring(qStart, qEnd).trim();
+        String productName = extractValue(arguments, NAME_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
+        String amountText = extractValue(arguments, PRICE_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
+        String quantityText = extractValue(arguments, QUANTITY_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
 
         if (productName.isEmpty()) {
             throw new SystemException("The product name cannot be empty. "
                     + "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
         }
-        
+
         double price = parsePrice(amountText);
         int quantity = parseQuantity(quantityText);
         return new AddStockCommand(productName, price, quantity);
     }
 
     private Command parseRemoveStock(String arguments) throws SystemException {
-        String productName = extractValue(arguments, NAME_PREFIX);
-        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
-        
+        String productName = extractValue(arguments, NAME_PREFIX, STOCK_PREFIXES, STOCK_REMOVE_FORMAT);
         if (productName.isEmpty()) {
-            throw new SystemException("The product name cannot be empty. Format: stock remove p/PRODUCT [q/QUANTITY]");
+            throw new SystemException("The product name cannot be empty. "
+                    + "Format: stock remove p/PRODUCT [q/QUANTITY]");
         }
 
+        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
         if (qtyPrefixIndex < 0) {
             return new RemoveStockCommand(productName, 1, true);
         }
-        
-        int qStart = qtyPrefixIndex + QUANTITY_PREFIX.length();
-        int qEnd = arguments.length();
-        for (String otherPrefix : new String[]{NAME_PREFIX, PRICE_PREFIX}) {
-            int otherIndex = arguments.indexOf(otherPrefix, qStart);
-            if (otherIndex >= 0 && otherIndex < qEnd) {
-                qEnd = otherIndex;
-            }
-        }
-        String quantityText = arguments.substring(qStart, qEnd).trim();
+
+        String quantityText = extractValue(arguments, QUANTITY_PREFIX, STOCK_PREFIXES, STOCK_REMOVE_FORMAT);
         int quantity = parseQuantity(quantityText);
-        
         return new RemoveStockCommand(productName, quantity, false);
     }
 }
