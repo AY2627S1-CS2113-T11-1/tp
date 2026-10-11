@@ -17,6 +17,7 @@ import seedu.duke.command.Command;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
+import seedu.duke.command.ListSalesCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -132,6 +133,16 @@ class ParserTest {
     @Test
     public void parse_listCommandWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("product list p/Oat Milk"));
+    }
+
+    @Test
+    public void parse_salesListCommand_returnsListSalesCommand() throws SystemException {
+        assertInstanceOf(ListSalesCommand.class, parser.parse("sales list"));
+    }
+
+    @Test
+    public void parse_salesListCommandWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("sales list today"));
     }
 
     @Test
