@@ -16,9 +16,10 @@ import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
-import seedu.duke.command.AddStockCommand;
-import seedu.duke.command.RemoveStockCommand;
+import seedu.duke.command.ListSalesCommand;
 import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.RemoveStockCommand;
+import seedu.duke.command.AddStockCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -69,6 +70,9 @@ public class Parser {
         String[] words = input.split("\\s+", 3);
         String noun = words[0].toLowerCase();
 
+        if (noun.equals("generate")) {
+            return new ReceiptParser().parse(input);
+        }
         if (noun.equals("product")) {
             return parseProductCommand(words);
         }
@@ -81,11 +85,14 @@ public class Parser {
         if (noun.equals("stock")) {
             return parseStockCommand(words);
         }
+        if (noun.equals("sales")) {
+            return parseSalesCommand(words);
+        }
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, stock, bye");
+                + "\". Known commands: product, order, expense, stock, sales, generate, bye");
     }
 
     /**
@@ -167,6 +174,28 @@ public class Parser {
             return new ListOrderCommand();
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
+    }
+
+    /**
+     * Returns the sales command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing, unknown, or has extra arguments
+     */
+    private Command parseSalesCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with sales? Try: sales list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"sales list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListSalesCommand();
+        }
+        throw new SystemException("I don't know how to \"sales " + words[1] + "\". Try: list");
     }
 
     /**
