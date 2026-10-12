@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
 import seedu.duke.ProductList;
@@ -25,8 +26,21 @@ public abstract class Command {
      * @param ui       the UI used to show the outcome
      * @throws SystemException if the command cannot be carried out, e.g. a duplicate product
      */
-    public abstract void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui)
+    public abstract void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException;
+
+    /**
+     * Executes a command using a temporary stock list.
+     *
+     * @param products the catalogue the command acts on
+     * @param orders the orders the command acts on
+     * @param expenses the operating expenses the command acts on
+     * @param ui the UI used to show the outcome
+     * @throws SystemException if the command cannot be carried out
+     */
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) throws SystemException {
+        execute(products, orders, expenses, new StockList(), ui);
+    }
 
     /**
      * Executes a command using a temporary expense list.
@@ -40,7 +54,7 @@ public abstract class Command {
      * @throws SystemException if the command cannot be carried out
      */
     public void execute(ProductList products, OrderList orders, Ui ui) throws SystemException {
-        execute(products, orders, new ExpenseList(), ui);
+        execute(products, orders, new ExpenseList(), new StockList(), ui);
     }
 
     /**

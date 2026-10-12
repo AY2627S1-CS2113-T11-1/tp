@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.Order;
 import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
@@ -32,7 +33,7 @@ public class CancelOrderCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui)
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
         Order order = orders.findById(orderId);
         if (order == null) {

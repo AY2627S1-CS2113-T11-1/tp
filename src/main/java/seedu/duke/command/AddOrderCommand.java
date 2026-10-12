@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import seedu.duke.Order;
 import seedu.duke.ExpenseList;
+import seedu.duke.Order;
 import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.StockList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
@@ -67,12 +68,13 @@ public class AddOrderCommand extends Command {
      * @param products the product catalogue
      * @param orders the order list
      * @param expenses the shared expense list
+     * @param stocks the stock list
      * @param ui the user interface
      * @throws SystemException if a product does not exist or has insufficient stock
      */
     @Override
-    public void execute(ProductList products, OrderList orders,
-                        ExpenseList expenses, Ui ui) throws SystemException {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
+            throws SystemException {
         // Pass 1: validate every line before changing any stock.
         List<Product> matchedProducts = new ArrayList<>();
 

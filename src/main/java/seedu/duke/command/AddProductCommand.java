@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.Product;
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
@@ -36,7 +37,7 @@ public class AddProductCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui)
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
         Product product = new Product(name, price);
         products.add(product);

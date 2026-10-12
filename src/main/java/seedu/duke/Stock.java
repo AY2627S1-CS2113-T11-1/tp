@@ -1,9 +1,9 @@
 package seedu.duke;
 
 public class Stock {
-    String product;
-    double price;
-    int quantity;
+    public String product;
+    public double price;
+    public int quantity;
 
     public Stock(String product, double price, int quantity) {
         this.product = product;

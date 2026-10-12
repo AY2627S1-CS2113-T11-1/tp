@@ -12,12 +12,15 @@ import org.junit.jupiter.api.Test;
 import seedu.duke.command.AddOrderCommand;
 import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
-import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
+import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
 import seedu.duke.command.ListSalesCommand;
+import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.RemoveStockCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -236,5 +239,33 @@ class ParserTest {
     @Test
     public void parse_orderListWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order list 1"));
+    }
+
+    @Test
+    public void parse_validStockAdd_returnsAddStockCommand() throws SystemException {
+        Command command = parser.parse("stock add p/as a/1 q/12");
+        AddStockCommand addStock = assertInstanceOf(AddStockCommand.class, command);
+        assertEquals("as", addStock.getProductName());
+        assertEquals(1.0, addStock.getPrice(), DELTA);
+        assertEquals(12, addStock.getQuantity());
+    }
+
+    @Test
+    public void parse_stockAddMissingPrefixes_throwsSystemException() {
+        SystemException e = assertThrows(SystemException.class, () -> parser.parse("stock add"));
+        assertTrue(e.getMessage().contains("Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY"));
+    }
+
+    @Test
+    public void parse_stockRemove_returnsRemoveStockCommand() throws SystemException {
+        Command command = parser.parse("stock remove p/as q/3");
+        RemoveStockCommand removeStock = assertInstanceOf(RemoveStockCommand.class, command);
+        assertEquals("as", removeStock.getProductName());
+        assertEquals(3, removeStock.getQuantityToRemove());
+    }
+
+    @Test
+    public void parse_stockList_returnsListStockCommand() throws SystemException {
+        assertInstanceOf(ListStockCommand.class, parser.parse("stock list"));
     }
 }

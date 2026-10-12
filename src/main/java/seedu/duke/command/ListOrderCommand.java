@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.OrderList;
 import seedu.duke.ExpenseList;
 import seedu.duke.ProductList;
@@ -13,7 +14,7 @@ import seedu.duke.Ui;
  */
 public class ListOrderCommand extends Command {
     @Override
-    public void execute(ProductList products, OrderList orders, ExpenseList expenses, Ui ui) {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) {
         ui.showOrders(orders.getAll());
     }
 }

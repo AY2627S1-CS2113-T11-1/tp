@@ -13,11 +13,12 @@ import seedu.duke.Expense;
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
 import seedu.duke.ProductList;
+import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
 class ListExpenseCommandTest {
     @Test
-    public void execute_expensesExist_displaysExpensesInInsertionOrder() {
+    public void execute_expensesExist_displaysExpensesInInsertionOrder() throws SystemException {
         ExpenseList expenses = new ExpenseList();
         expenses.add(new Expense("Bread", 100.50));
         expenses.add(new Expense("Lettuce", 42.30));
