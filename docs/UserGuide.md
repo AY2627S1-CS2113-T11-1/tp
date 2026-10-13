@@ -3,6 +3,7 @@
 ## Introduction
 
 {Give a product intro}
+BMS can be used to manage products, stocks, orders, sales, and expenses.
 
 ## Quick Start
 
