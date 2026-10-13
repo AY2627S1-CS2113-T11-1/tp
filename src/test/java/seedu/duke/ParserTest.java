@@ -243,17 +243,16 @@ class ParserTest {
 
     @Test
     public void parse_validStockAdd_returnsAddStockCommand() throws SystemException {
-        Command command = parser.parse("stock add p/as a/1 q/12");
+        Command command = parser.parse("stock add p/as q/12");
         AddStockCommand addStock = assertInstanceOf(AddStockCommand.class, command);
         assertEquals("as", addStock.getProductName());
-        assertEquals(1.0, addStock.getPrice(), DELTA);
         assertEquals(12, addStock.getQuantity());
     }
 
     @Test
     public void parse_stockAddMissingPrefixes_throwsSystemException() {
         SystemException e = assertThrows(SystemException.class, () -> parser.parse("stock add"));
-        assertTrue(e.getMessage().contains("Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY"));
+        assertTrue(e.getMessage().contains("Format: stock add p/PRODUCT q/QUANTITY"));
     }
 
     @Test

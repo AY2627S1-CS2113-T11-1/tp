@@ -44,9 +44,9 @@ public class Parser {
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
     private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
-    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY";
+    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT q/QUANTITY";
     private static final String STOCK_REMOVE_FORMAT = "Format: stock remove p/PRODUCT [q/QUANTITY]";
-    private static final String[] STOCK_PREFIXES = {"p/", "a/", "q/"};
+    private static final String[] STOCK_PREFIXES = {"p/", "q/"};
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
@@ -462,17 +462,15 @@ public class Parser {
 
     private Command parseAddStock(String arguments) throws SystemException {
         String productName = extractValue(arguments, NAME_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
-        String amountText = extractValue(arguments, PRICE_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
         String quantityText = extractValue(arguments, QUANTITY_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
 
         if (productName.isEmpty()) {
             throw new SystemException("The product name cannot be empty. "
-                    + "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
+                    + "Format: stock add p/PRODUCT q/QUANTITY");
         }
 
-        double price = parsePrice(amountText);
         int quantity = parseQuantity(quantityText);
-        return new AddStockCommand(productName, price, quantity);
+        return new AddStockCommand(productName, quantity);
     }
 
     private Command parseRemoveStock(String arguments) throws SystemException {
