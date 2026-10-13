@@ -21,6 +21,7 @@ public class GenerateReceiptsCommand extends Command {
      * @param customer the customer whose receipts should be shown
      */
     public GenerateReceiptsCommand(String customer) {
+        assert customer != null && !customer.isBlank() : "Parser must supply a non-empty customer name";
         this.customer = customer;
     }
 

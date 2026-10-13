@@ -21,6 +21,20 @@ import seedu.duke.command.GenerateReceiptsCommand;
  */
 class GenerateReceiptsTest {
     @Test
+    public void execute_unknownCustomer_throwsWithoutPrintingReceipt() {
+        OrderList orders = new OrderList();
+        orders.create("Alice", List.of());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        SystemException error = assertThrows(SystemException.class,
+                () -> new GenerateReceiptsCommand("Bob").execute(new ProductList(), orders, uiFor(output)));
+
+        assertEquals("Customer not in database.", error.getMessage());
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+        assertEquals(1, orders.size());
+    }
+
+    @Test
     public void parse_validCommand_acceptsSpacesAndCommandCase() throws SystemException {
         assertInstanceOf(GenerateReceiptsCommand.class,
                 new Parser().parse("  GENERATE   RECEIPTS   c/Jonas Low  "));

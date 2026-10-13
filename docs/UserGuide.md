@@ -4,6 +4,8 @@
 
 {Give a product intro}
 
+BMS can be used to manage products, stocks, orders, sales, and expenses.
+
 ## Quick Start
 
 {Give steps to get started quickly}
@@ -15,27 +17,7 @@
 
 {Give detailed description of each feature}
 
-### View confirmed sales: `sales list`
-Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
-are excluded from recorded sales. The final row and summary show the total amount recorded from the
-confirmed sales.
-
-Format: `sales list`
-
-### Adding a todo: `todo`
-Adds a new item to the list of todo items.
-
-Format: `todo n/TODO_NAME d/DEADLINE`
-
-* The `DEADLINE` can be in a natural language format.
-* The `TODO_NAME` cannot contain punctuation.
-
-Examples of usage:
-`todo n/Write the rest of the User Guide d/next week`
-
-`todo n/Refactor the User Guide to remove passive voice d/13/04/2020`
-
-### Adding an order: `order add`
+### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
 
@@ -61,7 +43,7 @@ Creates an order for two units of Bread, provided sufficient stock is available.
 
 Creates an order for two units of Bread and three units of Lettuce, provided both products have sufficient stock.
 
-### Cancelling an order: `order cancel`
+### 3.2 Cancelling an order: `order cancel`
 
 Cancels an active order and restores its ordered quantities to stock.
 
@@ -79,7 +61,7 @@ Example of usage:
 
 Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
 
-### Listing orders: `order list`
+### 3.3 Listing orders: `order list`
 
 Lists all recorded orders in the order they were created, including cancelled orders.
 
@@ -94,7 +76,14 @@ Example of usage:
 
 `order list`
 
-### Generating receipts: `generate receipts`
+### 4.1 View confirmed sales: `sales list`
+Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
+are excluded from recorded sales. The final row and summary show the total amount recorded from the
+confirmed sales.
+
+Format: `sales list`
+
+### 4.2 Generating receipts: `generate receipts`
 
 Shows a separate receipt for each confirmed, non-cancelled order belonging to a customer.
 
@@ -115,7 +104,7 @@ Example of usage:
 
 Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, in the order the purchases were recorded.
 
-### Adding an expense: `expense add`
+### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
 
@@ -127,7 +116,7 @@ Example of usage:
 
 `expense add p/Bread a/100.50`
 
-### Listing expenses: `expense list`
+### 5.2 Listing expenses: `expense list`
 
 Lists all recorded expenses in the order they were added.
 
@@ -148,10 +137,10 @@ Example output:
 
 ## Command Summary
 
-* Add todo `todo n/TODO_NAME d/DEADLINE`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* View sales: `sales list`
 * Generate receipts `generate receipts c/CUSTOMER`
 * Add expense `expense add p/PRODUCT a/AMOUNT`
 * List expenses `expense list`
