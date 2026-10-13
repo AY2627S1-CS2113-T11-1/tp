@@ -15,6 +15,7 @@ public class ExpenseList {
      * @param expense the expense to add
      */
     public void add(Expense expense) {
+        assert expense != null : "Cannot add a null expense";
         expenses.add(expense);
     }
 
