@@ -117,5 +117,6 @@ Example output:
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* View sales: `sales list`
 * Add expense `expense add p/PRODUCT a/AMOUNT`
 * List expenses `expense list`
