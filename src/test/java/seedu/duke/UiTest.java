@@ -125,11 +125,78 @@ class UiTest {
     }
 
     @Test
+    public void showSales_cancelledOrderIsExcluded_printsConfirmedSalesAndTotal() throws SystemException {
+        OrderList orders = new OrderList();
+        Order cancelledSale = orders.create("Jonas Low", sampleOrder().getItems());
+        cancelledSale.cancel();
+        orders.create("Mei", List.of(
+                new OrderItem(new Product("Organic Coffee Beans", 12.00), 10)));
+
+        ui.showSales(orders.getConfirmedSales());
+
+        assertEquals(indentedLines(
+                "Sales (1):",
+                "+-------+----------+-------+---------+",
+                "|   No. | Customer | Units |   Total |",
+                "+-------+----------+-------+---------+",
+                "|     2 | Mei      |    10 | $120.00 |",
+                "+-------+----------+-------+---------+",
+                "| Total |          |       | $120.00 |",
+                "+-------+----------+-------+---------+",
+                "Total sales: $120.00"), outputLines());
+    }
+
+    @Test
     public void showOrders_noOrders_printsZeroCountAndHint() {
         ui.showOrders(List.of());
 
         assertEquals("    Orders (0):", outputLines().get(0));
         assertEquals(2, outputLines().size());
+    }
+
+    @Test
+    public void showStocks_twoStocks_printsAlignedTable() {
+        Stock apple = new Stock("Apple", 1.50, 10);
+        Stock carrot = new Stock("Carrot", 1.88, 5);
+
+        ui.showStocks(List.of(apple, carrot));
+
+        assertEquals(indentedLines(
+                "+---------+-----+",
+                "| Product | Qty |",
+                "+---------+-----+",
+                "| Apple   |  10 |",
+                "| Carrot  |   5 |",
+                "+---------+-----+"), outputLines());
+    }
+
+    @Test
+    public void showStockCreated_wholeDollar_printsFormattedPrice() {
+        ui.showStockCreated(new Stock("Apple", 2.0, 10));
+
+        assertEquals(indentedLines(
+                "Creates stock for a new product Apple with quantity 10 and cost $2 each."), outputLines());
+    }
+
+    @Test
+    public void showStockUpdated_existingStock_printsNewQuantity() {
+        ui.showStockUpdated(new Stock("Apple", 2.0, 15));
+
+        assertEquals(indentedLines("Updated stock for Apple. New quantity: 15"), outputLines());
+    }
+
+    @Test
+    public void showStockRemoved_defaultBehavior_printsOneUnit() {
+        ui.showStockRemoved("Apple", 1, true);
+
+        assertEquals(indentedLines("Removes 1 unit (default behaviour) of Apple"), outputLines());
+    }
+
+    @Test
+    public void showStockRemoved_customQuantity_printsQuantity() {
+        ui.showStockRemoved("Apple", 5, false);
+
+        assertEquals(indentedLines("Removes 5 units of Apple"), outputLines());
     }
 
     /**

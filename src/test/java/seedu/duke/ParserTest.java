@@ -10,11 +10,17 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
+import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
+import seedu.duke.command.ListSalesCommand;
+import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.RemoveStockCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -89,6 +95,35 @@ class ParserTest {
     }
 
     @Test
+    public void parse_validExpenseAdd_returnsAddExpenseCommand() throws SystemException {
+        AddExpenseCommand command = assertInstanceOf(AddExpenseCommand.class,
+                parser.parse("expense add p/Bread a/100.50"));
+
+        assertEquals("Bread", command.getProductName());
+        assertEquals(100.50, command.getAmount(), DELTA);
+    }
+
+    @Test
+    public void parse_expenseList_returnsListExpenseCommand() throws SystemException {
+        assertInstanceOf(ListExpenseCommand.class, parser.parse("expense list"));
+    }
+
+    @Test
+    public void parse_expenseMissingProduct_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add a/100.50"));
+    }
+
+    @Test
+    public void parse_expenseMissingAmount_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add p/Bread"));
+    }
+
+    @Test
+    public void parse_expenseListWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense list extra"));
+    }
+
+    @Test
     public void parse_listCommand_returnsListCommand() throws SystemException {
         assertInstanceOf(ListProductCommand.class, parser.parse("product list"));
     }
@@ -101,6 +136,16 @@ class ParserTest {
     @Test
     public void parse_listCommandWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("product list p/Oat Milk"));
+    }
+
+    @Test
+    public void parse_salesListCommand_returnsListSalesCommand() throws SystemException {
+        assertInstanceOf(ListSalesCommand.class, parser.parse("sales list"));
+    }
+
+    @Test
+    public void parse_salesListCommandWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("sales list today"));
     }
 
     @Test
@@ -194,5 +239,33 @@ class ParserTest {
     @Test
     public void parse_orderListWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order list 1"));
+    }
+
+    @Test
+    public void parse_validStockAdd_returnsAddStockCommand() throws SystemException {
+        Command command = parser.parse("stock add p/as a/1 q/12");
+        AddStockCommand addStock = assertInstanceOf(AddStockCommand.class, command);
+        assertEquals("as", addStock.getProductName());
+        assertEquals(1.0, addStock.getPrice(), DELTA);
+        assertEquals(12, addStock.getQuantity());
+    }
+
+    @Test
+    public void parse_stockAddMissingPrefixes_throwsSystemException() {
+        SystemException e = assertThrows(SystemException.class, () -> parser.parse("stock add"));
+        assertTrue(e.getMessage().contains("Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY"));
+    }
+
+    @Test
+    public void parse_stockRemove_returnsRemoveStockCommand() throws SystemException {
+        Command command = parser.parse("stock remove p/as q/3");
+        RemoveStockCommand removeStock = assertInstanceOf(RemoveStockCommand.class, command);
+        assertEquals("as", removeStock.getProductName());
+        assertEquals(3, removeStock.getQuantityToRemove());
+    }
+
+    @Test
+    public void parse_stockList_returnsListStockCommand() throws SystemException {
+        assertInstanceOf(ListStockCommand.class, parser.parse("stock list"));
     }
 }

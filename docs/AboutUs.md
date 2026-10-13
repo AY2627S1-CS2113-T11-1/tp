@@ -1,9 +1,9 @@
 # About us
 
-Display | Name | Github Profile | Portfolio 
---------|:----:|:--------------:|:---------:
-![](https://via.placeholder.com/100.png?text=Photo) | John Doe | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
-![](https://via.placeholder.com/100.png?text=Photo) | Don Joe | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
-![](https://via.placeholder.com/100.png?text=Photo) | Ron John | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
-![](https://via.placeholder.com/100.png?text=Photo) | John Roe | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
-![](https://via.placeholder.com/100.png?text=Photo) | Don Roe | [Github](https://github.com/) | [Portfolio](docs/team/johndoe.md)
+Display |    Name    |             Github Profile              | Portfolio 
+--------|:----------:|:---------------------------------------:|:---------:
+![](https://via.placeholder.com/100.png?text=Photo) | Caleb Thow | [Github](https://github.com/CalebThow)  | [Portfolio](docs/team/calebthow.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Tham You Jie | [Github](https://github.com/DemiSushi)  | [Portfolio](docs/team/thamyoujie.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Jonas Low | [Github](https://github.com/JonasLow) | [Portfolio](docs/team/jonaslow.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Bryan Ang |  [Github](https://github.com/angbryan)  | [Portfolio](docs/team/bryan.md)
+![](https://via.placeholder.com/100.png?text=Photo) | Brian Yang |  [Github](https://github.com/zechby)  | [Portfolio](docs/team/brian.md)

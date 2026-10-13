@@ -80,9 +80,69 @@ public class Ui {
         out.println(INDENT + line);
     }
 
+    /**
+     * Shows the confirmation for updated stock.
+     *
+     * @param stock the stock entry that was updated
+     */
+    public void showStockUpdated(Stock stock) {
+        printIndent("Updated stock for " + stock.product + ". New quantity: " + stock.quantity);
+    }
+
+    /**
+     * Shows the confirmation for newly created stock.
+     *
+     * @param stock the stock entry that was created
+     */
+    public void showStockCreated(Stock stock) {
+        String formattedPrice = (stock.price == (long) stock.price)
+                ? String.format("%d", (long) stock.price)
+                : String.format("%.2f", stock.price);
+        printIndent("Creates stock for a new product " + stock.product
+                + " with quantity " + stock.quantity + " and cost $" + formattedPrice + " each.");
+    }
+
+    /**
+     * Shows a message indicating that the requested product was not found in stock.
+     */
+    public void showStockNotFound() {
+        printIndent("Product not found in stock.");
+    }
+
+    /**
+     * Shows confirmation for removed stock.
+     *
+     * @param productName the name of the product
+     * @param quantityRemoved the quantity removed
+     * @param defaultBehavior true if 1 unit was removed by default
+     */
+    public void showStockRemoved(String productName, int quantityRemoved, boolean defaultBehavior) {
+        if (defaultBehavior) {
+            printIndent("Removes 1 unit (default behaviour) of " + productName);
+        } else {
+            String unitLabel = quantityRemoved == 1 ? " unit of " : " units of ";
+            printIndent("Removes " + quantityRemoved + unitLabel + productName);
+        }
+    }
+
+    /**
+     * Shows every stock entry as a table with Product and Qty columns.
+     *
+     * @param stocks the stock entries to display
+     */
+    public void showStocks(List<Stock> stocks) {
+        String[] headers = {"Product", "Qty"};
+        List<String[]> rows = new ArrayList<>();
+        for (Stock stock : stocks) {
+            rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
+        }
+        boolean[] isLeftAligned = {true, false};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
     public void showGoodbye() {
         printDivider();
-        out.println("Goodbye!");
+        printIndent("Goodbye!");
     }
 
     /**
@@ -110,6 +170,19 @@ public class Ui {
                 printIndent(String.format(PRODUCT_LINE_FORMAT,
                         product.getName(), product.getPriceString(), product.getStock()));
             }
+        }
+    }
+
+    /**
+     * Shows every recorded expense in insertion order.
+     *
+     * @param expenses the expenses to display
+     */
+    public void showExpenses(List<Expense> expenses) {
+        for (int i = 0; i < expenses.size(); i++) {
+            Expense expense = expenses.get(i);
+            printIndent(String.format("%d. %s: $%.2f", i + 1,
+                    expense.getProductName(), expense.getAmount()));
         }
     }
 
@@ -161,6 +234,40 @@ public class Ui {
         String[] headers = {"No.", "Customer", "Units", "Total", "Status"};
         boolean[] isLeftAligned = {false, true, false, false, true};
         printTable(headers, rows, null, isLeftAligned);
+    }
+
+    /**
+     * Shows confirmed sales and the total amount recorded from them.
+     *
+     * Cancelled orders are filtered by {@link OrderList} before this method is called, so every
+     * row shown contributes to the total.
+     *
+     * @param sales the confirmed sales to display, oldest first
+     */
+    public void showSales(List<Order> sales) {
+        printIndent("Sales (" + sales.size() + "):");
+        if (sales.isEmpty()) {
+            printIndent("Nothing here yet. Confirm an order with: order add c/CUSTOMER p/PRODUCT q/QUANTITY");
+            printIndent("Total sales: $0.00");
+            return;
+        }
+
+        List<String[]> rows = new ArrayList<>();
+        double totalSales = 0;
+        for (Order sale : sales) {
+            int units = 0;
+            for (OrderItem item : sale.getItems()) {
+                units += item.getQuantity();
+            }
+            totalSales += sale.getTotal();
+            rows.add(new String[] {String.valueOf(sale.getId()), sale.getCustomer(), String.valueOf(units),
+                formatMoney(sale.getTotal())});
+        }
+        String[] headers = {"No.", "Customer", "Units", "Total"};
+        String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
+        boolean[] isLeftAligned = {false, true, false, false};
+        printTable(headers, rows, totalRow, isLeftAligned);
+        printIndent("Total sales: " + formatMoney(totalSales));
     }
 
     /**
@@ -243,6 +350,24 @@ public class Ui {
             row.append(" ").append(String.format("%" + alignment + widths[column] + "s", cells[column])).append(" |");
         }
         return row.toString();
+    }
+
+    /**
+     * Shows a separate receipt for each eligible order using the existing order table layout.
+     *
+     * @param customer the requested customer name
+     * @param receipts confirmed, non-cancelled orders for this customer, oldest first
+     */
+    public void showReceipts(String customer, List<Order> receipts) {
+        printIndent("Receipts for " + customer + " (" + receipts.size() + "):");
+        if (receipts.isEmpty()) {
+            printIndent("No paid, non-cancelled orders found for this customer.");
+            return;
+        }
+        for (Order order : receipts) {
+            printIndent("Receipt for order " + order.getId() + " - " + order.getCustomer());
+            printOrderTable(order, "Qty");
+        }
     }
 
     public void showError(String message) {

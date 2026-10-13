@@ -8,12 +8,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.ListOrderCommand;
+import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
+import seedu.duke.command.ListSalesCommand;
+import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.RemoveStockCommand;
+import seedu.duke.command.AddStockCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -30,6 +36,7 @@ public class Parser {
     private static final String NAME_PREFIX = "p/";
     private static final String PRICE_PREFIX = "a/";
     private static final String ADD_FORMAT = "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String EXPENSE_ADD_FORMAT = "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
 
     private static final String CUSTOMER_PREFIX = "c/";
@@ -37,6 +44,9 @@ public class Parser {
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
     private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
+    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY";
+    private static final String STOCK_REMOVE_FORMAT = "Format: stock remove p/PRODUCT [q/QUANTITY]";
+    private static final String[] STOCK_PREFIXES = {"p/", "a/", "q/"};
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
@@ -60,16 +70,29 @@ public class Parser {
         String[] words = input.split("\\s+", 3);
         String noun = words[0].toLowerCase();
 
+        if (noun.equals("generate")) {
+            return new ReceiptParser().parse(input);
+        }
         if (noun.equals("product")) {
             return parseProductCommand(words);
+        }
+        if (noun.equals("expense")) {
+            return parseExpenseCommand(words);
         }
         if (noun.equals("order")) {
             return parseOrderCommand(words);
         }
+        if (noun.equals("stock")) {
+            return parseStockCommand(words);
+        }
+        if (noun.equals("sales")) {
+            return parseSalesCommand(words);
+        }
         if (noun.equals("bye")) {
             return new ExitCommand();
         }
-        throw new SystemException("I don't recognise \"" + words[0] + "\". Known commands: product, order, bye");
+        throw new SystemException("I don't recognise \"" + words[0]
+                + "\". Known commands: product, order, expense, stock, sales, generate, bye");
     }
 
     /**
@@ -99,6 +122,32 @@ public class Parser {
     }
 
     /**
+     * Returns the expense command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing or its arguments are invalid
+     */
+    private Command parseExpenseCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with expenses? Try: expense add, or expense list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+
+        if (verb.equals("add")) {
+            return parseAddExpense(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"expense list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListExpenseCommand();
+        }
+        throw new SystemException("I don't know how to \"expense " + words[1] + "\". Try: add, or list");
+    }
+
+    /**
      * Returns the order command described by the already split input words.
      *
      * @param words the input split into noun, verb, and arguments
@@ -125,6 +174,28 @@ public class Parser {
             return new ListOrderCommand();
         }
         throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
+    }
+
+    /**
+     * Returns the sales command described by the already split input words.
+     *
+     * @param words the input split into noun, verb, and arguments
+     * @throws SystemException if the verb is missing, unknown, or has extra arguments
+     */
+    private Command parseSalesCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with sales? Try: sales list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"sales list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListSalesCommand();
+        }
+        throw new SystemException("I don't know how to \"sales " + words[1] + "\". Try: list");
     }
 
     /**
@@ -274,6 +345,22 @@ public class Parser {
     }
 
     /**
+     * Returns an add-expense command built from the arguments of {@code expense add}.
+     *
+     * @param arguments the text after "expense add"
+     * @throws SystemException if the product name or amount is invalid
+     */
+    private Command parseAddExpense(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX, PRODUCT_PREFIXES, EXPENSE_ADD_FORMAT);
+        String amountText = extractValue(arguments, PRICE_PREFIX, PRODUCT_PREFIXES, EXPENSE_ADD_FORMAT);
+
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
+        }
+        return new AddExpenseCommand(productName, parsePrice(amountText));
+    }
+
+    /**
      * Returns the value that follows the given prefix, up to the next prefix or the end of input.
      *
      * Scanning for prefixes rather than splitting on spaces is what lets a product name such as
@@ -284,14 +371,29 @@ public class Parser {
      * @throws SystemException if the prefix does not appear in the arguments
      */
     private String extractValue(String arguments, String prefix) throws SystemException {
+        return extractValue(arguments, prefix, PRODUCT_PREFIXES, ADD_FORMAT);
+    }
+
+    /**
+     * Returns the value that follows the given prefix, stopping at any prefix in {@code otherPrefixes}
+     * or the end of input.
+     *
+     * @param arguments     the argument text to search
+     * @param prefix        the prefix whose value is wanted, e.g. "p/"
+     * @param otherPrefixes array of all valid prefixes for this command
+     * @param formatHint    the usage hint to include if the prefix is missing
+     * @throws SystemException if the prefix does not appear in the arguments
+     */
+    private String extractValue(String arguments, String prefix, String[] otherPrefixes, String formatHint)
+            throws SystemException {
         int prefixIndex = arguments.indexOf(prefix);
         if (prefixIndex < 0) {
-            throw new SystemException("Missing " + prefix + " in your command. " + ADD_FORMAT);
+            throw new SystemException("Missing " + prefix + " in your command. " + formatHint);
         }
 
         int valueStart = prefixIndex + prefix.length();
         int valueEnd = arguments.length();
-        for (String otherPrefix : PRODUCT_PREFIXES) {
+        for (String otherPrefix : otherPrefixes) {
             if (otherPrefix.equals(prefix)) {
                 continue;
             }
@@ -333,5 +435,60 @@ public class Parser {
             throw new SystemException("The price cannot be negative, but I got: " + priceText);
         }
         return price;
+    }
+
+    private Command parseStockCommand(String[] words) throws SystemException {
+        if (words.length < 2) {
+            throw new SystemException("What should I do with stock? Try: stock add, stock remove, or stock list");
+        }
+
+        String verb = words[1].toLowerCase();
+        String arguments = words.length < 3 ? "" : words[2].trim();
+
+        if (verb.equals("add")) {
+            return parseAddStock(arguments);
+        }
+        if (verb.equals("remove")) {
+            return parseRemoveStock(arguments);
+        }
+        if (verb.equals("list")) {
+            if (!arguments.isEmpty()) {
+                throw new SystemException("\"stock list\" takes no extra input, but I found: " + arguments);
+            }
+            return new ListStockCommand();
+        }
+        throw new SystemException("I don't know how to \"stock " + words[1] + "\". Try: add, remove, or list");
+    }
+
+    private Command parseAddStock(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
+        String amountText = extractValue(arguments, PRICE_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
+        String quantityText = extractValue(arguments, QUANTITY_PREFIX, STOCK_PREFIXES, STOCK_ADD_FORMAT);
+
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. "
+                    + "Format: stock add p/PRODUCT a/AMOUNT q/QUANTITY");
+        }
+
+        double price = parsePrice(amountText);
+        int quantity = parseQuantity(quantityText);
+        return new AddStockCommand(productName, price, quantity);
+    }
+
+    private Command parseRemoveStock(String arguments) throws SystemException {
+        String productName = extractValue(arguments, NAME_PREFIX, STOCK_PREFIXES, STOCK_REMOVE_FORMAT);
+        if (productName.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. "
+                    + "Format: stock remove p/PRODUCT [q/QUANTITY]");
+        }
+
+        int qtyPrefixIndex = arguments.indexOf(QUANTITY_PREFIX);
+        if (qtyPrefixIndex < 0) {
+            return new RemoveStockCommand(productName, 1, true);
+        }
+
+        String quantityText = extractValue(arguments, QUANTITY_PREFIX, STOCK_PREFIXES, STOCK_REMOVE_FORMAT);
+        int quantity = parseQuantity(quantityText);
+        return new RemoveStockCommand(productName, quantity, false);
     }
 }

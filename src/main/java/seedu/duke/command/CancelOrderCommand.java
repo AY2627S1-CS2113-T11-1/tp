@@ -1,8 +1,10 @@
 package seedu.duke.command;
 
+import seedu.duke.StockList;
 import seedu.duke.Order;
 import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
+import seedu.duke.ExpenseList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
 import seedu.duke.SystemException;
@@ -31,7 +33,8 @@ public class CancelOrderCommand extends Command {
     }
 
     @Override
-    public void execute(ProductList products, OrderList orders, Ui ui) throws SystemException {
+    public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
+            throws SystemException {
         Order order = orders.findById(orderId);
         if (order == null) {
             throw new SystemException("    There is no order " + orderId + ".");
