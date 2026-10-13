@@ -22,19 +22,6 @@ confirmed sales.
 
 Format: `sales list`
 
-### Adding a todo: `todo`
-Adds a new item to the list of todo items.
-
-Format: `todo n/TODO_NAME d/DEADLINE`
-
-* The `DEADLINE` can be in a natural language format.
-* The `TODO_NAME` cannot contain punctuation.
-
-Examples of usage:
-`todo n/Write the rest of the User Guide d/next week`
-
-`todo n/Refactor the User Guide to remove passive voice d/13/04/2020`
-
 ### Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -127,7 +114,6 @@ Example output:
 
 ## Command Summary
 
-* Add todo `todo n/TODO_NAME d/DEADLINE`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
