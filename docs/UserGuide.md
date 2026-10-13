@@ -83,6 +83,27 @@ confirmed sales.
 
 Format: `sales list`
 
+### 4.2 Generating receipts: `generate receipts`
+
+Shows a separate receipt for each confirmed, non-cancelled order belonging to a customer.
+
+Format: `generate receipts c/CUSTOMER`
+
+* The `CUSTOMER` cannot be empty. Specify exactly one customer and no other fields.
+* Use the full customer name. Names are case-insensitive and may contain spaces.
+* Each receipt shows the order number, customer name, products, quantities, prices paid, subtotals and total.
+* Receipts use the same table layout as the output of `order add`.
+* Creating an order records a confirmed purchase. There is no separate payment command.
+* A customer with no order history receives `Sorry! Customer not in database.`
+* A customer whose orders are all cancelled receives `No paid, non-cancelled orders found for this customer.`
+* Generating receipts does not change orders, stock or recorded sales. The command can be repeated.
+
+Example of usage:
+
+`generate receipts c/Jonas Low`
+
+Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, in the order the purchases were recorded.
+
 ### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
@@ -120,5 +141,6 @@ Example output:
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
 * View sales: `sales list`
+* Generate receipts `generate receipts c/CUSTOMER`
 * Add expense `expense add p/PRODUCT a/AMOUNT`
 * List expenses `expense list`
