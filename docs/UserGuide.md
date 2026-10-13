@@ -15,13 +15,6 @@
 
 {Give detailed description of each feature}
 
-### 4.1 View confirmed sales: `sales list`
-Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
-are excluded from recorded sales. The final row and summary show the total amount recorded from the
-confirmed sales.
-
-Format: `sales list`
-
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -66,7 +59,7 @@ Example of usage:
 
 Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
 
-### Listing orders: `order list`
+### 3.3 Listing orders: `order list`
 
 Lists all recorded orders in the order they were created, including cancelled orders.
 
@@ -80,6 +73,13 @@ Format: `order list`
 Example of usage:
 
 `order list`
+
+### 4.1 View confirmed sales: `sales list`
+Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
+are excluded from recorded sales. The final row and summary show the total amount recorded from the
+confirmed sales.
+
+Format: `sales list`
 
 ### 5.1 Adding an expense: `expense add`
 
