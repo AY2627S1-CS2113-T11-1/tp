@@ -15,14 +15,14 @@
 
 {Give detailed description of each feature}
 
-### View confirmed sales: `sales list`
+### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
 confirmed sales.
 
 Format: `sales list`
 
-### Adding an order: `order add`
+### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
 
@@ -48,7 +48,7 @@ Creates an order for two units of Bread, provided sufficient stock is available.
 
 Creates an order for two units of Bread and three units of Lettuce, provided both products have sufficient stock.
 
-### Cancelling an order: `order cancel`
+### 3.2 Cancelling an order: `order cancel`
 
 Cancels an active order and restores its ordered quantities to stock.
 
@@ -81,7 +81,7 @@ Example of usage:
 
 `order list`
 
-### Adding an expense: `expense add`
+### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
 
@@ -93,7 +93,7 @@ Example of usage:
 
 `expense add p/Bread a/100.50`
 
-### Listing expenses: `expense list`
+### 5.2 Listing expenses: `expense list`
 
 Lists all recorded expenses in the order they were added.
 
