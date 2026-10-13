@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddStockCommand;
+import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 
 class StockCommandTest {
@@ -72,4 +73,30 @@ class StockCommandTest {
         assertThrows(SystemException.class, () ->
                 command.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui()));
     }
+
+    @Test
+    public void addStock_invalidConstructorArguments_failAssertions() {
+        assertThrows(AssertionError.class, () -> new AddStockCommand(null, 10));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("  ", 10));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("Apple", 0));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("Apple", -5));
+    }
+
+    @Test
+    public void removeStock_invalidConstructorArguments_failAssertions() {
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand(null, 5, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("  ", 5, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("Apple", 0, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("Apple", -2, false));
+    }
+
+    @Test
+    public void listStock_nullArguments_failAssertions() {
+        ListStockCommand listCommand = new ListStockCommand();
+        assertThrows(AssertionError.class, () ->
+                listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), null, new Ui()));
+        assertThrows(AssertionError.class, () ->
+                listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
+    }
 }
+
