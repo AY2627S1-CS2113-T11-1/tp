@@ -20,11 +20,10 @@ public class Ui {
     private static final String PRODUCT_LINE_FORMAT = "   %-18s%-8sstock %d";
     private static final String INDENT = "    ";
     private static final String DIVIDER = INDENT + "_".repeat(60);
-    private static final String banner = "       ____        _        \n"
-            + "      |  _ \\ _   _| | _____ \n"
-            + "      | | | | | | | |/ / _ \\\n"
-            + "      | |_| | |_| |   <  __/\n"
-            + "      |____/ \\__,_|_|\\_\\___|\n";
+    private static final String banner = "    +--------------------------------------+\n"
+            + "    |       BUSINESS MANAGEMENT SYSTEM     |\n"
+            + "    |                 (BMS)                |\n"
+            + "    +--------------------------------------+\n";
 
     private final Scanner scanner;
     private final PrintStream out;
@@ -64,7 +63,7 @@ public class Ui {
 
     public void showWelcome() {
         printBanner();
-        printIndent("Welcome to the management system.");
+        printIndent("Welcome to BMS.");
         printIndent("Type a command, or \"bye\" to exit.");
     }
 
