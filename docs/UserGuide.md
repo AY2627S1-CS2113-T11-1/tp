@@ -17,6 +17,68 @@ BMS can be used to manage products, stocks, orders, sales, and expenses.
 
 {Give detailed description of each feature}
 
+### 1. Product catalogue
+
+Products are the items your business sells. Orders and stock records refer to products by name, so add
+your products to the catalogue first.
+
+Each product has:
+
+* **Name**: identifies the product. Two products cannot share a name. Names are compared ignoring
+  upper and lower case, so `Oat Milk` and `oat milk` count as the same product.
+* **Price**: the selling price of one unit, in dollars.
+* **Stock**: the number of units on hand. A new product starts with 0 stock. Use the stock commands
+  to change it.
+
+### 1.1 Adding a product: `product add`
+
+Adds a new product to the catalogue with 0 stock.
+
+Format: `product add p/PRODUCT a/AMOUNT`
+
+* `PRODUCT` is the product name. It cannot be empty, and it cannot contain `p/` or `a/`.
+* `AMOUNT` is the unit price. It must be a number that is 0 or more, with at most 2 decimal places.
+  Type the number only, without a `$` sign.
+* `p/` and `a/` can be given in either order.
+* Spaces at the start and end of a value are ignored.
+* A product whose name is already in the catalogue is rejected, and the catalogue stays unchanged.
+
+Examples of usage:
+
+`product add p/Oat Milk 1L a/3.50`
+
+Adds Oat Milk 1L at $3.50 per unit.
+
+`product add a/12 p/Coffee Beans 250g`
+
+Adds Coffee Beans 250g at $12.00 per unit.
+
+Example output:
+
+```text
+Added product Oat Milk 1L
+Price: $3.50
+Stock: 0
+```
+
+### 1.2 Listing products: `product list`
+
+Lists every product in the catalogue in alphabetical order, ignoring upper and lower case.
+
+Format: `product list`
+
+* No additional arguments are allowed.
+* Each line shows the product name, unit price and current stock.
+* If the catalogue is empty, the application explains how to add a product.
+
+Example output:
+
+```text
+Products (2):
+   Coffee Beans 250g $12.00  stock 0
+   Oat Milk 1L       $3.50   stock 0
+```
+
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -137,6 +199,8 @@ Example output:
 
 ## Command Summary
 
+* Add product `product add p/PRODUCT a/AMOUNT`
+* List products `product list`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
