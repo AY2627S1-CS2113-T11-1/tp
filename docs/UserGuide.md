@@ -79,6 +79,107 @@ Products (2):
    Oat Milk 1L       $3.50   stock 0
 ```
 
+### 2. Stock inventory
+
+Stock records track the quantity of each product physically on hand. When you add or remove stock,
+the system updates both the stock records and the product catalogue, ensuring available quantities
+remain in sync.
+
+### 2.1 Adding stock: `stock add`
+
+Adds stock to an existing product in the catalogue and updates or creates a corresponding stock entry.
+
+Format: `stock add p/PRODUCT q/QUANTITY`
+
+* `PRODUCT` is the product name. It must match an existing product in the catalogue. Product names are
+  case-insensitive.
+* `QUANTITY` is the number of units to add. It must be a positive whole number (e.g. 1, 10, 50).
+* `p/` and `q/` can be given in either order.
+* Spaces at the start and end of a value are ignored.
+* If the product does not exist in the catalogue, the addition is rejected. Add the product with `product add` first.
+* Unit price is automatically retrieved from the product in the catalogue.
+* If a stock record already exists for the product, its quantity is increased. Otherwise, a new stock record is created.
+
+Examples of usage:
+
+`stock add p/Oat Milk 1L q/20`
+
+Adds 20 units of stock for Oat Milk 1L.
+
+`stock add q/10 p/Coffee Beans 250g`
+
+Adds 10 units of stock for Coffee Beans 250g.
+
+Example output:
+
+```text
+Creates stock for a new product Oat Milk 1L with quantity 20 and cost $3.50 each.
+```
+
+Or when updating existing stock:
+
+```text
+Updated stock for Oat Milk 1L. New quantity: 35
+```
+
+### 2.2 Removing stock: `stock remove`
+
+Removes a specified quantity of stock from a product.
+
+Format: `stock remove p/PRODUCT [q/QUANTITY]`
+
+* `PRODUCT` is the product name. Product names are case-insensitive.
+* `QUANTITY` is optional. If specified, it must be a positive whole number.
+* If `q/QUANTITY` is omitted, the command defaults to removing 1 unit.
+* If the product is not found in the catalogue or stock list, the application reports `Product not found in stock.`
+* If the quantity to remove is greater than the available stock, the stock level is reduced to 0 (stock never drops below 0).
+
+Examples of usage:
+
+`stock remove p/Oat Milk 1L`
+
+Removes 1 unit of Oat Milk 1L (default behavior).
+
+`stock remove p/Coffee Beans 250g q/5`
+
+Removes 5 units of Coffee Beans 250g.
+
+Example output (default behavior):
+
+```text
+Removes 1 unit (default behaviour) of Oat Milk 1L
+```
+
+Example output (custom quantity):
+
+```text
+Removes 5 units of Coffee Beans 250g
+```
+
+### 2.3 Listing stock: `stock list`
+
+Lists all current stock records in a table showing the product name and quantity on hand.
+
+Format: `stock list`
+
+* No additional arguments are allowed. Any extra text produces an error.
+* Displays each product and its current quantity in an aligned table.
+
+Example of usage:
+
+`stock list`
+
+Example output:
+
+```text
++-------------------+-----+
+| Product           | Qty |
++-------------------+-----+
+| Coffee Beans 250g |  10 |
+| Oat Milk 1L       |  34 |
++-------------------+-----+
+```
+
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -201,6 +302,9 @@ Example output:
 
 * Add product `product add p/PRODUCT a/AMOUNT`
 * List products `product list`
+* Add stock `stock add p/PRODUCT q/QUANTITY`
+* Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
+* List stock `stock list`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
