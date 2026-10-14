@@ -1,10 +1,13 @@
 package seedu.duke;
 
-import org.junit.jupiter.api.Test;
-import seedu.duke.command.AddStockCommand;
-import seedu.duke.command.RemoveStockCommand;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+import seedu.duke.command.AddStockCommand;
+import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.RemoveStockCommand;
 
 class StockCommandTest {
 
@@ -13,14 +16,14 @@ class StockCommandTest {
         StockList stocks = new StockList();
         ProductList products = new ProductList();
         products.add(new Product("Apple", 2.00));
-        AddStockCommand command = new AddStockCommand("Apple", 1.50, 10);
+        AddStockCommand command = new AddStockCommand("Apple", 10);
 
         command.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
 
         assertEquals(1, stocks.getStocks().size());
         assertEquals("Apple", stocks.getStocks().get(0).product);
         assertEquals(10, stocks.getStocks().get(0).quantity);
-        assertEquals(1.50, stocks.getStocks().get(0).price);
+        assertEquals(2.00, stocks.getStocks().get(0).price);
         assertEquals(10, products.findByName("Apple").getStock());
     }
 
@@ -31,15 +34,15 @@ class StockCommandTest {
         Product banana = new Product("Banana", 3.00);
         banana.setStock(5);
         products.add(banana);
-        stocks.add(new Stock("Banana", 2.0, 5));
+        stocks.add(new Stock("Banana", 3.00, 5));
 
-        AddStockCommand command = new AddStockCommand("Banana", 2.50, 10);
+        AddStockCommand command = new AddStockCommand("Banana", 10);
         command.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
 
         assertEquals(1, stocks.getStocks().size());
         assertEquals("Banana", stocks.getStocks().get(0).product);
         assertEquals(15, stocks.getStocks().get(0).quantity); // 5 + 10
-        assertEquals(2.50, stocks.getStocks().get(0).price); // updated price
+        assertEquals(3.00, stocks.getStocks().get(0).price);
         assertEquals(15, products.findByName("Banana").getStock());
     }
 
@@ -65,9 +68,35 @@ class StockCommandTest {
     public void execute_missingProduct_throwsSystemException() {
         StockList stocks = new StockList();
         ProductList products = new ProductList();
-        AddStockCommand command = new AddStockCommand("Apple", 1.50, 10);
+        AddStockCommand command = new AddStockCommand("Apple", 10);
 
         assertThrows(SystemException.class, () ->
                 command.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui()));
     }
+
+    @Test
+    public void addStock_invalidConstructorArguments_failAssertions() {
+        assertThrows(AssertionError.class, () -> new AddStockCommand(null, 10));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("  ", 10));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("Apple", 0));
+        assertThrows(AssertionError.class, () -> new AddStockCommand("Apple", -5));
+    }
+
+    @Test
+    public void removeStock_invalidConstructorArguments_failAssertions() {
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand(null, 5, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("  ", 5, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("Apple", 0, false));
+        assertThrows(AssertionError.class, () -> new RemoveStockCommand("Apple", -2, false));
+    }
+
+    @Test
+    public void listStock_nullArguments_failAssertions() {
+        ListStockCommand listCommand = new ListStockCommand();
+        assertThrows(AssertionError.class, () ->
+                listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), null, new Ui()));
+        assertThrows(AssertionError.class, () ->
+                listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
+    }
 }
+
