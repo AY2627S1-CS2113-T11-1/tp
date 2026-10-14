@@ -24,10 +24,17 @@ public class ProductList {
      * @throws SystemException if a product with the same name already exists, ignoring case
      */
     public void add(Product product) throws SystemException {
+        assert product != null : "Cannot add a null product to the catalogue";
+
         if (findByName(product.getName()) != null) {
             throw new SystemException("A product named \"" + product.getName() + "\" is already in the catalogue.");
         }
+        int sizeBefore = products.size();
         products.add(product);
+
+        // A successful add must leave exactly one new entry that later lookups can find.
+        assert products.size() == sizeBefore + 1 : "Catalogue should grow by exactly one product";
+        assert findByName(product.getName()) == product : "Newly added product should be found by its name";
     }
 
     /**
