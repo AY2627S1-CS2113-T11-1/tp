@@ -199,6 +199,26 @@ class UiTest {
         assertEquals(indentedLines("Removes 5 units of Apple"), outputLines());
     }
 
+    @Test
+    public void showOrderUpdated_editedOrder_printsCustomerUnitsTotalAndStatus() throws SystemException {
+        Product carrot = new Product("Carrot", 1.88);
+        Order order = new Order(2, "Jonas Low", List.of(new OrderItem(carrot, 4)));
+        order.update("Mei Tan", List.of(new OrderItem(carrot, 5)));
+
+        ui.showOrderUpdated(order);
+
+        assertEquals(indentedLines("Order 2 updated.", "Customer: Mei Tan", "Units: 5", "Total: $9.40",
+                "Status: Active"), outputLines());
+    }
+
+    @Test
+    public void showError_multiLineMessage_indentsEveryLine() {
+        ui.showError("Unable to edit order: insufficient stock.\nNo changes were made to the order or stock.");
+
+        assertEquals(indentedLines("Sorry! Unable to edit order: insufficient stock.",
+                "No changes were made to the order or stock."), outputLines());
+    }
+
     /**
      * Returns order 1 for Jonas Low: 3 apples at $1.50 and 1 carrot at $1.88, the UG example.
      */

@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class Order {
     private final int id;
-    private final String customer;
-    private final List<OrderItem> items;
+    private String customer;
+    private List<OrderItem> items;
     private boolean isCancelled;
 
     /**
@@ -42,6 +42,39 @@ public class Order {
 
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    /**
+     * Returns the number of units bought, summed over all lines of the order.
+     */
+    public int getTotalUnits() {
+        int units = 0;
+        for (OrderItem item : items) {
+            units += item.getQuantity();
+        }
+        return units;
+    }
+
+    /**
+     * Replaces the customer and lines of this active order, keeping its order number.
+     *
+     * The caller ({@code EditOrderCommand}) is responsible for validating the new values and moving stock
+     * before calling this, so that a rejected edit never leaves the order half-changed. The cancelled check
+     * is repeated here because an edit to a cancelled order would bring a dead sale back into the figures.
+     *
+     * @param newCustomer the customer's name, never blank
+     * @param newItems    the new lines of the order, at least one; copied, as in the constructor
+     * @throws SystemException if the order has been cancelled
+     */
+    public void update(String newCustomer, List<OrderItem> newItems) throws SystemException {
+        assert newCustomer != null && !newCustomer.isBlank() : "Edited customer name must be validated as non-blank";
+        assert newItems != null && !newItems.isEmpty() : "An edited order must keep at least one line";
+
+        if (isCancelled) {
+            throw new SystemException("Order " + id + " is cancelled and cannot be edited.");
+        }
+        this.customer = newCustomer;
+        this.items = List.copyOf(newItems);
     }
 
     /**

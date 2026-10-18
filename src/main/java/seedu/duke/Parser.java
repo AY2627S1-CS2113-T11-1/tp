@@ -20,6 +20,7 @@ import seedu.duke.command.ListSalesCommand;
 import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.AddStockCommand;
+import seedu.duke.command.EditOrderCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -35,24 +36,39 @@ public class Parser {
 
     private static final String NAME_PREFIX = "p/";
     private static final String PRICE_PREFIX = "a/";
-    private static final String ADD_FORMAT = "Format: product add p/PRODUCT a/AMOUNT";
-    private static final String EXPENSE_ADD_FORMAT = "Format: expense add p/PRODUCT a/AMOUNT";
+    private static final String ADD_FORMAT =
+            "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String EXPENSE_ADD_FORMAT =
+            "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
 
     private static final String CUSTOMER_PREFIX = "c/";
     private static final String QUANTITY_PREFIX = "q/";
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
-    private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
-    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT q/QUANTITY";
-    private static final String STOCK_REMOVE_FORMAT = "Format: stock remove p/PRODUCT [q/QUANTITY]";
+    private static final String ORDER_CANCEL_FORMAT =
+            "Format: order cancel ORDER_NUMBER";
+    private static final String ORDER_EDIT_FORMAT =
+            "Format: order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]";
+    private static final String STOCK_ADD_FORMAT =
+            "Format: stock add p/PRODUCT q/QUANTITY";
+    private static final String STOCK_REMOVE_FORMAT =
+            "Format: stock remove p/PRODUCT [q/QUANTITY]";
     private static final String[] STOCK_PREFIXES = {"p/", "q/"};
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
      * space means a product name such as "Salt and Pepper Mix 1c/2" is not split in the middle.
      */
-    private static final Pattern ORDER_PREFIX_PATTERN = Pattern.compile("(?<=^|\\s)([cpq]/)");
+    private static final Pattern ORDER_PREFIX_PATTERN =
+            Pattern.compile("(?<=^|\\s)([acdpq]/)");
+
+    /**
+     * Matches any prefix used anywhere in the system (a/, c/, d/, p/, q/), so that a command can reject
+     * prefixes that belong to other commands instead of silently treating them as part of a name.
+     */
+    private static final Pattern KNOWN_PREFIX_PATTERN =
+            Pattern.compile("(?<=^|\\s)([acdpq]/)");
 
     /**
      * Returns the command described by a line of user input.
@@ -155,7 +171,8 @@ public class Parser {
      */
     private Command parseOrderCommand(String[] words) throws SystemException {
         if (words.length < 2) {
-            throw new SystemException("What should I do with orders? Try: order add, order cancel, or order list");
+            throw new SystemException("What should I do with orders? "
+                    + "Try: order add, order edit, order cancel, or order list");
         }
 
         String verb = words[1].toLowerCase();
@@ -167,13 +184,17 @@ public class Parser {
         if (verb.equals("cancel")) {
             return parseCancelOrder(arguments);
         }
+        if (verb.equals("edit")) {
+            return parseEditOrder(arguments);
+        }
         if (verb.equals("list")) {
             if (!arguments.isEmpty()) {
                 throw new SystemException("\"order list\" takes no extra input, but I found: " + arguments);
             }
             return new ListOrderCommand();
         }
-        throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
+        throw new SystemException("I don't know how to \"order " + words[1]
+                + "\". Try: add, edit, cancel, or list");
     }
 
     /**
@@ -210,7 +231,7 @@ public class Parser {
      * @throws SystemException if the arguments do not follow the format, or a value is invalid
      */
     private Command parseAddOrder(String arguments) throws SystemException {
-        List<String[]> pairs = splitIntoPrefixValuePairs(arguments);
+        List<String[]> pairs = splitToPrefix(arguments);
 
         if (pairs.isEmpty() || !pairs.get(0)[0].equals(CUSTOMER_PREFIX)) {
             throw new SystemException("Start the order with c/CUSTOMER. " + ORDER_ADD_FORMAT);
@@ -253,6 +274,9 @@ public class Parser {
         return new AddOrderCommand(customer, items);
     }
 
+    private List<String[]> splitToPrefix(String arguments) throws SystemException {
+        return splitToPrefix(arguments, ORDER_PREFIX_PATTERN, ORDER_ADD_FORMAT);
+    }
     /**
      * Cuts order arguments into (prefix, value) pairs, in the order they were typed.
      *
@@ -261,7 +285,8 @@ public class Parser {
      * @param arguments the argument text to split
      * @throws SystemException if there is text before the first prefix
      */
-    private List<String[]> splitIntoPrefixValuePairs(String arguments) throws SystemException {
+    private List<String[]> splitToPrefix(String arguments, Pattern prefixPattern, String formatHint)
+            throws SystemException {
         List<String[]> pairs = new ArrayList<>();
         Matcher matcher = ORDER_PREFIX_PATTERN.matcher(arguments);
 
@@ -271,7 +296,7 @@ public class Parser {
             if (currentPrefix == null) {
                 String leadingText = arguments.substring(0, matcher.start()).trim();
                 if (!leadingText.isEmpty()) {
-                    throw new SystemException("I don't understand \"" + leadingText + "\". " + ORDER_ADD_FORMAT);
+                    throw new SystemException("I don't understand \"" + leadingText + "\". " + formatHint);
                 }
             } else {
                 pairs.add(new String[] {currentPrefix, arguments.substring(valueStart, matcher.start()).trim()});
@@ -305,27 +330,95 @@ public class Parser {
         return quantity;
     }
 
-    /**
-     * Returns a cancel-order command built from the arguments of {@code order cancel}.
-     *
-     * @param arguments the text after "order cancel", e.g. "1"
-     * @throws SystemException if the arguments are not a single positive whole number
-     */
     private Command parseCancelOrder(String arguments) throws SystemException {
         if (arguments.isEmpty()) {
             throw new SystemException("Which order should I cancel? " + ORDER_CANCEL_FORMAT);
         }
+        return new CancelOrderCommand(parseOrderNumber(arguments, ORDER_CANCEL_FORMAT));
+    }
+
+    /**
+     * Returns the order number described by the given text.
+     *
+     * @param orderNumberText the text that should hold the order number, e.g. "1"
+     * @param formatHint      the usage hint to include if the text is not a valid order number
+     * @throws SystemException if the text is not a whole number of at least 1
+     */
+    private int parseOrderNumber(String orderNumberText, String formatHint) throws SystemException {
         int orderId;
         try {
-            orderId = Integer.parseInt(arguments);
+            orderId = Integer.parseInt(orderNumberText);
         } catch (NumberFormatException e) {
             throw new SystemException("The order number must be a whole number such as 1, but I got: \""
-                    + arguments + "\". " + ORDER_CANCEL_FORMAT);
+                    + orderNumberText + "\". " + formatHint);
         }
         if (orderId < 1) {
-            throw new SystemException("Order numbers start at 1, but I got: " + arguments);
+            throw new SystemException("Order numbers start at 1, but I got: " + orderNumberText);
         }
-        return new CancelOrderCommand(orderId);
+        return orderId;
+    }
+
+    /**
+     * Returns an edit-order command built from the arguments of {@code order edit}.
+     *
+     * The order number comes first, followed by any of c/, p/ and q/ in any order, each at most once.
+     * Fields that are left out stay unchanged, so they are passed to the command as null.
+     *
+     * @param arguments the text after "order edit", e.g. "2 c/Mei Tan q/5"
+     * @throws SystemException if the order number is invalid, no field is given, a prefix is repeated
+     *                         or not supported, or a value is blank or invalid
+     */
+    private Command parseEditOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw new SystemException("Which order should I edit? " + ORDER_EDIT_FORMAT);
+        }
+        String[] parts = arguments.split("\\s+", 2);
+        int orderId = parseOrderNumber(parts[0], ORDER_EDIT_FORMAT);
+        String fieldText = parts.length < 2 ? "" : parts[1];
+        if (fieldText.isBlank()) {
+            throw new SystemException("Give at least one of c/CUSTOMER, p/PRODUCT or q/QUANTITY to change. "
+                    + ORDER_EDIT_FORMAT);
+        }
+
+        String customer = null;
+        String productName = null;
+        Integer quantity = null;
+        List<String[]> pairs = splitToPrefix(fieldText, KNOWN_PREFIX_PATTERN, ORDER_EDIT_FORMAT);
+        if (pairs.isEmpty()) {
+            // No recognised prefix at all, e.g. "order edit 2 x/5" or "order edit 2 Mei".
+            throw new SystemException("I don't understand \"" + fieldText.trim() + "\". " + ORDER_EDIT_FORMAT);
+        }
+
+        Set<String> seenPrefixes = new HashSet<>();
+        for (String[] pair : pairs) {
+            String prefix = pair[0];
+            String value = pair[1];
+            if (!seenPrefixes.add(prefix)) {
+                throw new SystemException(prefix + " appears more than once. Give each field at most once. "
+                        + ORDER_EDIT_FORMAT);
+            }
+            switch (prefix) {
+            case CUSTOMER_PREFIX:
+                if (value.isEmpty()) {
+                    throw new SystemException("The customer name cannot be blank. " + ORDER_EDIT_FORMAT);
+                }
+                customer = value;
+                break;
+            case NAME_PREFIX:
+                if (value.isEmpty()) {
+                    throw new SystemException("The product name cannot be blank. " + ORDER_EDIT_FORMAT);
+                }
+                productName = value;
+                break;
+            case QUANTITY_PREFIX:
+                quantity = parseQuantity(value);
+                break;
+            default:
+                throw new SystemException("\"order edit\" does not accept " + prefix + ". "
+                        + "Use c/, p/ or q/. " + ORDER_EDIT_FORMAT);
+            }
+        }
+        return new EditOrderCommand(orderId, customer, productName, quantity);
     }
 
     /**

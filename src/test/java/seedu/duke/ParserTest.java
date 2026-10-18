@@ -21,6 +21,7 @@ import seedu.duke.command.ListProductCommand;
 import seedu.duke.command.ListSalesCommand;
 import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
+import seedu.duke.command.EditOrderCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -229,6 +230,68 @@ class ParserTest {
     @Test
     public void parse_cancelOrderMissingNumber_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("order cancel"));
+    }
+
+    @Test
+    public void parse_editOrderCustomerAndQuantity_returnsEditCommandWithProductUnchanged() throws SystemException {
+        EditOrderCommand edit = assertInstanceOf(EditOrderCommand.class,
+                parser.parse("order edit 2 c/Mei Tan q/5"));
+        assertEquals(2, edit.getOrderId());
+        assertEquals("Mei Tan", edit.getNewCustomer());
+        assertEquals(null, edit.getNewProductName());
+        assertEquals(5, edit.getNewQuantity());
+    }
+
+    @Test
+    public void parse_editOrderFieldsInAnyOrder_readsEachField() throws SystemException {
+        EditOrderCommand edit = assertInstanceOf(EditOrderCommand.class,
+                parser.parse("order edit 1 q/3 p/Oat Milk c/Raj s/o Kumar"));
+        assertEquals("Raj s/o Kumar", edit.getNewCustomer());
+        assertEquals("Oat Milk", edit.getNewProductName());
+        assertEquals(3, edit.getNewQuantity());
+    }
+
+    @Test
+    public void parse_editOrderWithoutFields_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2   "));
+    }
+
+    @Test
+    public void parse_editOrderWithoutNumber_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order edit"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit c/Mei"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 0 c/Mei"));
+    }
+
+    @Test
+    public void parse_editOrderRepeatedPrefix_throwsSystemException() {
+        SystemException e = assertThrows(SystemException.class,
+                () -> parser.parse("order edit 2 c/Mei c/Tan"));
+        assertTrue(e.getMessage().contains("more than once"));
+    }
+
+    @Test
+    public void parse_editOrderUnsupportedPrefix_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 a/3.50"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 c/Mei d/10"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 x/5"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 extra c/Mei"));
+    }
+
+    @Test
+    public void parse_editOrderBlankValues_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 c/"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 p/ q/3"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/"));
+    }
+
+    @Test
+    public void parse_editOrderInvalidQuantity_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/0"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/-1"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/1.5"));
+        assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/five"));
     }
 
     @Test
