@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -13,6 +15,7 @@ public class Order {
     private String customer;
     private List<OrderItem> items;
     private boolean isCancelled;
+    private BigDecimal discountPercent = BigDecimal.ZERO;
 
     /**
      * Constructs an active order.
@@ -78,14 +81,84 @@ public class Order {
     }
 
     /**
-     * Returns the total cost of the order, summed over all its lines.
+     * Returns the discount percentage, e.g. 12.5 for 12.5%, or zero if there is no discount.
+     */
+    public BigDecimal getDiscountPercent() {
+        return discountPercent;
+    }
+
+    /**
+     * Returns true if a non-zero discount applies to this order.
+     */
+    public boolean hasDiscount() {
+        return discountPercent.signum() > 0;
+    }
+
+    /**
+     * Sets the discount percentage, replacing any previous discount. Zero removes the discount.
+     *
+     * Discounts are not added together: {@code d/10} followed by {@code d/5} leaves a 5% discount.
+     *
+     * @param percent the new percentage, already validated by the parser as 0 to 100 with at most two decimals
+     * @throws SystemException if the order has been cancelled
+     */
+    public void setDiscountPercent(BigDecimal percent) throws SystemException {
+        assert percent != null : "Discount percentage must not be null";
+        assert percent.signum() >= 0 && percent.compareTo(BigDecimal.valueOf(100)) <= 0
+                : "Parser must keep the discount percentage between 0 and 100";
+        assert percent.stripTrailingZeros().scale() <= 2 : "Parser must reject more than two decimal places";
+
+        if (isCancelled) {
+            throw new SystemException("Order " + id + " is cancelled and cannot receive a discount.");
+        }
+        this.discountPercent = percent;
+    }
+
+    /**
+     * Returns the undiscounted subtotal: each line's stored unit price times its quantity, summed.
+     */
+    public double getSubtotal() {
+        return subtotalAmount().doubleValue();
+    }
+
+    /**
+     * Returns the discount in dollars: subtotal times percentage, rounded to the nearest cent, with half a
+     * cent rounded up.
+     */
+    public double getDiscountAmount() {
+        return discountAmount().doubleValue();
+    }
+
+    /**
+     * Returns the amount the customer pays: the subtotal minus the discount amount.
      */
     public double getTotal() {
-        double total = 0;
+        BigDecimal total = subtotalAmount().subtract(discountAmount());
+        assert total.signum() >= 0 : "A discount of at most 100% can never make the total negative";
+        return total.doubleValue();
+    }
+
+    /**
+     * Returns the exact subtotal in dollars, using each line's stored unit price.
+     *
+     * {@code BigDecimal.valueOf(double)} goes through the shortest decimal form of the price, so a stored
+     * price of 1.88 becomes exactly 1.88 rather than the nearest binary fraction.
+     */
+    private BigDecimal subtotalAmount() {
+        BigDecimal subtotal = BigDecimal.ZERO;
         for (OrderItem item : items) {
-            total += item.getSubtotal();
+            subtotal = subtotal.add(BigDecimal.valueOf(item.getUnitPrice())
+                    .multiply(BigDecimal.valueOf(item.getQuantity())));
         }
-        return total;
+        return subtotal.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns the exact discount amount in dollars, already rounded to cents.
+     */
+    private BigDecimal discountAmount() {
+        // movePointLeft(2) divides by 100 exactly, without the rounding questions of divide().
+        return subtotalAmount().multiply(discountPercent).movePointLeft(2).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**

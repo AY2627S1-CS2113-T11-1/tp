@@ -223,6 +223,22 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for a new, replaced or removed discount, with the amounts it produces.
+     *
+     * @param order the order whose discount was just set
+     */
+    public void showDiscountUpdated(Order order) {
+        if (order.hasDiscount()) {
+            printIndent("Discount updated for order " + order.getId() + ".");
+        } else {
+            printIndent("Discount removed from order " + order.getId() + ".");
+        }
+        printIndent("Subtotal: " + formatMoney(order.getSubtotal()));
+        printIndent(discountLine(order));
+        printIndent("Total: " + formatMoney(order.getTotal()));
+    }
+
+    /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *
      * @param orders the orders to display, oldest first
@@ -298,9 +314,23 @@ public class Ui {
             totalUnits += item.getQuantity();
         }
         String[] headers = {"Product", quantityHeader, "Unit price", "Subtotal"};
-        String[] totalRow = {"Total", String.valueOf(totalUnits), "", formatMoney(order.getTotal())};
+        String footerLabel = order.hasDiscount() ? "Subtotal" : "Total";
+        String[] totalRow = {footerLabel, String.valueOf(totalUnits), "", formatMoney(order.getSubtotal())};
         boolean[] isLeftAligned = {true, false, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
+        if (order.hasDiscount()) {
+            printIndent(discountLine(order));
+            printIndent("Total: " + formatMoney(order.getTotal()));
+        }
+    }
+
+    /**
+     * Returns the discount summary line, e.g. "Discount: 12.5% ($1.18)".
+     */
+    private static String discountLine(Order order) {
+        // stripTrailingZeros turns 10.00 into 1E+1; toPlainString then prints it as "10".
+        String percent = order.getDiscountPercent().stripTrailingZeros().toPlainString();
+        return "Discount: " + percent + "% (" + formatMoney(order.getDiscountAmount()) + ")";
     }
 
     /**

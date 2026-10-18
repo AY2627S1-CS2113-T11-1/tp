@@ -1,5 +1,6 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,6 +23,7 @@ import seedu.duke.command.ListSalesCommand;
 import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.EditOrderCommand;
+import seedu.duke.command.DiscountOrderCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -292,6 +294,62 @@ class ParserTest {
         assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/-1"));
         assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/1.5"));
         assertThrows(SystemException.class, () -> parser.parse("order edit 2 q/five"));
+    }
+
+    @Test
+    public void parse_discountOrder_returnsDiscountCommand() throws SystemException {
+        DiscountOrderCommand discount = assertInstanceOf(DiscountOrderCommand.class,
+                parser.parse("order discount 2 d/10"));
+        assertEquals(2, discount.getOrderId());
+        assertEquals(new BigDecimal("10"), discount.getPercent());
+    }
+
+    @Test
+    public void parse_discountBoundaryAndDecimalValues_accepted() throws SystemException {
+        for (String percent : new String[] {"0", "100", "100.00", "12.5", "0.01", "99.99"}) {
+            DiscountOrderCommand discount = assertInstanceOf(DiscountOrderCommand.class,
+                    parser.parse("order discount 1 d/" + percent));
+            assertEquals(new BigDecimal(percent), discount.getPercent());
+        }
+    }
+
+    @Test
+    public void parse_discountOutOfRange_throwsRangeMessage() {
+        for (String percent : new String[] {"101", "100.01", "-1", "-0.5"}) {
+            String input = "order discount 2 d/" + percent;
+            SystemException e = assertThrows(SystemException.class, () -> parser.parse(input));
+            assertEquals("Discount must be between 0 and 100.\n" + DiscountOrderCommand.NO_CHANGES_MESSAGE,
+                    e.getMessage());
+        }
+    }
+
+    @Test
+    public void parse_discountInvalidNumber_throwsSystemException() {
+        for (String percent : new String[] {"10.555", "10.500", "abc", "10%", "", "1e2", "+5", "10.", ".5"}) {
+            String input = "order discount 2 d/" + percent;
+            SystemException e = assertThrows(SystemException.class, () -> parser.parse(input));
+            assertTrue(e.getMessage().endsWith(DiscountOrderCommand.NO_CHANGES_MESSAGE), percent);
+        }
+    }
+
+    @Test
+    public void parse_discountUnexpectedArguments_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("order discount"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount d/10"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount two d/10"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2 extra d/10"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2 d/10 extra"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2 d/10 d/5"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2 c/Mei d/10"));
+        assertThrows(SystemException.class, () -> parser.parse("order discount 2 d/10 q/3"));
+    }
+
+    @Test
+    public void parse_discountWithOtherPrefixBeforeD_reportsThatPrefix() {
+        SystemException e = assertThrows(SystemException.class,
+                () -> parser.parse("order discount 2 c/Mei d/10"));
+        assertTrue(e.getMessage().contains("only accepts d/, but I found c/"));
     }
 
     @Test

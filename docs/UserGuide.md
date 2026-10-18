@@ -253,6 +253,7 @@ Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 * Increasing the quantity deducts the additional units from stock. Decreasing it returns the difference to stock.
 * Changing the product restores the original product's stock and deducts the required quantity of the replacement product.
 * If the product is unchanged, its stored purchase price is retained. A replacement product uses its current price.
+* Any existing discount percentage is retained and applied to the updated subtotal.
 * `p/` and `q/` can only be used on orders containing a single product. For an order with several products, only `c/` can be edited.
 * Missing values, repeated prefixes and prefixes other than `c/`, `p/` and `q/` are rejected.
 * All checks must pass before changes are applied. If an edit fails, the order and stock remain unchanged.
@@ -276,6 +277,55 @@ Expected output (insufficient stock):
 ```text
 Sorry! Unable to edit order: insufficient stock.
 No changes were made to the order or stock.
+```
+
+### 3.5 Discounting an order: `order discount`
+
+Applies a percentage discount to an active order and updates its total. An existing discount can be replaced or removed.
+
+Format: `order discount ORDER_NUMBER d/PERCENTAGE`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot receive discounts.
+* `PERCENTAGE` must be a number between 0 and 100 inclusive, with up to two decimal places.
+* Enter the percentage as a number without the `%` symbol.
+* Setting the percentage to `0` removes the existing discount.
+* A new discount replaces the previous discount. Discounts are not added together.
+* The discount is calculated using the undiscounted subtotal, based on the order's quantities and stored unit prices.
+* The discount amount is rounded to the nearest cent, with half-cent values rounded up. The final total is the subtotal minus this amount.
+* Applying a discount does not change stock quantities or stored unit prices.
+* If the order is edited later, the same discount percentage applies to its updated subtotal.
+* Order lists, sales, receipts and cancellations use the discounted total.
+* Missing values, repeated prefixes and unexpected arguments are rejected. Invalid input leaves the order unchanged.
+
+Example of usage (order 2 is active and has an undiscounted subtotal of $9.40):
+
+`order discount 2 d/10`
+
+Expected output:
+
+```text
+Discount updated for order 2.
+Subtotal: $9.40
+Discount: 10% ($0.94)
+Total: $8.46
+```
+
+`order discount 2 d/0`
+
+Expected output (remove discount):
+
+```text
+Discount removed from order 2.
+Subtotal: $9.40
+Discount: 0% ($0.00)
+Total: $9.40
+```
+
+Expected output (percentage outside the allowed range):
+
+```text
+Sorry! Discount must be between 0 and 100.
+No changes were made to the order.
 ```
 
 ### 4.1 View confirmed sales: `sales list`
@@ -346,6 +396,7 @@ Example output:
 * List stock `stock list`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
 * Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
 * View sales: `sales list`

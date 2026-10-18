@@ -1,5 +1,6 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,7 @@ import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.EditOrderCommand;
+import seedu.duke.command.DiscountOrderCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -50,6 +52,17 @@ public class Parser {
             "Format: order cancel ORDER_NUMBER";
     private static final String ORDER_EDIT_FORMAT =
             "Format: order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]";
+    private static final String DISCOUNT_PREFIX = "d/";
+    private static final String ORDER_DISCOUNT_FORMAT =
+            "Format: order discount ORDER_NUMBER d/PERCENTAGE";
+    private static final BigDecimal MAX_DISCOUNT_PERCENT = BigDecimal.valueOf(100);
+
+    /**
+     * A plain decimal number, optionally negative,
+     * e.g. "10", "12.5" or "-3". Rejects "1e2", "+5" and "10%".
+     */
+    private static final Pattern DECIMAL_NUMBER_PATTERN =
+            Pattern.compile("-?\\d+(\\.\\d+)?");
     private static final String STOCK_ADD_FORMAT =
             "Format: stock add p/PRODUCT q/QUANTITY";
     private static final String STOCK_REMOVE_FORMAT =
@@ -172,7 +185,7 @@ public class Parser {
     private Command parseOrderCommand(String[] words) throws SystemException {
         if (words.length < 2) {
             throw new SystemException("What should I do with orders? "
-                    + "Try: order add, order edit, order cancel, or order list");
+                    + "Try: order add, order edit, order discount, order cancel, or order list");
         }
 
         String verb = words[1].toLowerCase();
@@ -187,14 +200,18 @@ public class Parser {
         if (verb.equals("edit")) {
             return parseEditOrder(arguments);
         }
+        if (verb.equals("discount")) {
+            return parseDiscountOrder(arguments);
+        }
         if (verb.equals("list")) {
             if (!arguments.isEmpty()) {
-                throw new SystemException("\"order list\" takes no extra input, but I found: " + arguments);
+                throw new SystemException("\"order list\" takes no extra input, " +
+                        "but I found: " + arguments);
             }
             return new ListOrderCommand();
         }
         throw new SystemException("I don't know how to \"order " + words[1]
-                + "\". Try: add, edit, cancel, or list");
+                + "\". Try: add, edit, discount, cancel, or list");
     }
 
     /**
@@ -419,6 +436,95 @@ public class Parser {
             }
         }
         return new EditOrderCommand(orderId, customer, productName, quantity);
+    }
+
+    /**
+     * Returns a discount command built from the arguments of {@code order discount}.
+     *
+     * Every error message ends by confirming that the order was not changed, as the User Guide promises.
+     *
+     * @param arguments the text after "order discount", e.g. "2 d/10"
+     * @throws SystemException if the order number or percentage is missing or invalid, d/ is repeated,
+     *                         or there is any other input
+     */
+    private Command parseDiscountOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw discountError("Which order should I discount? " + ORDER_DISCOUNT_FORMAT);
+        }
+        String[] parts = arguments.split("\\s+", 2);
+        int orderId;
+        try {
+            orderId = parseOrderNumber(parts[0], ORDER_DISCOUNT_FORMAT);
+        } catch (SystemException e) {
+            throw discountError(e.getMessage());
+        }
+
+        String fieldText = parts.length < 2 ? "" : parts[1];
+        List<String[]> pairs;
+        try {
+            pairs = splitToPrefix(fieldText, KNOWN_PREFIX_PATTERN, ORDER_DISCOUNT_FORMAT);
+        } catch (SystemException e) {
+            throw discountError(e.getMessage());
+        }
+        if (pairs.isEmpty()) {
+            String problem = fieldText.isBlank() ? "Missing d/PERCENTAGE. " : "I don't understand \""
+                    + fieldText.trim() + "\". ";
+            throw discountError(problem + ORDER_DISCOUNT_FORMAT);
+        }
+        for (String[] pair : pairs) {
+            if (!pair[0].equals(DISCOUNT_PREFIX)) {
+                throw discountError("\"order discount\" only accepts d/, but I found " + pair[0] + ". "
+                        + ORDER_DISCOUNT_FORMAT);
+            }
+        }
+        if (pairs.size() > 1) {
+            throw discountError("d/ appears more than once. Give a single percentage. " + ORDER_DISCOUNT_FORMAT);
+        }
+        return new DiscountOrderCommand(orderId, parseDiscountPercent(pairs.get(0)[1]));
+    }
+
+    /**
+     * Returns the discount percentage described by the text after d/.
+     *
+     * The percentage is kept as a {@link BigDecimal} so that 12.5 stays exactly 12.5 for the
+     * half-cent rounding done by {@link Order}.
+     *
+     * @param percentText the text after the d/ prefix, e.g. "12.5"
+     * @throws SystemException if the text is empty, not a plain number, outside 0 to 100,
+     *                         or has more than two decimal places
+     */
+    private BigDecimal parseDiscountPercent(String percentText) throws SystemException {
+        if (percentText.isEmpty()) {
+            throw discountError("The discount percentage cannot be empty. " + ORDER_DISCOUNT_FORMAT);
+        }
+        if (percentText.matches("\\S+\\s+.*")) {
+            throw discountError("I found extra input after the percentage: \"" + percentText + "\". "
+                    + ORDER_DISCOUNT_FORMAT);
+        }
+        if (percentText.endsWith("%")) {
+            throw discountError("Enter the percentage without the % symbol, e.g. d/10.");
+        }
+        if (!DECIMAL_NUMBER_PATTERN.matcher(percentText).matches()) {
+            throw discountError("The discount must be a number such as 10 or 12.5, but I got: \""
+                    + percentText + "\".");
+        }
+
+        BigDecimal percent = new BigDecimal(percentText);
+        if (percent.signum() < 0 || percent.compareTo(MAX_DISCOUNT_PERCENT) > 0) {
+            throw discountError("Discount must be between 0 and 100.");
+        }
+        // scale() counts the decimals as typed, so "10.500" is rejected just as "a/3.500" is for prices.
+        if (percent.scale() > MAX_DECIMAL_PLACES) {
+            throw discountError("A discount can have at most 2 decimal places, but I got: " + percentText);
+        }
+        return percent;
+    }
+
+    /**
+     * Returns a discount error whose message ends by confirming that the order was not changed.
+     */
+    private static SystemException discountError(String reason) {
+        return new SystemException(reason + "\n" + DiscountOrderCommand.NO_CHANGES_MESSAGE);
     }
 
     /**
