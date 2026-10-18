@@ -239,6 +239,45 @@ Example of usage:
 
 `order list`
 
+### 3.4 Editing an order: `order edit`
+
+Updates an active order's customer, product or quantity. The order keeps its original number, while its total and the affected stock quantities are updated accordingly.
+
+Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot be edited.
+* At least one field must be provided. Fields that are not provided remain unchanged. Fields may be given in any order.
+* Square brackets indicate optional fields and should not be typed.
+* Customer and product names cannot be blank. The product must exist in the catalogue. Product names are case-insensitive.
+* `QUANTITY` must be a positive whole number.
+* Increasing the quantity deducts the additional units from stock. Decreasing it returns the difference to stock.
+* Changing the product restores the original product's stock and deducts the required quantity of the replacement product.
+* If the product is unchanged, its stored purchase price is retained. A replacement product uses its current price.
+* `p/` and `q/` can only be used on orders containing a single product. For an order with several products, only `c/` can be edited.
+* Missing values, repeated prefixes and prefixes other than `c/`, `p/` and `q/` are rejected.
+* All checks must pass before changes are applied. If an edit fails, the order and stock remain unchanged.
+
+Example of usage (order 2 contains 4 units at $1.88 each, and enough additional stock is available):
+
+`order edit 2 c/Mei Tan q/5`
+
+Expected output:
+
+```text
+Order 2 updated.
+Customer: Mei Tan
+Units: 5
+Total: $9.40
+Status: Active
+```
+
+Expected output (insufficient stock):
+
+```text
+Sorry! Unable to edit order: insufficient stock.
+No changes were made to the order or stock.
+```
+
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
@@ -305,7 +344,8 @@ Example output:
 * Add stock `stock add p/PRODUCT q/QUANTITY`
 * Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
 * List stock `stock list`
-* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
+* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
+* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
 * View sales: `sales list`

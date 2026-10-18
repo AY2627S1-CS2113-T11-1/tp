@@ -210,6 +210,19 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for an edited order: its customer, units, total and status.
+     *
+     * @param order the order that was just edited
+     */
+    public void showOrderUpdated(Order order) {
+        printIndent("Order " + order.getId() + " updated.");
+        printIndent("Customer: " + order.getCustomer());
+        printIndent("Units: " + order.getTotalUnits());
+        printIndent("Total: " + formatMoney(order.getTotal()));
+        printIndent("Status: " + (order.isCancelled() ? "Cancelled" : "Active"));
+    }
+
+    /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *
      * @param orders the orders to display, oldest first
@@ -369,8 +382,18 @@ public class Ui {
         }
     }
 
+    /**
+     * Shows an error message. A message may span several lines; each line is indented like other output,
+     * and only the first carries the "Sorry!" lead-in.
+     *
+     * @param message the message to show, with lines separated by {@code \n}
+     */
     public void showError(String message) {
-        printIndent("Sorry! " + message);
+        String[] lines = message.split("\n");
+        printIndent("Sorry! " + lines[0]);
+        for (int i = 1; i < lines.length; i++) {
+            printIndent(lines[i]);
+        }
     }
 
     /**
