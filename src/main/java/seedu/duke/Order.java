@@ -13,6 +13,7 @@ public class Order {
     private final String customer;
     private final List<OrderItem> items;
     private boolean isCancelled;
+    private boolean isPaid;
 
     /**
      * Constructs an active order.
@@ -42,6 +43,30 @@ public class Order {
 
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    /**
+     * Returns whether payment has been recorded for this order.
+     *
+     * @return true when the order has been paid
+     */
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    /**
+     * Marks an active, unpaid order as paid after the payment amount has been checked.
+     *
+     * @throws SystemException if the order is cancelled or already paid
+     */
+    public void markPaid() throws SystemException {
+        if (isCancelled) {
+            throw new SystemException("Cannot pay for cancelled order " + id + ".");
+        }
+        if (isPaid) {
+            throw new SystemException("Order " + id + " has already been paid.");
+        }
+        isPaid = true;
     }
 
     /**

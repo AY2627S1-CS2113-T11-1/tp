@@ -292,6 +292,37 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+### Recording a customer's payment: `order add pay`
+
+Records payment for **all unpaid, non-cancelled orders** belonging to a customer.
+Orders start unpaid. The customer must already appear in the order history; there is no
+separate customer registration command. Full names are matched without case sensitivity.
+
+Format: `order add pay c/CUSTOMER a/AMOUNT`
+
+Enter the customer before the amount. Names may contain spaces. The amount must be a
+non-negative integer or decimal with at most two decimal places, such as `20` or `20.50`.
+
+Example: `order add pay c/BigChungus a/20.50`
+
+For an outstanding total of $20.40:
+
+```text
+    BigChungus has paid $20.50! The change to return is: $0.10.
+```
+
+If the customer has no order history:
+
+```text
+    Sorry! Customer BigChungus is not a registered customer.
+```
+
+Insufficient payment is rejected with the remaining amount required; no orders are marked paid.
+Successful payment marks every eligible order paid. Already-paid and cancelled orders are
+excluded from subsequent payments. If no eligible orders remain, no payment is accepted.
+Payment does not change stock, record an expense, or implement refunds. Payment status is held
+in memory for the current session, like the existing order history.
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
@@ -308,6 +339,7 @@ Example output:
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* Pay outstanding orders `order add pay c/CUSTOMER a/AMOUNT`
 * View sales: `sales list`
 * Generate receipts `generate receipts c/CUSTOMER`
 * Add expense `expense add p/PRODUCT a/AMOUNT`
