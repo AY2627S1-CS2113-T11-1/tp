@@ -139,6 +139,32 @@ public class Ui {
         printTable(headers, rows, null, isLeftAligned);
     }
 
+    /**
+     * Displays products with stock levels at or below the given threshold.
+     *
+     * @param lowStocks the list of low stock items to display
+     * @param threshold the threshold used for filtering
+     * @param isStockListEmpty whether the entire stock list is empty
+     */
+    public void showLowStock(List<Stock> lowStocks, int threshold, boolean isStockListEmpty) {
+        if (isStockListEmpty) {
+            printIndent("There are currently no stocks in the list.");
+            return;
+        }
+        if (lowStocks.isEmpty()) {
+            printIndent("All products have sufficient stock (more than " + threshold + ").");
+            return;
+        }
+        printIndent("Low stock items (quantity <= " + threshold + "):");
+        String[] headers = {"Product", "Qty"};
+        List<String[]> rows = new ArrayList<>();
+        for (Stock stock : lowStocks) {
+            rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
+        }
+        boolean[] isLeftAligned = {true, false};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
     public void showGoodbye() {
         printDivider();
         printIndent("Goodbye!");
@@ -442,6 +468,7 @@ public class Ui {
         }
     }
 
+    /**
      * Displays the available help areas and command format.
      *
      * @param usage format and list of supported areas
@@ -467,6 +494,7 @@ public class Ui {
         }
     }
 
+    /**
      * Shows an error message. A message may span several lines; each line is indented like other output,
      * and only the first carries the "Sorry!" lead-in.
      *
