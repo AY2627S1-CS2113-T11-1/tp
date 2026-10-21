@@ -18,6 +18,10 @@ public class Product {
      * @param price the unit price in dollars, e.g. 3.50
      */
     public Product(String name, double price) {
+        // The parser rejects empty names and negative prices, so failing here means a caller skipped validation.
+        assert name != null && !name.isBlank() : "Product name must be validated as non-empty before construction";
+        assert price >= 0 : "Product price must be validated as non-negative before construction";
+
         this.name = name;
         this.price = price;
         this.stock = 0;
@@ -42,7 +46,16 @@ public class Product {
         return stock;
     }
 
+    /**
+     * Sets the number of units on hand.
+     *
+     * Callers (stock and order commands) must check quantities first, e.g. an order cannot take
+     * more units than are in stock, so a negative value here is a bug in the caller.
+     *
+     * @param stock the new stock level, never negative
+     */
     public void setStock(int stock) {
+        assert stock >= 0 : "Stock cannot go negative; caller must check quantities before updating";
         this.stock = stock;
     }
 }

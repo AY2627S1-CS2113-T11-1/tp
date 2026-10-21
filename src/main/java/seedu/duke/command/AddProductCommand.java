@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.util.logging.Logger;
+
 import seedu.duke.StockList;
 import seedu.duke.Product;
 import seedu.duke.ExpenseList;
@@ -14,6 +16,14 @@ import seedu.duke.Ui;
  * Corresponds to {@code product add p/PRODUCT a/AMOUNT}.
  */
 public class AddProductCommand extends Command {
+    /**
+     * Records catalogue changes for debugging.
+     *
+     * Messages are logged at FINE, which the default console handler does not print, so they never
+     * appear in the user's CLI output. Raise the level to FINE in a logging config to see them.
+     */
+    private static final Logger logger = Logger.getLogger(AddProductCommand.class.getName());
+
     private final String name;
     private final double price;
 
@@ -40,7 +50,15 @@ public class AddProductCommand extends Command {
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
         Product product = new Product(name, price);
-        products.add(product);
+        try {
+            products.add(product);
+        } catch (SystemException e) {
+            // A duplicate name is ordinary user error, so it is only logged quietly before being reported.
+            logger.fine("Rejected product add, name already in catalogue: " + name);
+            throw e;
+        }
+        logger.fine("Added product " + name + " at " + product.getPriceString()
+                + "; catalogue size is now " + products.size());
         ui.showProductAdded(product);
     }
 }

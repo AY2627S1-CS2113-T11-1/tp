@@ -14,6 +14,8 @@ import seedu.duke.Ui;
 public class ListExpenseCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) {
+        assert expenses != null : "Expense list must be available when listing expenses";
+        assert ui != null : "UI must be available when listing expenses";
         ui.showExpenses(expenses.getExpenses());
     }
 }

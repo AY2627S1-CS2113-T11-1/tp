@@ -13,6 +13,18 @@ import org.junit.jupiter.api.Test;
  */
 class ReceiptGeneratorTest {
     @Test
+    public void generate_returnedReceipts_cannotBeModified() throws SystemException {
+        OrderList orders = new OrderList();
+        Order first = orders.create("Alice", List.of());
+        List<Order> receipts = new ReceiptGenerator().generate(orders, "Alice");
+
+        assertThrows(UnsupportedOperationException.class, receipts::clear);
+        orders.create("Alice", List.of());
+        assertEquals(List.of(first), receipts);
+        assertEquals(2, orders.size());
+    }
+
+    @Test
     public void generate_matchingCustomer_returnsOnlyTheirConfirmedOrders() throws SystemException {
         OrderList orders = new OrderList();
         Order first = orders.create("Jonas Low", List.of());
