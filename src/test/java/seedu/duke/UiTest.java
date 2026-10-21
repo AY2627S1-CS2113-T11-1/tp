@@ -132,19 +132,24 @@ class UiTest {
         cancelledSale.cancel();
         orders.create("Mei", List.of(
                 new OrderItem(new Product("Organic Coffee Beans", 12.00), 10)));
+        orders.create("Mei", List.of(
+                new OrderItem(new Product("Organic Coffee Beans", 12.00), 1)));
 
         ui.showSales(orders.getConfirmedSales());
 
         assertEquals(indentedLines(
-                "Sales (1):",
-                "+-------+----------+-------+---------+",
-                "|   No. | Customer | Units |   Total |",
-                "+-------+----------+-------+---------+",
-                "|     2 | Mei      |    10 | $120.00 |",
-                "+-------+----------+-------+---------+",
-                "| Total |          |       | $120.00 |",
-                "+-------+----------+-------+---------+",
-                "Total sales: $120.00"), outputLines());
+                "Sales (2):",
+                "+-------+----------+-------+----------+",
+                "|   No. | Customer | Units | Subtotal |",
+                "+-------+----------+-------+----------+",
+                "|     1 | Mei      |    10 |  $120.00 |",
+                "|     2 | Mei      |     1 |   $12.00 |",
+                "+-------+----------+-------+----------+",
+                "| Total |          |       |  $132.00 |",
+                "+-------+----------+-------+----------+",
+                "Total sales: $132.00"), outputLines());
+        assertEquals(2, orders.getConfirmedSales().get(0).getId());
+        assertEquals(3, orders.getConfirmedSales().get(1).getId());
     }
 
     @Test
