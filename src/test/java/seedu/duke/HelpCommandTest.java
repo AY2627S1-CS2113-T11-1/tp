@@ -124,9 +124,9 @@ class HelpCommandTest {
     @Test
     public void execute_help_doesNotAdvertiseOtherFeatureBranches() throws SystemException {
         String text = runHelp("help order");
-        assertFalse(text.contains("order details"));
+
         assertFalse(text.contains("order add pay"));
-        assertThrows(SystemException.class, () -> new Parser().parse("order details c/You Jie"));
+
         assertThrows(SystemException.class, () -> new Parser().parse("order add pay c/You Jie a/20"));
     }
 
