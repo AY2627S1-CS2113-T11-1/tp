@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -131,19 +132,24 @@ class UiTest {
         cancelledSale.cancel();
         orders.create("Mei", List.of(
                 new OrderItem(new Product("Organic Coffee Beans", 12.00), 10)));
+        orders.create("Mei", List.of(
+                new OrderItem(new Product("Organic Coffee Beans", 12.00), 1)));
 
         ui.showSales(orders.getConfirmedSales());
 
         assertEquals(indentedLines(
-                "Sales (1):",
-                "+-------+----------+-------+---------+",
-                "|   No. | Customer | Units |   Total |",
-                "+-------+----------+-------+---------+",
-                "|     2 | Mei      |    10 | $120.00 |",
-                "+-------+----------+-------+---------+",
-                "| Total |          |       | $120.00 |",
-                "+-------+----------+-------+---------+",
-                "Total sales: $120.00"), outputLines());
+                "Sales (2):",
+                "+-------+----------+-------+----------+",
+                "|   No. | Customer | Units | Subtotal |",
+                "+-------+----------+-------+----------+",
+                "|     1 | Mei      |    10 |  $120.00 |",
+                "|     2 | Mei      |     1 |   $12.00 |",
+                "+-------+----------+-------+----------+",
+                "| Total |          |       |  $132.00 |",
+                "+-------+----------+-------+----------+",
+                "Total sales: $132.00"), outputLines());
+        assertEquals(2, orders.getConfirmedSales().get(0).getId());
+        assertEquals(3, orders.getConfirmedSales().get(1).getId());
     }
 
     @Test
@@ -197,6 +203,65 @@ class UiTest {
         ui.showStockRemoved("Apple", 5, false);
 
         assertEquals(indentedLines("Removes 5 units of Apple"), outputLines());
+    }
+
+    @Test
+    public void showOrderUpdated_editedOrder_printsCustomerUnitsTotalAndStatus() throws SystemException {
+        Product carrot = new Product("Carrot", 1.88);
+        Order order = new Order(2, "Jonas Low", List.of(new OrderItem(carrot, 4)));
+        order.update("Mei Tan", List.of(new OrderItem(carrot, 5)));
+
+        ui.showOrderUpdated(order);
+
+        assertEquals(indentedLines("Order 2 updated.", "Customer: Mei Tan", "Units: 5", "Total: $9.40",
+                "Status: Active"), outputLines());
+    }
+
+    @Test
+    public void showError_multiLineMessage_indentsEveryLine() {
+        ui.showError("Unable to edit order: insufficient stock.\nNo changes were made to the order or stock.");
+
+        assertEquals(indentedLines("Sorry! Unable to edit order: insufficient stock.",
+                "No changes were made to the order or stock."), outputLines());
+    }
+
+    @Test
+    public void showDiscountUpdated_tenPercent_printsSubtotalDiscountAndTotal() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("10"));
+
+        ui.showDiscountUpdated(order);
+
+        assertEquals(indentedLines("Discount updated for order 2.", "Subtotal: $9.40", "Discount: 10% ($0.94)",
+                "Total: $8.46"), outputLines());
+    }
+
+    @Test
+    public void showDiscountUpdated_zeroPercent_printsRemovedMessage() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("10"));
+        order.setDiscountPercent(BigDecimal.ZERO);
+
+        ui.showDiscountUpdated(order);
+
+        assertEquals(indentedLines("Discount removed from order 2.", "Subtotal: $9.40", "Discount: 0% ($0.00)",
+                "Total: $9.40"), outputLines());
+    }
+
+    @Test
+    public void showReceipts_discountedOrder_showsSubtotalRowThenDiscountAndTotal() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("12.50"));
+
+        ui.showReceipts("Mei Tan", List.of(order));
+
+        List<String> lines = outputLines();
+        assertEquals("    | Subtotal |   5 |            |    $9.40 |", lines.get(lines.size() - 4));
+        assertEquals("    Discount: 12.5% ($1.18)", lines.get(lines.size() - 2));
+        assertEquals("    Total: $8.22", lines.get(lines.size() - 1));
     }
 
     /**

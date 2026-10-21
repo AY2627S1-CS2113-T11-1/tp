@@ -239,6 +239,112 @@ Example of usage:
 
 `order list`
 
+### 3.4 Editing an order: `order edit`
+
+Updates an active order's customer, product or quantity. The order keeps its original number, while its total and the affected stock quantities are updated accordingly.
+
+Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot be edited.
+* At least one field must be provided. Fields that are not provided remain unchanged. Fields may be given in any order.
+* Square brackets indicate optional fields and should not be typed.
+* Customer and product names cannot be blank. The product must exist in the catalogue. Product names are case-insensitive.
+* `QUANTITY` must be a positive whole number.
+* Increasing the quantity deducts the additional units from stock. Decreasing it returns the difference to stock.
+* Changing the product restores the original product's stock and deducts the required quantity of the replacement product.
+* If the product is unchanged, its stored purchase price is retained. A replacement product uses its current price.
+* Any existing discount percentage is retained and applied to the updated subtotal.
+* `p/` and `q/` can only be used on orders containing a single product. For an order with several products, only `c/` can be edited.
+* Missing values, repeated prefixes and prefixes other than `c/`, `p/` and `q/` are rejected.
+* All checks must pass before changes are applied. If an edit fails, the order and stock remain unchanged.
+
+Example of usage (order 2 contains 4 units at $1.88 each, and enough additional stock is available):
+
+`order edit 2 c/Mei Tan q/5`
+
+Expected output:
+
+```text
+Order 2 updated.
+Customer: Mei Tan
+Units: 5
+Total: $9.40
+Status: Active
+```
+
+Expected output (insufficient stock):
+
+```text
+Sorry! Unable to edit order: insufficient stock.
+No changes were made to the order or stock.
+```
+
+### 3.5 Discounting an order: `order discount`
+
+Applies a percentage discount to an active order and updates its total. An existing discount can be replaced or removed.
+
+Format: `order discount ORDER_NUMBER d/PERCENTAGE`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot receive discounts.
+* `PERCENTAGE` must be a number between 0 and 100 inclusive, with up to two decimal places.
+* Enter the percentage as a number without the `%` symbol.
+* Setting the percentage to `0` removes the existing discount.
+* A new discount replaces the previous discount. Discounts are not added together.
+* The discount is calculated using the undiscounted subtotal, based on the order's quantities and stored unit prices.
+* The discount amount is rounded to the nearest cent, with half-cent values rounded up. The final total is the subtotal minus this amount.
+* Applying a discount does not change stock quantities or stored unit prices.
+* If the order is edited later, the same discount percentage applies to its updated subtotal.
+* Order lists, sales, receipts and cancellations use the discounted total.
+* Missing values, repeated prefixes and unexpected arguments are rejected. Invalid input leaves the order unchanged.
+
+Example of usage (order 2 is active and has an undiscounted subtotal of $9.40):
+
+`order discount 2 d/10`
+
+Expected output:
+
+```text
+Discount updated for order 2.
+Subtotal: $9.40
+Discount: 10% ($0.94)
+Total: $8.46
+```
+
+`order discount 2 d/0`
+
+Expected output (remove discount):
+
+```text
+Discount removed from order 2.
+Subtotal: $9.40
+Discount: 0% ($0.00)
+Total: $9.40
+```
+
+Expected output (percentage outside the allowed range):
+
+```text
+Sorry! Discount must be between 0 and 100.
+No changes were made to the order.
+```
+
+### 3.6 Viewing a customer's order details: `order details`
+
+Displays each order for a customer, oldest first, including cancelled orders.
+
+Format: `order details c/CUSTOMER`
+
+Example: `order details c/You Jie`
+
+Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
+Each order has its own order number, Active or Cancelled status, and a table of products,
+quantities and line costs. The final row shows the total item count and cost for that order.
+Cancelled orders show their original contents and total for reference.
+
+If no orders match, the app displays `No orders found for You Jie.`
+Viewing details does not change orders, stock or sales. Missing customer names and extra fields
+are rejected with the command format.
+
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
@@ -292,22 +398,23 @@ Example output:
 2. Lettuce: $42.30
 ```
 
-### Viewing a customer's order details: `order details`
 
-Displays each order for a customer, oldest first, including cancelled orders.
+### Getting command help: `help`
 
-Format: `order details c/CUSTOMER`
+Format: `help {AREA}`
 
-Example: `order details c/You Jie`
+Example: `help stock`
 
-Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
-Each order has its own order number, Active or Cancelled status, and a table of products,
-quantities and line costs. The final row shows the total item count and cost for that order.
-Cancelled orders show their original contents and total for reference.
+Shows all commands for the selected area, with a numbered description and command format.
+Optional parameters are shown in square brackets. Area names are case-insensitive.
 
-If no orders match, the app displays `No orders found for You Jie.`
-Viewing details does not change orders, stock or sales. Missing customer names and extra fields
-are rejected with the command format.
+Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Use `help generate` for receipt commands and `help general` for help and exit commands.
+Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
+areas produce a helpful error with the usage format.
+
+Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist in the
+catalogue, and its selling price is used. No separate price parameter is required.
 
 ## FAQ
 
@@ -317,12 +424,16 @@ are rejected with the command format.
 
 ## Command Summary
 
+* View help `help [AREA]`
+
 * Add product `product add p/PRODUCT a/AMOUNT`
 * List products `product list`
 * Add stock `stock add p/PRODUCT q/QUANTITY`
 * Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
 * List stock `stock list`
-* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
+* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
+* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
 * View customer order details `order details c/CUSTOMER`
