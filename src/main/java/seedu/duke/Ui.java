@@ -210,6 +210,35 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for an edited order: its customer, units, total and status.
+     *
+     * @param order the order that was just edited
+     */
+    public void showOrderUpdated(Order order) {
+        printIndent("Order " + order.getId() + " updated.");
+        printIndent("Customer: " + order.getCustomer());
+        printIndent("Units: " + order.getTotalUnits());
+        printIndent("Total: " + formatMoney(order.getTotal()));
+        printIndent("Status: " + (order.isCancelled() ? "Cancelled" : "Active"));
+    }
+
+    /**
+     * Shows the confirmation for a new, replaced or removed discount, with the amounts it produces.
+     *
+     * @param order the order whose discount was just set
+     */
+    public void showDiscountUpdated(Order order) {
+        if (order.hasDiscount()) {
+            printIndent("Discount updated for order " + order.getId() + ".");
+        } else {
+            printIndent("Discount removed from order " + order.getId() + ".");
+        }
+        printIndent("Subtotal: " + formatMoney(order.getSubtotal()));
+        printIndent(discountLine(order));
+        printIndent("Total: " + formatMoney(order.getTotal()));
+    }
+
+    /**
      * Shows every order as a table: number, customer, units bought, total and status.
      *
      * @param orders the orders to display, oldest first
@@ -239,7 +268,7 @@ public class Ui {
      * Shows confirmed sales and the total amount recorded from them.
      *
      * Cancelled orders are filtered by {@link OrderList} before this method is called, so every
-     * row shown contributes to the total.
+     * row shown contributes to the total. Row numbers reflect display positions, not order IDs.
      *
      * @param sales the confirmed sales to display, oldest first
      */
@@ -259,10 +288,10 @@ public class Ui {
                 units += item.getQuantity();
             }
             totalSales += sale.getTotal();
-            rows.add(new String[] {String.valueOf(sale.getId()), sale.getCustomer(), String.valueOf(units),
+            rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
                 formatMoney(sale.getTotal())});
         }
-        String[] headers = {"No.", "Customer", "Units", "Total"};
+        String[] headers = {"No.", "Customer", "Units", "Subtotal"};
         String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
         boolean[] isLeftAligned = {false, true, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
@@ -285,9 +314,23 @@ public class Ui {
             totalUnits += item.getQuantity();
         }
         String[] headers = {"Product", quantityHeader, "Unit price", "Subtotal"};
-        String[] totalRow = {"Total", String.valueOf(totalUnits), "", formatMoney(order.getTotal())};
+        String footerLabel = order.hasDiscount() ? "Subtotal" : "Total";
+        String[] totalRow = {footerLabel, String.valueOf(totalUnits), "", formatMoney(order.getSubtotal())};
         boolean[] isLeftAligned = {true, false, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
+        if (order.hasDiscount()) {
+            printIndent(discountLine(order));
+            printIndent("Total: " + formatMoney(order.getTotal()));
+        }
+    }
+
+    /**
+     * Returns the discount summary line, e.g. "Discount: 12.5% ($1.18)".
+     */
+    private static String discountLine(Order order) {
+        // stripTrailingZeros turns 10.00 into 1E+1; toPlainString then prints it as "10".
+        String percent = order.getDiscountPercent().stripTrailingZeros().toPlainString();
+        return "Discount: " + percent + "% (" + formatMoney(order.getDiscountAmount()) + ")";
     }
 
     /**
@@ -395,8 +438,17 @@ public class Ui {
         }
     }
 
+     * Shows an error message. A message may span several lines; each line is indented like other output,
+     * and only the first carries the "Sorry!" lead-in.
+     *
+     * @param message the message to show, with lines separated by {@code \n}
+     */
     public void showError(String message) {
-        printIndent("Sorry! " + message);
+        String[] lines = message.split("\n");
+        printIndent("Sorry! " + lines[0]);
+        for (int i = 1; i < lines.length; i++) {
+            printIndent(lines[i]);
+        }
     }
 
     /**

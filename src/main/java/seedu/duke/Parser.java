@@ -1,5 +1,6 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,8 @@ import seedu.duke.command.ListSalesCommand;
 import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.AddStockCommand;
+import seedu.duke.command.EditOrderCommand;
+import seedu.duke.command.DiscountOrderCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -36,24 +39,50 @@ public class Parser {
 
     private static final String NAME_PREFIX = "p/";
     private static final String PRICE_PREFIX = "a/";
-    private static final String ADD_FORMAT = "Format: product add p/PRODUCT a/AMOUNT";
-    private static final String EXPENSE_ADD_FORMAT = "Format: expense add p/PRODUCT a/AMOUNT";
+    private static final String ADD_FORMAT =
+            "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String EXPENSE_ADD_FORMAT =
+            "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
 
     private static final String CUSTOMER_PREFIX = "c/";
     private static final String QUANTITY_PREFIX = "q/";
     private static final String ORDER_ADD_FORMAT =
             "Format: order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...";
-    private static final String ORDER_CANCEL_FORMAT = "Format: order cancel ORDER_NUMBER";
-    private static final String STOCK_ADD_FORMAT = "Format: stock add p/PRODUCT q/QUANTITY";
-    private static final String STOCK_REMOVE_FORMAT = "Format: stock remove p/PRODUCT [q/QUANTITY]";
+    private static final String ORDER_CANCEL_FORMAT =
+            "Format: order cancel ORDER_NUMBER";
+    private static final String ORDER_EDIT_FORMAT =
+            "Format: order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]";
+    private static final String DISCOUNT_PREFIX = "d/";
+    private static final String ORDER_DISCOUNT_FORMAT =
+            "Format: order discount ORDER_NUMBER d/PERCENTAGE";
+    private static final BigDecimal MAX_DISCOUNT_PERCENT = BigDecimal.valueOf(100);
+
+    /**
+     * A plain decimal number, optionally negative,
+     * e.g. "10", "12.5" or "-3". Rejects "1e2", "+5" and "10%".
+     */
+    private static final Pattern DECIMAL_NUMBER_PATTERN =
+            Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final String STOCK_ADD_FORMAT =
+            "Format: stock add p/PRODUCT q/QUANTITY";
+    private static final String STOCK_REMOVE_FORMAT =
+            "Format: stock remove p/PRODUCT [q/QUANTITY]";
     private static final String[] STOCK_PREFIXES = {"p/", "q/"};
 
     /**
      * Matches a c/, p/ or q/ prefix at the start of the arguments or after a space. Requiring the
      * space means a product name such as "Salt and Pepper Mix 1c/2" is not split in the middle.
      */
-    private static final Pattern ORDER_PREFIX_PATTERN = Pattern.compile("(?<=^|\\s)([cpq]/)");
+    private static final Pattern ORDER_PREFIX_PATTERN =
+            Pattern.compile("(?<=^|\\s)([acdpq]/)");
+
+    /**
+     * Matches any prefix used anywhere in the system (a/, c/, d/, p/, q/), so that a command can reject
+     * prefixes that belong to other commands instead of silently treating them as part of a name.
+     */
+    private static final Pattern KNOWN_PREFIX_PATTERN =
+            Pattern.compile("(?<=^|\\s)([acdpq]/)");
 
     /**
      * Returns the command described by a line of user input.
@@ -162,7 +191,8 @@ public class Parser {
      */
     private Command parseOrderCommand(String[] words) throws SystemException {
         if (words.length < 2) {
-            throw new SystemException("What should I do with orders? Try: order add, order cancel, or order list");
+            throw new SystemException("What should I do with orders? "
+                    + "Try: order add, order edit, order discount, order cancel, or order list");
         }
 
         String verb = words[1].toLowerCase();
@@ -174,13 +204,21 @@ public class Parser {
         if (verb.equals("cancel")) {
             return parseCancelOrder(arguments);
         }
+        if (verb.equals("edit")) {
+            return parseEditOrder(arguments);
+        }
+        if (verb.equals("discount")) {
+            return parseDiscountOrder(arguments);
+        }
         if (verb.equals("list")) {
             if (!arguments.isEmpty()) {
-                throw new SystemException("\"order list\" takes no extra input, but I found: " + arguments);
+                throw new SystemException("\"order list\" takes no extra input, " +
+                        "but I found: " + arguments);
             }
             return new ListOrderCommand();
         }
-        throw new SystemException("I don't know how to \"order " + words[1] + "\". Try: add, cancel, or list");
+        throw new SystemException("I don't know how to \"order " + words[1]
+                + "\". Try: add, edit, discount, cancel, or list");
     }
 
     /**
@@ -217,7 +255,7 @@ public class Parser {
      * @throws SystemException if the arguments do not follow the format, or a value is invalid
      */
     private Command parseAddOrder(String arguments) throws SystemException {
-        List<String[]> pairs = splitIntoPrefixValuePairs(arguments);
+        List<String[]> pairs = splitToPrefix(arguments);
 
         if (pairs.isEmpty() || !pairs.get(0)[0].equals(CUSTOMER_PREFIX)) {
             throw new SystemException("Start the order with c/CUSTOMER. " + ORDER_ADD_FORMAT);
@@ -260,6 +298,9 @@ public class Parser {
         return new AddOrderCommand(customer, items);
     }
 
+    private List<String[]> splitToPrefix(String arguments) throws SystemException {
+        return splitToPrefix(arguments, ORDER_PREFIX_PATTERN, ORDER_ADD_FORMAT);
+    }
     /**
      * Cuts order arguments into (prefix, value) pairs, in the order they were typed.
      *
@@ -268,7 +309,8 @@ public class Parser {
      * @param arguments the argument text to split
      * @throws SystemException if there is text before the first prefix
      */
-    private List<String[]> splitIntoPrefixValuePairs(String arguments) throws SystemException {
+    private List<String[]> splitToPrefix(String arguments, Pattern prefixPattern, String formatHint)
+            throws SystemException {
         List<String[]> pairs = new ArrayList<>();
         Matcher matcher = ORDER_PREFIX_PATTERN.matcher(arguments);
 
@@ -278,7 +320,7 @@ public class Parser {
             if (currentPrefix == null) {
                 String leadingText = arguments.substring(0, matcher.start()).trim();
                 if (!leadingText.isEmpty()) {
-                    throw new SystemException("I don't understand \"" + leadingText + "\". " + ORDER_ADD_FORMAT);
+                    throw new SystemException("I don't understand \"" + leadingText + "\". " + formatHint);
                 }
             } else {
                 pairs.add(new String[] {currentPrefix, arguments.substring(valueStart, matcher.start()).trim()});
@@ -312,27 +354,184 @@ public class Parser {
         return quantity;
     }
 
-    /**
-     * Returns a cancel-order command built from the arguments of {@code order cancel}.
-     *
-     * @param arguments the text after "order cancel", e.g. "1"
-     * @throws SystemException if the arguments are not a single positive whole number
-     */
     private Command parseCancelOrder(String arguments) throws SystemException {
         if (arguments.isEmpty()) {
             throw new SystemException("Which order should I cancel? " + ORDER_CANCEL_FORMAT);
         }
+        return new CancelOrderCommand(parseOrderNumber(arguments, ORDER_CANCEL_FORMAT));
+    }
+
+    /**
+     * Returns the order number described by the given text.
+     *
+     * @param orderNumberText the text that should hold the order number, e.g. "1"
+     * @param formatHint      the usage hint to include if the text is not a valid order number
+     * @throws SystemException if the text is not a whole number of at least 1
+     */
+    private int parseOrderNumber(String orderNumberText, String formatHint) throws SystemException {
         int orderId;
         try {
-            orderId = Integer.parseInt(arguments);
+            orderId = Integer.parseInt(orderNumberText);
         } catch (NumberFormatException e) {
             throw new SystemException("The order number must be a whole number such as 1, but I got: \""
-                    + arguments + "\". " + ORDER_CANCEL_FORMAT);
+                    + orderNumberText + "\". " + formatHint);
         }
         if (orderId < 1) {
-            throw new SystemException("Order numbers start at 1, but I got: " + arguments);
+            throw new SystemException("Order numbers start at 1, but I got: " + orderNumberText);
         }
-        return new CancelOrderCommand(orderId);
+        return orderId;
+    }
+
+    /**
+     * Returns an edit-order command built from the arguments of {@code order edit}.
+     *
+     * The order number comes first, followed by any of c/, p/ and q/ in any order, each at most once.
+     * Fields that are left out stay unchanged, so they are passed to the command as null.
+     *
+     * @param arguments the text after "order edit", e.g. "2 c/Mei Tan q/5"
+     * @throws SystemException if the order number is invalid, no field is given, a prefix is repeated
+     *                         or not supported, or a value is blank or invalid
+     */
+    private Command parseEditOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw new SystemException("Which order should I edit? " + ORDER_EDIT_FORMAT);
+        }
+        String[] parts = arguments.split("\\s+", 2);
+        int orderId = parseOrderNumber(parts[0], ORDER_EDIT_FORMAT);
+        String fieldText = parts.length < 2 ? "" : parts[1];
+        if (fieldText.isBlank()) {
+            throw new SystemException("Give at least one of c/CUSTOMER, p/PRODUCT or q/QUANTITY to change. "
+                    + ORDER_EDIT_FORMAT);
+        }
+
+        String customer = null;
+        String productName = null;
+        Integer quantity = null;
+        List<String[]> pairs = splitToPrefix(fieldText, KNOWN_PREFIX_PATTERN, ORDER_EDIT_FORMAT);
+        if (pairs.isEmpty()) {
+            // No recognised prefix at all, e.g. "order edit 2 x/5" or "order edit 2 Mei".
+            throw new SystemException("I don't understand \"" + fieldText.trim() + "\". " + ORDER_EDIT_FORMAT);
+        }
+
+        Set<String> seenPrefixes = new HashSet<>();
+        for (String[] pair : pairs) {
+            String prefix = pair[0];
+            String value = pair[1];
+            if (!seenPrefixes.add(prefix)) {
+                throw new SystemException(prefix + " appears more than once. Give each field at most once. "
+                        + ORDER_EDIT_FORMAT);
+            }
+            switch (prefix) {
+            case CUSTOMER_PREFIX:
+                if (value.isEmpty()) {
+                    throw new SystemException("The customer name cannot be blank. " + ORDER_EDIT_FORMAT);
+                }
+                customer = value;
+                break;
+            case NAME_PREFIX:
+                if (value.isEmpty()) {
+                    throw new SystemException("The product name cannot be blank. " + ORDER_EDIT_FORMAT);
+                }
+                productName = value;
+                break;
+            case QUANTITY_PREFIX:
+                quantity = parseQuantity(value);
+                break;
+            default:
+                throw new SystemException("\"order edit\" does not accept " + prefix + ". "
+                        + "Use c/, p/ or q/. " + ORDER_EDIT_FORMAT);
+            }
+        }
+        return new EditOrderCommand(orderId, customer, productName, quantity);
+    }
+
+    /**
+     * Returns a discount command built from the arguments of {@code order discount}.
+     *
+     * Every error message ends by confirming that the order was not changed, as the User Guide promises.
+     *
+     * @param arguments the text after "order discount", e.g. "2 d/10"
+     * @throws SystemException if the order number or percentage is missing or invalid, d/ is repeated,
+     *                         or there is any other input
+     */
+    private Command parseDiscountOrder(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw discountError("Which order should I discount? " + ORDER_DISCOUNT_FORMAT);
+        }
+        String[] parts = arguments.split("\\s+", 2);
+        int orderId;
+        try {
+            orderId = parseOrderNumber(parts[0], ORDER_DISCOUNT_FORMAT);
+        } catch (SystemException e) {
+            throw discountError(e.getMessage());
+        }
+
+        String fieldText = parts.length < 2 ? "" : parts[1];
+        List<String[]> pairs;
+        try {
+            pairs = splitToPrefix(fieldText, KNOWN_PREFIX_PATTERN, ORDER_DISCOUNT_FORMAT);
+        } catch (SystemException e) {
+            throw discountError(e.getMessage());
+        }
+        if (pairs.isEmpty()) {
+            String problem = fieldText.isBlank() ? "Missing d/PERCENTAGE. " : "I don't understand \""
+                    + fieldText.trim() + "\". ";
+            throw discountError(problem + ORDER_DISCOUNT_FORMAT);
+        }
+        for (String[] pair : pairs) {
+            if (!pair[0].equals(DISCOUNT_PREFIX)) {
+                throw discountError("\"order discount\" only accepts d/, but I found " + pair[0] + ". "
+                        + ORDER_DISCOUNT_FORMAT);
+            }
+        }
+        if (pairs.size() > 1) {
+            throw discountError("d/ appears more than once. Give a single percentage. " + ORDER_DISCOUNT_FORMAT);
+        }
+        return new DiscountOrderCommand(orderId, parseDiscountPercent(pairs.get(0)[1]));
+    }
+
+    /**
+     * Returns the discount percentage described by the text after d/.
+     *
+     * The percentage is kept as a {@link BigDecimal} so that 12.5 stays exactly 12.5 for the
+     * half-cent rounding done by {@link Order}.
+     *
+     * @param percentText the text after the d/ prefix, e.g. "12.5"
+     * @throws SystemException if the text is empty, not a plain number, outside 0 to 100,
+     *                         or has more than two decimal places
+     */
+    private BigDecimal parseDiscountPercent(String percentText) throws SystemException {
+        if (percentText.isEmpty()) {
+            throw discountError("The discount percentage cannot be empty. " + ORDER_DISCOUNT_FORMAT);
+        }
+        if (percentText.matches("\\S+\\s+.*")) {
+            throw discountError("I found extra input after the percentage: \"" + percentText + "\". "
+                    + ORDER_DISCOUNT_FORMAT);
+        }
+        if (percentText.endsWith("%")) {
+            throw discountError("Enter the percentage without the % symbol, e.g. d/10.");
+        }
+        if (!DECIMAL_NUMBER_PATTERN.matcher(percentText).matches()) {
+            throw discountError("The discount must be a number such as 10 or 12.5, but I got: \""
+                    + percentText + "\".");
+        }
+
+        BigDecimal percent = new BigDecimal(percentText);
+        if (percent.signum() < 0 || percent.compareTo(MAX_DISCOUNT_PERCENT) > 0) {
+            throw discountError("Discount must be between 0 and 100.");
+        }
+        // scale() counts the decimals as typed, so "10.500" is rejected just as "a/3.500" is for prices.
+        if (percent.scale() > MAX_DECIMAL_PLACES) {
+            throw discountError("A discount can have at most 2 decimal places, but I got: " + percentText);
+        }
+        return percent;
+    }
+
+    /**
+     * Returns a discount error whose message ends by confirming that the order was not changed.
+     */
+    private static SystemException discountError(String reason) {
+        return new SystemException(reason + "\n" + DiscountOrderCommand.NO_CHANGES_MESSAGE);
     }
 
     /**

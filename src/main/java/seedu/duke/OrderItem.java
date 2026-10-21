@@ -18,9 +18,27 @@ public class OrderItem {
      * @param quantity the number of units bought, already validated as positive
      */
     public OrderItem(Product product, int quantity) {
+        this(product, quantity, product.getPrice());
+    }
+
+    /**
+     * Constructs an order line at a given unit price instead of the product's current price.
+     *
+     * Used when an order is edited but keeps the same product: the customer keeps the price
+     * stored when the order was placed, even if the catalogue price has changed since.
+     *
+     * @param product   the product bought
+     * @param quantity  the number of units bought, already validated as positive
+     * @param unitPrice the unit price to record, never negative
+     */
+    public OrderItem(Product product, int quantity, double unitPrice) {
+        assert product != null : "An order line must refer to a product";
+        assert quantity > 0 : "Order line quantity must be validated as positive before construction";
+        assert unitPrice >= 0 : "Order line unit price cannot be negative";
+
         this.product = product;
         this.quantity = quantity;
-        this.unitPrice = product.getPrice();
+        this.unitPrice = unitPrice;
     }
 
     public Product getProduct() {
