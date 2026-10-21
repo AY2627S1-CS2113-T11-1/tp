@@ -239,7 +239,7 @@ public class Ui {
      * Shows confirmed sales and the total amount recorded from them.
      *
      * Cancelled orders are filtered by {@link OrderList} before this method is called, so every
-     * row shown contributes to the total.
+     * row shown contributes to the total. Row numbers reflect display positions, not order IDs.
      *
      * @param sales the confirmed sales to display, oldest first
      */
@@ -259,10 +259,10 @@ public class Ui {
                 units += item.getQuantity();
             }
             totalSales += sale.getTotal();
-            rows.add(new String[] {String.valueOf(sale.getId()), sale.getCustomer(), String.valueOf(units),
+            rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
                 formatMoney(sale.getTotal())});
         }
-        String[] headers = {"No.", "Customer", "Units", "Total"};
+        String[] headers = {"No.", "Customer", "Units", "Subtotal"};
         String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
         boolean[] isLeftAligned = {false, true, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
