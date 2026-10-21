@@ -2,11 +2,17 @@ package seedu.duke;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.ListStockCommand;
+import seedu.duke.command.LowStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 
 class StockCommandTest {
@@ -97,6 +103,140 @@ class StockCommandTest {
                 listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), null, new Ui()));
         assertThrows(AssertionError.class, () ->
                 listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
+    }
+
+    @Test
+    public void execute_lowStockDefaultThreshold_filtersCorrectly() throws SystemException {
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+
+        Product apple = new Product("Apple", 2.00);
+        apple.setStock(3);
+        products.add(apple);
+        stocks.add(new Stock("Apple", 2.00, 3));
+
+        Product banana = new Product("Banana", 1.50);
+        banana.setStock(10);
+        products.add(banana);
+        stocks.add(new Stock("Banana", 1.50, 10));
+
+        Product orange = new Product("Orange", 3.00);
+        orange.setStock(5);
+        products.add(orange);
+        stocks.add(new Stock("Orange", 3.00, 5));
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+
+        LowStockCommand command = new LowStockCommand();
+        assertEquals(5, command.getThreshold());
+        command.execute(products, new OrderList(), new ExpenseList(), stocks, testUi);
+
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Low stock items (quantity <= 5):"));
+        assertTrue(output.contains("Apple"));
+        assertTrue(output.contains("Orange"));
+        assertTrue(!output.contains("Banana"));
+    }
+
+    @Test
+    public void execute_lowStockCustomThreshold_filtersCorrectly() throws SystemException {
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+
+        Product apple = new Product("Apple", 2.00);
+        apple.setStock(2);
+        products.add(apple);
+        stocks.add(new Stock("Apple", 2.00, 2));
+
+        Product banana = new Product("Banana", 1.50);
+        banana.setStock(4);
+        products.add(banana);
+        stocks.add(new Stock("Banana", 1.50, 4));
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+
+        LowStockCommand command = new LowStockCommand(2);
+        assertEquals(2, command.getThreshold());
+        command.execute(products, new OrderList(), new ExpenseList(), stocks, testUi);
+
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Low stock items (quantity <= 2):"));
+        assertTrue(output.contains("Apple"));
+        assertTrue(!output.contains("Banana"));
+    }
+
+    @Test
+    public void execute_lowStockEmptyList_showsNoStockMessage() throws SystemException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+
+        LowStockCommand command = new LowStockCommand(5);
+        command.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), testUi);
+
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("There are currently no stocks in the list."));
+    }
+
+    @Test
+    public void execute_lowStockNoLowItems_showsSufficientStockMessage() throws SystemException {
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+
+        Product banana = new Product("Banana", 1.50);
+        banana.setStock(10);
+        products.add(banana);
+        stocks.add(new Stock("Banana", 1.50, 10));
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+
+        LowStockCommand command = new LowStockCommand(5);
+        command.execute(products, new OrderList(), new ExpenseList(), stocks, testUi);
+
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("All products have sufficient stock (more than 5)."));
+    }
+
+    @Test
+    public void execute_lowStockSyncsWithProductStock() throws SystemException {
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+
+        Product apple = new Product("Apple", 2.00);
+        apple.setStock(2);
+        products.add(apple);
+        Stock appleStock = new Stock("Apple", 2.00, 10);
+        stocks.add(appleStock);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+
+        LowStockCommand command = new LowStockCommand(5);
+        command.execute(products, new OrderList(), new ExpenseList(), stocks, testUi);
+
+        assertEquals(2, appleStock.quantity);
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Low stock items (quantity <= 5):"));
+        assertTrue(output.contains("Apple"));
+    }
+
+    @Test
+    public void lowStock_invalidConstructorArguments_failAssertions() {
+        assertThrows(AssertionError.class, () -> new LowStockCommand(-1));
+        assertThrows(AssertionError.class, () -> new LowStockCommand(-10));
+    }
+
+    @Test
+    public void lowStock_nullArguments_failAssertions() {
+        LowStockCommand command = new LowStockCommand();
+        assertThrows(AssertionError.class, () ->
+                command.execute(null, new OrderList(), new ExpenseList(), new StockList(), new Ui()));
+        assertThrows(AssertionError.class, () ->
+                command.execute(new ProductList(), new OrderList(), new ExpenseList(), null, new Ui()));
+        assertThrows(AssertionError.class, () ->
+                command.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
     }
 }
 

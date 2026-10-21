@@ -24,6 +24,7 @@ import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.EditOrderCommand;
 import seedu.duke.command.DiscountOrderCommand;
+import seedu.duke.command.LowStockCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -387,5 +388,42 @@ class ParserTest {
     @Test
     public void parse_stockList_returnsListStockCommand() throws SystemException {
         assertInstanceOf(ListStockCommand.class, parser.parse("stock list"));
+    }
+
+    @Test
+    public void parse_stockLowDefault_returnsLowStockCommand() throws SystemException {
+        Command command = parser.parse("stock low");
+        LowStockCommand lowStock = assertInstanceOf(LowStockCommand.class, command);
+        assertEquals(5, lowStock.getThreshold());
+    }
+
+    @Test
+    public void parse_stockLowWithPrefix_returnsLowStockCommand() throws SystemException {
+        Command command = parser.parse("stock low q/10");
+        LowStockCommand lowStock = assertInstanceOf(LowStockCommand.class, command);
+        assertEquals(10, lowStock.getThreshold());
+    }
+
+    @Test
+    public void parse_stockLowWithoutPrefix_returnsLowStockCommand() throws SystemException {
+        Command command = parser.parse("stock low 15");
+        LowStockCommand lowStock = assertInstanceOf(LowStockCommand.class, command);
+        assertEquals(15, lowStock.getThreshold());
+    }
+
+    @Test
+    public void parse_stockLowZeroThreshold_returnsLowStockCommand() throws SystemException {
+        Command command = parser.parse("stock low q/0");
+        LowStockCommand lowStock = assertInstanceOf(LowStockCommand.class, command);
+        assertEquals(0, lowStock.getThreshold());
+    }
+
+    @Test
+    public void parse_stockLowInvalidInputs_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("stock low q/-1"));
+        assertThrows(SystemException.class, () -> parser.parse("stock low -1"));
+        assertThrows(SystemException.class, () -> parser.parse("stock low q/"));
+        assertThrows(SystemException.class, () -> parser.parse("stock low abc"));
+        assertThrows(SystemException.class, () -> parser.parse("stock low 5 extra"));
     }
 }
