@@ -381,6 +381,23 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+### Getting command help: `help`
+
+Format: `help {AREA}`
+
+Example: `help stock`
+
+Shows all commands for the selected area, with a numbered description and command format.
+Optional parameters are shown in square brackets. Area names are case-insensitive.
+
+Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Use `help generate` for receipt commands and `help general` for help and exit commands.
+Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
+areas produce a helpful error with the usage format.
+
+Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist in the
+catalogue, and its selling price is used. No separate price parameter is required.
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
@@ -388,6 +405,8 @@ Example output:
 **A**: {your answer here}
 
 ## Command Summary
+
+* View help `help [AREA]`
 
 * Add product `product add p/PRODUCT a/AMOUNT`
 * List products `product list`

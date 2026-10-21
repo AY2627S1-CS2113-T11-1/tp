@@ -413,6 +413,31 @@ public class Ui {
     }
 
     /**
+     * Displays the available help areas and command format.
+     *
+     * @param usage format and list of supported areas
+     */
+    public void showHelpOverview(String usage) {
+        printIndent(usage);
+        printIndent("Example: help stock");
+        printIndent("Use help general for help and exit commands.");
+    }
+
+    /**
+     * Displays numbered descriptions followed by each command's format.
+     *
+     * @param area display name of the selected area
+     * @param commands description and syntax pairs
+     */
+    public void showHelp(String area, List<String[]> commands) {
+        printIndent(area + " commands:");
+        for (int i = 0; i < commands.size(); i++) {
+            String[] command = commands.get(i);
+            printIndent((i + 1) + ". " + command[0]);
+            printIndent("   " + command[1]);
+        }
+    }
+
      * Shows an error message. A message may span several lines; each line is indented like other output,
      * and only the first carries the "Sorry!" lead-in.
      *
