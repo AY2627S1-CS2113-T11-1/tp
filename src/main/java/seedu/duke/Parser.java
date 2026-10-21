@@ -13,6 +13,7 @@ import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.ExitCommand;
+import seedu.duke.command.HelpCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListProductCommand;
@@ -70,6 +71,12 @@ public class Parser {
         String[] words = input.split("\\s+", 3);
         String noun = words[0].toLowerCase();
 
+        if (noun.equals("help")) {
+            if (words.length > 2) {
+                throw new SystemException("Choose one help area. " + HelpCommand.USAGE);
+            }
+            return new HelpCommand(words.length == 2 ? words[1] : "");
+        }
         if (noun.equals("generate")) {
             return new ReceiptParser().parse(input);
         }
@@ -92,7 +99,7 @@ public class Parser {
             return new ExitCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, stock, sales, generate, bye");
+                + "\". Known commands: product, order, expense, stock, sales, generate, help, bye");
     }
 
     /**
