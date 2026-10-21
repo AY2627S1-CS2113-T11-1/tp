@@ -292,6 +292,23 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+### Viewing a customer's order details: `order details`
+
+Displays each order for a customer, oldest first, including cancelled orders.
+
+Format: `order details c/CUSTOMER`
+
+Example: `order details c/You Jie`
+
+Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
+Each order has its own order number, Active or Cancelled status, and a table of products,
+quantities and line costs. The final row shows the total item count and cost for that order.
+Cancelled orders show their original contents and total for reference.
+
+If no orders match, the app displays `No orders found for You Jie.`
+Viewing details does not change orders, stock or sales. Missing customer names and extra fields
+are rejected with the command format.
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
@@ -308,6 +325,7 @@ Example output:
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* View customer order details `order details c/CUSTOMER`
 * View sales: `sales list`
 * Generate receipts `generate receipts c/CUSTOMER`
 * Add expense `expense add p/PRODUCT a/AMOUNT`
