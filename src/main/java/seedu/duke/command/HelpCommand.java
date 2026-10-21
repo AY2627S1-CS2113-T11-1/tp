@@ -54,7 +54,9 @@ public class HelpCommand extends Command {
                         "stock add p/PRODUCT q/QUANTITY"},
                     new String[] {"Removes stock, defaulting to one unit when quantity is omitted."
                             + " Stock cannot fall below zero.", "stock remove p/PRODUCT [q/QUANTITY]"},
-                    new String[] {"Lists products currently in the stock list and their quantities.", "stock list"});
+                    new String[] {"Lists products currently in the stock list and their quantities.", "stock list"},
+                    new String[] {"Lists products with stock at or below a threshold (default 5).",
+                        "stock low [q/THRESHOLD]"});
             break;
         case "order":
             commands = List.of(

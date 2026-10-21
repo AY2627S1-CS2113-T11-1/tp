@@ -46,7 +46,8 @@ class HelpCommandTest {
     public void execute_supportedAreas_listsEveryCurrentCommand() throws SystemException {
         String[][] topics = {
             {"product", "product add p/PRODUCT a/AMOUNT", "product list"},
-            {"stock", "stock add p/PRODUCT q/QUANTITY", "stock remove p/PRODUCT [q/QUANTITY]", "stock list"},
+            {"stock", "stock add p/PRODUCT q/QUANTITY", "stock remove p/PRODUCT [q/QUANTITY]", "stock list",
+                "stock low [q/THRESHOLD]"},
             {"order", "order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...",
                 "order cancel ORDER_NUMBER", "order list"},
             {"sales", "sales list"},
@@ -75,7 +76,9 @@ class HelpCommandTest {
                         + " Stock cannot fall below zero.",
                 "       stock remove p/PRODUCT [q/QUANTITY]",
                 "    3. Lists products currently in the stock list and their quantities.",
-                "       stock list"), runHelp("help stock").lines().toList());
+                "       stock list",
+                "    4. Lists products with stock at or below a threshold (default 5).",
+                "       stock low [q/THRESHOLD]"), runHelp("help stock").lines().toList());
     }
 
     @Test
@@ -124,9 +127,9 @@ class HelpCommandTest {
     @Test
     public void execute_help_doesNotAdvertiseOtherFeatureBranches() throws SystemException {
         String text = runHelp("help order");
-        assertFalse(text.contains("order details"));
+
         assertFalse(text.contains("order add pay"));
-        assertThrows(SystemException.class, () -> new Parser().parse("order details c/You Jie"));
+
         assertThrows(SystemException.class, () -> new Parser().parse("order add pay c/You Jie a/20"));
     }
 

@@ -180,6 +180,43 @@ Example output:
 +-------------------+-----+
 ```
 
+### 2.4 Viewing low stock: `stock low`
+
+Displays products whose current stock level is at or below a specified threshold, alerting you when items need replenishing.
+
+Format: `stock low [q/THRESHOLD]`
+
+* If `THRESHOLD` is omitted, the default threshold of 5 is used.
+* `THRESHOLD` must be a non-negative whole number (0, 1, 2, ...).
+* You may specify the threshold with or without the `q/` prefix (e.g. `stock low q/10` or `stock low 10`).
+* If no products have low stock, a message confirms that all items have sufficient stock.
+
+Example of usage:
+
+`stock low`
+
+Example output (items at or below default threshold 5):
+
+```text
+Low stock items (quantity <= 5):
++---------+-----+
+| Product | Qty |
++---------+-----+
+| Apples  |   3 |
+| Oranges |   5 |
++---------+-----+
+```
+
+Example output (when all items have sufficient stock):
+
+```text
+All products have sufficient stock (more than 5).
+```
+
+Example of usage with custom threshold:
+
+`stock low q/10`
+
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -431,6 +468,7 @@ catalogue, and its selling price is used. No separate price parameter is require
 * Add stock `stock add p/PRODUCT q/QUANTITY`
 * Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
 * List stock `stock list`
+* View low stock `stock low [q/THRESHOLD]`
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
 * Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 * Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
