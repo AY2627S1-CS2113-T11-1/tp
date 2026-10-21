@@ -442,6 +442,7 @@ public class Ui {
         }
     }
 
+    /**
      * Displays the available help areas and command format.
      *
      * @param usage format and list of supported areas
@@ -467,6 +468,7 @@ public class Ui {
         }
     }
 
+    /**
      * Shows an error message. A message may span several lines; each line is indented like other output,
      * and only the first carries the "Sorry!" lead-in.
      *
