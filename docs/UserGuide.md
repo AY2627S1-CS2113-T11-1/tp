@@ -328,6 +328,23 @@ Sorry! Discount must be between 0 and 100.
 No changes were made to the order.
 ```
 
+### 3.6 Viewing a customer's order details: `order details`
+
+Displays each order for a customer, oldest first, including cancelled orders.
+
+Format: `order details c/CUSTOMER`
+
+Example: `order details c/You Jie`
+
+Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
+Each order has its own order number, Active or Cancelled status, and a table of products,
+quantities and line costs. The final row shows the total item count and cost for that order.
+Cancelled orders show their original contents and total for reference.
+
+If no orders match, the app displays `No orders found for You Jie.`
+Viewing details does not change orders, stock or sales. Missing customer names and extra fields
+are rejected with the command format.
+
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
@@ -381,6 +398,7 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+
 ### Getting command help: `help`
 
 Format: `help {AREA}`
@@ -418,6 +436,7 @@ catalogue, and its selling price is used. No separate price parameter is require
 * Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* View customer order details `order details c/CUSTOMER`
 * View sales: `sales list`
 * Generate receipts `generate receipts c/CUSTOMER`
 * Add expense `expense add p/PRODUCT a/AMOUNT`

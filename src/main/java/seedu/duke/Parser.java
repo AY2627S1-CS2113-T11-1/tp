@@ -198,6 +198,9 @@ public class Parser {
         String verb = words[1].toLowerCase();
         String arguments = words.length < 3 ? "" : words[2].trim();
 
+        if (verb.equals("details")) {
+            return new OrderDetailsParser().parse(arguments);
+        }
         if (verb.equals("add")) {
             return parseAddOrder(arguments);
         }

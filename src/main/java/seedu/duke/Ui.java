@@ -413,6 +413,35 @@ public class Ui {
     }
 
     /**
+     * Displays the customer's orders with individual totals and cancellation status.
+     *
+     * @param customer requested customer name
+     * @param orders matching orders in creation order
+     */
+    public void showOrderDetails(String customer, List<Order> orders) {
+        if (orders.isEmpty()) {
+            printIndent("No orders found for " + customer + ".");
+            return;
+        }
+        printIndent("Here are " + customer + "'s order details:");
+        for (Order order : orders) {
+            String status = order.isCancelled() ? "Cancelled" : "Active";
+            printIndent("Order " + order.getId() + " (" + status + "):");
+            List<String[]> rows = new ArrayList<>();
+            long totalUnits = 0;
+            for (OrderItem item : order.getItems()) {
+                rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
+                    formatMoney(item.getSubtotal())});
+                totalUnits += item.getQuantity();
+            }
+            String[] headers = {"Product", "Qty", "Cost"};
+            String unitLabel = totalUnits == 1 ? " item" : " items";
+            String[] totalRow = {"Total", totalUnits + unitLabel, formatMoney(order.getTotal())};
+            boolean[] isLeftAligned = {true, false, false};
+            printTable(headers, rows, totalRow, isLeftAligned);
+        }
+    }
+
      * Displays the available help areas and command format.
      *
      * @param usage format and list of supported areas
