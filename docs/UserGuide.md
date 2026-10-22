@@ -459,19 +459,32 @@ catalogue, and its selling price is used. No separate price parameter is require
 
 * View help `help [AREA]`
 
+### Product:
 * Add product `product add p/PRODUCT a/AMOUNT`
 * List products `product list`
+
+
+### Stock:
 * Add stock `stock add p/PRODUCT q/QUANTITY`
 * Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
 * List stock `stock list`
+
+
+### Order:
 * Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
-* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
-* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
 * Cancel order `order cancel ORDER_NUMBER`
 * List orders `order list`
+* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
+
+
 * Pay outstanding orders `order add pay c/CUSTOMER a/AMOUNT`
 * View customer order details `order details c/CUSTOMER`
+
+### Sales:
 * View sales: `sales list`
 * Generate receipts `generate receipts c/CUSTOMER`
+
+### Expense:
 * Add expense `expense add p/PRODUCT a/AMOUNT`
 * List expenses `expense list`
