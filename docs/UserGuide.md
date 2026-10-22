@@ -430,7 +430,6 @@ Example output:
 ```
 
 
-
 ### 6.1 Getting command help: `help`
 
 Format: `help {AREA}`
@@ -464,41 +463,36 @@ Format: `bye`
 
 ## Command Summary
 
-### Product:
-* Add product `product add p/PRODUCT a/AMOUNT`
-* List products `product list`
-
-
-### Stock:
-* Add stock `stock add p/PRODUCT q/QUANTITY`
-* Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
-* List stock `stock list`
-
-
-### Order:
-* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
-* Cancel order `order cancel ORDER_NUMBER`
-* List orders `order list`
-* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
-* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
-
-* Pay outstanding orders `order add pay c/CUSTOMER a/AMOUNT`
-* View customer order details `order details c/CUSTOMER`
-
-
-### Sales:
-* View sales: `sales list`
-
-
-### Generate:
-* Generate receipts `generate receipts c/CUSTOMER`
-
-
-### Expense:
-* Add expense `expense add p/PRODUCT a/AMOUNT`
-* List expenses `expense list`
-
-
-### General:
-* View help `help [AREA]`
-* Exit the program `bye`
+| Description | Command |
+| --- | --- |
+| **<ins>Product<ins>** | |
+| Add product | `product add p/PRODUCT a/AMOUNT` |
+| List products | `product list` |
+| | |
+| **<ins>Stock<ins>** | |
+| Add stock | `stock add p/PRODUCT q/QUANTITY` |
+| Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
+| List stock | `stock list` |
+| | |
+| **<ins>Order<ins>** | |
+| Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |
+| Cancel order | `order cancel ORDER_NUMBER` |
+| List orders | `order list` |
+| Edit order | `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]` |
+| Discount order | `order discount ORDER_NUMBER d/PERCENTAGE` |
+| Pay outstanding orders | `order add pay c/CUSTOMER a/AMOUNT` |
+| View customer order details | `order details c/CUSTOMER` |
+| | |
+| **<ins>Sales<ins>** | |
+| View sales | `sales list` |
+| | |
+| **<ins>Generate<ins>** | |
+| Generate receipts | `generate receipts c/CUSTOMER` |
+| | |
+| **<ins>Expense<ins>** | |
+| Add expense | `expense add p/PRODUCT a/AMOUNT` |
+| List expenses | `expense list` |
+| | |
+| **<ins>General<ins>** | |
+| View help | `help [AREA]` |
+| Exit the program | `bye` |
