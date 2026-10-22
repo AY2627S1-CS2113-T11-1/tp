@@ -431,7 +431,7 @@ Example output:
 
 
 
-### Getting command help: `help`
+### 6.1 Getting command help: `help`
 
 Format: `help {AREA}`
 
@@ -449,11 +449,12 @@ Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist
 catalogue, and its selling price is used. No separate price parameter is required.
 
 
-## Exiting the program: `bye`
+### 6.2 Exiting the program: `bye`
 
 Exits the BMS program.
 
 Format: `bye`
+
 
 
 ## FAQ
@@ -463,7 +464,9 @@ Format: `bye`
 **A**: {your answer here}
 
 
+
 ## Command Summary
+
 
 
 ### Product:
