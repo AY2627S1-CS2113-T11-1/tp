@@ -456,18 +456,13 @@ Exits the BMS program.
 Format: `bye`
 
 
-
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
 
 **A**: {your answer here}
 
-
-
 ## Command Summary
-
-
 
 ### Product:
 * Add product `product add p/PRODUCT a/AMOUNT`
