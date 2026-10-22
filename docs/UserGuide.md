@@ -449,15 +449,22 @@ Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist
 catalogue, and its selling price is used. No separate price parameter is required.
 
 
+## Exiting the program: `bye`
+
+Exits the BMS program.
+
+Format: `bye`
+
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
 
 **A**: {your answer here}
 
+
 ## Command Summary
 
-* View help `help [AREA]`
 
 ### Product:
 * Add product `product add p/PRODUCT a/AMOUNT`
@@ -477,14 +484,23 @@ catalogue, and its selling price is used. No separate price parameter is require
 * Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 * Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
 
-
 * Pay outstanding orders `order add pay c/CUSTOMER a/AMOUNT`
 * View customer order details `order details c/CUSTOMER`
 
+
 ### Sales:
 * View sales: `sales list`
+
+
+### Generate:
 * Generate receipts `generate receipts c/CUSTOMER`
+
 
 ### Expense:
 * Add expense `expense add p/PRODUCT a/AMOUNT`
 * List expenses `expense list`
+
+
+### General:
+* View help `help [AREA]`
+* Exit the program `bye`
