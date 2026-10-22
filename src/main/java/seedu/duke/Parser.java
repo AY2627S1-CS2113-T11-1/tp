@@ -258,6 +258,12 @@ public class Parser {
      * @throws SystemException if the arguments do not follow the format, or a value is invalid
      */
     private Command parseAddOrder(String arguments) throws SystemException {
+
+        String[] paymentParts = arguments.split("\\s+", 2);
+        if (paymentParts[0].equalsIgnoreCase("pay")) {
+            return new PaymentParser().parse(paymentParts.length == 2 ? paymentParts[1] : "");
+        }
+
         List<String[]> pairs = splitToPrefix(arguments);
 
         if (pairs.isEmpty() || !pairs.get(0)[0].equals(CUSTOMER_PREFIX)) {
