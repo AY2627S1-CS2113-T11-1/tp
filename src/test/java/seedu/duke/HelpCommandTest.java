@@ -49,7 +49,11 @@ class HelpCommandTest {
             {"stock", "stock add p/PRODUCT q/QUANTITY", "stock remove p/PRODUCT [q/QUANTITY]", "stock list",
                 "stock low [q/THRESHOLD]"},
             {"order", "order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...",
-                "order cancel ORDER_NUMBER", "order list"},
+                "order cancel ORDER_NUMBER", "order list",
+                "order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]",
+                "order discount ORDER_NUMBER d/PERCENTAGE",
+                "order add pay c/CUSTOMER a/AMOUNT",
+                "order details c/CUSTOMER"},
             {"sales", "sales list"},
             {"expense", "expense add p/PRODUCT a/AMOUNT", "expense list"},
             {"generate", "generate receipts c/CUSTOMER"},
@@ -127,10 +131,14 @@ class HelpCommandTest {
     @Test
     public void execute_help_doesNotAdvertiseOtherFeatureBranches() throws SystemException {
         String text = runHelp("help order");
-
-        assertFalse(text.contains("order add pay"));
-
-        assertThrows(SystemException.class, () -> new Parser().parse("order add pay c/You Jie a/20"));
+        assertTrue(text.contains("order edit"));
+        assertTrue(text.contains("order discount"));
+        assertTrue(text.contains("order details"));
+        assertTrue(text.contains("order add pay"));
+        for (String example : List.of("order edit 1 c/Mei", "order discount 1 d/10",
+                "order details c/You Jie", "order add pay c/You Jie a/20")) {
+            new Parser().parse(example);
+        }
     }
 
     @Test

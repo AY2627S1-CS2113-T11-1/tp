@@ -451,6 +451,7 @@ public class Ui {
                 + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
     }
 
+    /**
      * Displays the customer's orders with individual totals and cancellation status.
      *
      * @param customer requested customer name
