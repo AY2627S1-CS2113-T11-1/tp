@@ -2,6 +2,7 @@ package seedu.duke;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -439,6 +440,17 @@ public class Ui {
     }
 
     /**
+     * Displays the payment amount and change to return to the customer.
+     *
+     * @param customer customer who paid
+     * @param amount amount received, in dollars
+     * @param change change to return, in dollars
+     */
+    public void showPayment(String customer, BigDecimal amount, BigDecimal change) {
+        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString()
+                + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
+    }
+
      * Displays the customer's orders with individual totals and cancellation status.
      *
      * @param customer requested customer name
