@@ -425,6 +425,7 @@ public class Ui {
                 + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
     }
 
+    /**
      * Displays the customer's orders with individual totals and cancellation status.
      *
      * @param customer requested customer name
@@ -454,6 +455,7 @@ public class Ui {
         }
     }
 
+    /**
      * Displays the available help areas and command format.
      *
      * @param usage format and list of supported areas
@@ -479,6 +481,7 @@ public class Ui {
         }
     }
 
+    /**
      * Shows an error message. A message may span several lines; each line is indented like other output,
      * and only the first carries the "Sorry!" lead-in.
      *
