@@ -180,6 +180,19 @@ Example output:
 +-------------------+-----+
 ```
 
+### 3. Orders
+
+An order records what a customer buys. Creating an order takes the ordered units out of stock, and
+cancelling it puts them back, so stock levels always reflect your orders.
+
+Each order has:
+
+* **Order number**: assigned automatically, starting from 1. Numbers are never reused, so a number always
+  refers to the same order, even after it is cancelled.
+* **Customer**: the name of the customer who placed the order.
+* **Items**: one or more products, each with a quantity and the unit price at the time of the order.
+* **Status**: `Active`, or `Cancelled` once the order is cancelled.
+
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -206,6 +219,26 @@ Creates an order for two units of Bread, provided sufficient stock is available.
 
 Creates an order for two units of Bread and three units of Lettuce, provided both products have sufficient stock.
 
+Expected output (Bread costs $1.88 and Lettuce costs $2.50):
+
+```text
+Order 3 created for Jonas Low.
++---------+-----+------------+----------+
+| Product | Qty | Unit price | Subtotal |
++---------+-----+------------+----------+
+| Bread   |   2 |      $1.88 |    $3.76 |
+| Lettuce |   3 |      $2.50 |    $7.50 |
++---------+-----+------------+----------+
+| Total   |   5 |            |   $11.26 |
++---------+-----+------------+----------+
+```
+
+Expected output (the same product appears twice):
+
+```text
+Sorry! "bread" appears more than once in this order. Put the full quantity in a single q/ instead.
+```
+
 ### 3.2 Cancelling an order: `order cancel`
 
 Cancels an active order and restores its ordered quantities to stock.
@@ -224,20 +257,55 @@ Example of usage:
 
 Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
 
+Expected output (order 1 contained 2 units of Bread at $1.88 each):
+
+```text
+Order 1 for Jonas Low cancelled.
+Stock restored:
++---------+----------+------------+----------+
+| Product | Restored | Unit price | Subtotal |
++---------+----------+------------+----------+
+| Bread   |        2 |      $1.88 |    $3.76 |
++---------+----------+------------+----------+
+| Total   |        2 |            |    $3.76 |
++---------+----------+------------+----------+
+Amount excluded from recorded sales: $3.76
+```
+
+Expected output (order 1 was already cancelled):
+
+```text
+Sorry! Order 1 is already cancelled.
+```
+
 ### 3.3 Listing orders: `order list`
 
 Lists all recorded orders in the order they were created, including cancelled orders.
 
 Format: `order list`
 
-* No additional arguments are required.
+* No additional arguments are allowed. Any extra text produces an error.
 * Each order shows its order number, customer name, total number of units, total cost and status.
+* The total includes any discount applied with `order discount`.
 * The status is either `Active` or `Cancelled`.
 * If there are no orders, the application displays a message explaining how to create one.
 
 Example of usage:
 
 `order list`
+
+Expected output:
+
+```text
+Orders (3):
++-----+-----------+-------+--------+-----------+
+| No. | Customer  | Units |  Total | Status    |
++-----+-----------+-------+--------+-----------+
+|   1 | Jonas Low |     2 |  $3.76 | Cancelled |
+|   2 | Mei Tan   |     5 |  $8.46 | Active    |
+|   3 | Jonas Low |     5 | $11.26 | Active    |
++-----+-----------+-------+--------+-----------+
+```
 
 ### 3.4 Editing an order: `order edit`
 
