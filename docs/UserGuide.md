@@ -180,6 +180,43 @@ Example output:
 +-------------------+-----+
 ```
 
+### 2.4 Viewing low stock: `stock low`
+
+Displays products whose current stock level is at or below a specified threshold, alerting you when items need replenishing.
+
+Format: `stock low [q/THRESHOLD]`
+
+* If `THRESHOLD` is omitted, the default threshold of 5 is used.
+* `THRESHOLD` must be a non-negative whole number (0, 1, 2, ...).
+* You may specify the threshold with or without the `q/` prefix (e.g. `stock low q/10` or `stock low 10`).
+* If no products have low stock, a message confirms that all items have sufficient stock.
+
+Example of usage:
+
+`stock low`
+
+Example output (items at or below default threshold 5):
+
+```text
+Low stock items (quantity <= 5):
++---------+-----+
+| Product | Qty |
++---------+-----+
+| Apples  |   3 |
+| Oranges |   5 |
++---------+-----+
+```
+
+Example output (when all items have sufficient stock):
+
+```text
+All products have sufficient stock (more than 5).
+```
+
+Example of usage with custom threshold:
+
+`stock low q/10`
+
 ### 3. Orders
 
 An order records what a customer buys. Creating an order takes the ordered units out of stock, and

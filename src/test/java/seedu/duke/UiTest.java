@@ -264,6 +264,30 @@ class UiTest {
         assertEquals("    Total: $8.22", lines.get(lines.size() - 1));
     }
 
+    @Test
+    public void showLowStock_emptyStockList_printsNoStockMessage() {
+        ui.showLowStock(List.of(), 5, true);
+
+        assertEquals(indentedLines("There are currently no stocks in the list."), outputLines());
+    }
+
+    @Test
+    public void showLowStock_noLowStockItems_printsAllSufficientMessage() {
+        ui.showLowStock(List.of(), 5, false);
+
+        assertEquals(indentedLines("All products have sufficient stock (more than 5)."), outputLines());
+    }
+
+    @Test
+    public void showLowStock_itemsFound_printsLowStockHeaderAndTable() {
+        ui.showLowStock(List.of(new Stock("Apple", 2.0, 3)), 5, false);
+
+        List<String> lines = outputLines();
+        assertEquals("    Low stock items (quantity <= 5):", lines.get(0));
+        assertEquals("    | Product | Qty |", lines.get(2));
+        assertEquals("    | Apple   |   3 |", lines.get(4));
+    }
+
     /**
      * Returns order 1 for Jonas Low: 3 apples at $1.50 and 1 carrot at $1.88, the UG example.
      */
