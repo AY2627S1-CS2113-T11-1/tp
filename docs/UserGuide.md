@@ -356,6 +356,54 @@ Example of usage:
 
 Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, in the order the purchases were recorded.
 
+### 4.3 Recording a customer's payment: `order add pay`
+
+Records payment for **all unpaid, non-cancelled orders** belonging to a customer.
+Orders start unpaid. The customer must already appear in the order history; there is no
+separate customer registration command. Full names are matched without case sensitivity.
+
+Format: `order add pay c/CUSTOMER a/AMOUNT`
+
+Enter the customer before the amount. Names may contain spaces. The amount must be a
+non-negative integer or decimal with at most two decimal places, such as `20` or `20.50`.
+
+Example: `order add pay c/BigChungus a/20.50`
+
+For an outstanding total of $20.40:
+
+```text
+    BigChungus has paid $20.50! The change to return is: $0.10.
+```
+
+If the customer has no order history:
+
+```text
+    Sorry! Customer BigChungus is not a registered customer.
+```
+
+Insufficient payment is rejected with the remaining amount required; no orders are marked paid.
+Successful payment marks every eligible order paid. Already-paid and cancelled orders are
+excluded from subsequent payments. If no eligible orders remain, no payment is accepted.
+Payment does not change stock, record an expense, or implement refunds. Payment status is held
+in memory for the current session, like the existing order history.
+
+### 4.4 Viewing a customer's order details: `order details`
+
+Displays each order for a customer, oldest first, including cancelled orders.
+
+Format: `order details c/CUSTOMER`
+
+Example: `order details c/You Jie`
+
+Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
+Each order has its own order number, Active or Cancelled status, and a table of products,
+quantities and line costs. The final row shows the total item count and cost for that order.
+Cancelled orders show their original contents and total for reference.
+
+If no orders match, the app displays `No orders found for You Jie.`
+Viewing details does not change orders, stock or sales. Missing customer names and extra fields
+are rejected with the command format.
+
 ### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
@@ -381,6 +429,32 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+
+### 6.1 Getting command help: `help`
+
+Format: `help {AREA}`
+
+Example: `help stock`
+
+Shows all commands for the selected area, with a numbered description and command format.
+Optional parameters are shown in square brackets. Area names are case-insensitive.
+
+Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Use `help generate` for receipt commands and `help general` for help and exit commands.
+Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
+areas produce a helpful error with the usage format.
+
+Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist in the
+catalogue, and its selling price is used. No separate price parameter is required.
+
+
+### 6.2 Exiting the program: `bye`
+
+Exits the BMS program.
+
+Format: `bye`
+
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
@@ -389,17 +463,36 @@ Example output:
 
 ## Command Summary
 
-* Add product `product add p/PRODUCT a/AMOUNT`
-* List products `product list`
-* Add stock `stock add p/PRODUCT q/QUANTITY`
-* Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
-* List stock `stock list`
-* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]`
-* Edit order `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
-* Discount order `order discount ORDER_NUMBER d/PERCENTAGE`
-* Cancel order `order cancel ORDER_NUMBER`
-* List orders `order list`
-* View sales: `sales list`
-* Generate receipts `generate receipts c/CUSTOMER`
-* Add expense `expense add p/PRODUCT a/AMOUNT`
-* List expenses `expense list`
+| Description | Command |
+| --- | --- |
+| **<ins>Product<ins>** | |
+| Add product | `product add p/PRODUCT a/AMOUNT` |
+| List products | `product list` |
+| | |
+| **<ins>Stock<ins>** | |
+| Add stock | `stock add p/PRODUCT q/QUANTITY` |
+| Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
+| List stock | `stock list` |
+| | |
+| **<ins>Order<ins>** | |
+| Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |
+| Cancel order | `order cancel ORDER_NUMBER` |
+| List orders | `order list` |
+| Edit order | `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]` |
+| Discount order | `order discount ORDER_NUMBER d/PERCENTAGE` |
+| Pay outstanding orders | `order add pay c/CUSTOMER a/AMOUNT` |
+| View customer order details | `order details c/CUSTOMER` |
+| | |
+| **<ins>Sales<ins>** | |
+| View sales | `sales list` |
+| | |
+| **<ins>Generate<ins>** | |
+| Generate receipts | `generate receipts c/CUSTOMER` |
+| | |
+| **<ins>Expense<ins>** | |
+| Add expense | `expense add p/PRODUCT a/AMOUNT` |
+| List expenses | `expense list` |
+| | |
+| **<ins>General<ins>** | |
+| View help | `help [AREA]` |
+| Exit the program | `bye` |

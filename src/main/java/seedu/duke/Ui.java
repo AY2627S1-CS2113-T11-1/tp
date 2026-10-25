@@ -2,6 +2,7 @@ package seedu.duke;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -268,7 +269,7 @@ public class Ui {
      * Shows confirmed sales and the total amount recorded from them.
      *
      * Cancelled orders are filtered by {@link OrderList} before this method is called, so every
-     * row shown contributes to the total.
+     * row shown contributes to the total. Row numbers reflect display positions, not order IDs.
      *
      * @param sales the confirmed sales to display, oldest first
      */
@@ -288,10 +289,10 @@ public class Ui {
                 units += item.getQuantity();
             }
             totalSales += sale.getTotal();
-            rows.add(new String[] {String.valueOf(sale.getId()), sale.getCustomer(), String.valueOf(units),
+            rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
                 formatMoney(sale.getTotal())});
         }
-        String[] headers = {"No.", "Customer", "Units", "Total"};
+        String[] headers = {"No.", "Customer", "Units", "Subtotal"};
         String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
         boolean[] isLeftAligned = {false, true, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
@@ -413,6 +414,71 @@ public class Ui {
     }
 
     /**
+     * Displays the payment amount and change to return to the customer.
+     *
+     * @param customer customer who paid
+     * @param amount amount received, in dollars
+     * @param change change to return, in dollars
+     */
+    public void showPayment(String customer, BigDecimal amount, BigDecimal change) {
+        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString()
+                + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
+    }
+
+     * Displays the customer's orders with individual totals and cancellation status.
+     *
+     * @param customer requested customer name
+     * @param orders matching orders in creation order
+     */
+    public void showOrderDetails(String customer, List<Order> orders) {
+        if (orders.isEmpty()) {
+            printIndent("No orders found for " + customer + ".");
+            return;
+        }
+        printIndent("Here are " + customer + "'s order details:");
+        for (Order order : orders) {
+            String status = order.isCancelled() ? "Cancelled" : "Active";
+            printIndent("Order " + order.getId() + " (" + status + "):");
+            List<String[]> rows = new ArrayList<>();
+            long totalUnits = 0;
+            for (OrderItem item : order.getItems()) {
+                rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
+                    formatMoney(item.getSubtotal())});
+                totalUnits += item.getQuantity();
+            }
+            String[] headers = {"Product", "Qty", "Cost"};
+            String unitLabel = totalUnits == 1 ? " item" : " items";
+            String[] totalRow = {"Total", totalUnits + unitLabel, formatMoney(order.getTotal())};
+            boolean[] isLeftAligned = {true, false, false};
+            printTable(headers, rows, totalRow, isLeftAligned);
+        }
+    }
+
+     * Displays the available help areas and command format.
+     *
+     * @param usage format and list of supported areas
+     */
+    public void showHelpOverview(String usage) {
+        printIndent(usage);
+        printIndent("Example: help stock");
+        printIndent("Use help general for help and exit commands.");
+    }
+
+    /**
+     * Displays numbered descriptions followed by each command's format.
+     *
+     * @param area display name of the selected area
+     * @param commands description and syntax pairs
+     */
+    public void showHelp(String area, List<String[]> commands) {
+        printIndent(area + " commands:");
+        for (int i = 0; i < commands.size(); i++) {
+            String[] command = commands.get(i);
+            printIndent((i + 1) + ". " + command[0]);
+            printIndent("   " + command[1]);
+        }
+    }
+
      * Shows an error message. A message may span several lines; each line is indented like other output,
      * and only the first carries the "Sorry!" lead-in.
      *
