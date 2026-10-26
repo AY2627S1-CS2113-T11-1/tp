@@ -180,6 +180,56 @@ Example output:
 +-------------------+-----+
 ```
 
+### 2.4 Viewing low stock: `stock low`
+
+Displays products whose current stock level is at or below a specified threshold, alerting you when items need replenishing.
+
+Format: `stock low [q/THRESHOLD]`
+
+* If `THRESHOLD` is omitted, the default threshold of 5 is used.
+* `THRESHOLD` must be a non-negative whole number (0, 1, 2, ...).
+* You may specify the threshold with or without the `q/` prefix (e.g. `stock low q/10` or `stock low 10`).
+* If no products have low stock, a message confirms that all items have sufficient stock.
+
+Example of usage:
+
+`stock low`
+
+Example output (items at or below default threshold 5):
+
+```text
+Low stock items (quantity <= 5):
++---------+-----+
+| Product | Qty |
++---------+-----+
+| Apples  |   3 |
+| Oranges |   5 |
++---------+-----+
+```
+
+Example output (when all items have sufficient stock):
+
+```text
+All products have sufficient stock (more than 5).
+```
+
+Example of usage with custom threshold:
+
+`stock low q/10`
+
+### 3. Orders
+
+An order records what a customer buys. Creating an order takes the ordered units out of stock, and
+cancelling it puts them back, so stock levels always reflect your orders.
+
+Each order has:
+
+* **Order number**: assigned automatically, starting from 1. Numbers are never reused, so a number always
+  refers to the same order, even after it is cancelled.
+* **Customer**: the name of the customer who placed the order.
+* **Items**: one or more products, each with a quantity and the unit price at the time of the order.
+* **Status**: `Active`, or `Cancelled` once the order is cancelled.
+
 ### 3.1 Adding an order: `order add`
 
 Records a customer's order and deducts the ordered quantities from stock.
@@ -206,6 +256,26 @@ Creates an order for two units of Bread, provided sufficient stock is available.
 
 Creates an order for two units of Bread and three units of Lettuce, provided both products have sufficient stock.
 
+Expected output (Bread costs $1.88 and Lettuce costs $2.50):
+
+```text
+Order 3 created for Jonas Low.
++---------+-----+------------+----------+
+| Product | Qty | Unit price | Subtotal |
++---------+-----+------------+----------+
+| Bread   |   2 |      $1.88 |    $3.76 |
+| Lettuce |   3 |      $2.50 |    $7.50 |
++---------+-----+------------+----------+
+| Total   |   5 |            |   $11.26 |
++---------+-----+------------+----------+
+```
+
+Expected output (the same product appears twice):
+
+```text
+Sorry! "bread" appears more than once in this order. Put the full quantity in a single q/ instead.
+```
+
 ### 3.2 Cancelling an order: `order cancel`
 
 Cancels an active order and restores its ordered quantities to stock.
@@ -224,20 +294,144 @@ Example of usage:
 
 Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
 
+Expected output (order 1 contained 2 units of Bread at $1.88 each):
+
+```text
+Order 1 for Jonas Low cancelled.
+Stock restored:
++---------+----------+------------+----------+
+| Product | Restored | Unit price | Subtotal |
++---------+----------+------------+----------+
+| Bread   |        2 |      $1.88 |    $3.76 |
++---------+----------+------------+----------+
+| Total   |        2 |            |    $3.76 |
++---------+----------+------------+----------+
+Amount excluded from recorded sales: $3.76
+```
+
+Expected output (order 1 was already cancelled):
+
+```text
+Sorry! Order 1 is already cancelled.
+```
+
 ### 3.3 Listing orders: `order list`
 
 Lists all recorded orders in the order they were created, including cancelled orders.
 
 Format: `order list`
 
-* No additional arguments are required.
+* No additional arguments are allowed. Any extra text produces an error.
 * Each order shows its order number, customer name, total number of units, total cost and status.
+* The total includes any discount applied with `order discount`.
 * The status is either `Active` or `Cancelled`.
 * If there are no orders, the application displays a message explaining how to create one.
 
 Example of usage:
 
 `order list`
+
+Expected output:
+
+```text
+Orders (3):
++-----+-----------+-------+--------+-----------+
+| No. | Customer  | Units |  Total | Status    |
++-----+-----------+-------+--------+-----------+
+|   1 | Jonas Low |     2 |  $3.76 | Cancelled |
+|   2 | Mei Tan   |     5 |  $8.46 | Active    |
+|   3 | Jonas Low |     5 | $11.26 | Active    |
++-----+-----------+-------+--------+-----------+
+```
+
+### 3.4 Editing an order: `order edit`
+
+Updates an active order's customer, product or quantity. The order keeps its original number, while its total and the affected stock quantities are updated accordingly.
+
+Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot be edited.
+* At least one field must be provided. Fields that are not provided remain unchanged. Fields may be given in any order.
+* Square brackets indicate optional fields and should not be typed.
+* Customer and product names cannot be blank. The product must exist in the catalogue. Product names are case-insensitive.
+* `QUANTITY` must be a positive whole number.
+* Increasing the quantity deducts the additional units from stock. Decreasing it returns the difference to stock.
+* Changing the product restores the original product's stock and deducts the required quantity of the replacement product.
+* If the product is unchanged, its stored purchase price is retained. A replacement product uses its current price.
+* Any existing discount percentage is retained and applied to the updated subtotal.
+* `p/` and `q/` can only be used on orders containing a single product. For an order with several products, only `c/` can be edited.
+* Missing values, repeated prefixes and prefixes other than `c/`, `p/` and `q/` are rejected.
+* All checks must pass before changes are applied. If an edit fails, the order and stock remain unchanged.
+
+Example of usage (order 2 contains 4 units at $1.88 each, and enough additional stock is available):
+
+`order edit 2 c/Mei Tan q/5`
+
+Expected output:
+
+```text
+Order 2 updated.
+Customer: Mei Tan
+Units: 5
+Total: $9.40
+Status: Active
+```
+
+Expected output (insufficient stock):
+
+```text
+Sorry! Unable to edit order: insufficient stock.
+No changes were made to the order or stock.
+```
+
+### 3.5 Discounting an order: `order discount`
+
+Applies a percentage discount to an active order and updates its total. An existing discount can be replaced or removed.
+
+Format: `order discount ORDER_NUMBER d/PERCENTAGE`
+
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot receive discounts.
+* `PERCENTAGE` must be a number between 0 and 100 inclusive, with up to two decimal places.
+* Enter the percentage as a number without the `%` symbol.
+* Setting the percentage to `0` removes the existing discount.
+* A new discount replaces the previous discount. Discounts are not added together.
+* The discount is calculated using the undiscounted subtotal, based on the order's quantities and stored unit prices.
+* The discount amount is rounded to the nearest cent, with half-cent values rounded up. The final total is the subtotal minus this amount.
+* Applying a discount does not change stock quantities or stored unit prices.
+* If the order is edited later, the same discount percentage applies to its updated subtotal.
+* Order lists, sales, receipts and cancellations use the discounted total.
+* Missing values, repeated prefixes and unexpected arguments are rejected. Invalid input leaves the order unchanged.
+
+Example of usage (order 2 is active and has an undiscounted subtotal of $9.40):
+
+`order discount 2 d/10`
+
+Expected output:
+
+```text
+Discount updated for order 2.
+Subtotal: $9.40
+Discount: 10% ($0.94)
+Total: $8.46
+```
+
+`order discount 2 d/0`
+
+Expected output (remove discount):
+
+```text
+Discount removed from order 2.
+Subtotal: $9.40
+Discount: 0% ($0.00)
+Total: $9.40
+```
+
+Expected output (percentage outside the allowed range):
+
+```text
+Sorry! Discount must be between 0 and 100.
+No changes were made to the order.
+```
 
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
@@ -267,6 +461,54 @@ Example of usage:
 
 Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, in the order the purchases were recorded.
 
+### 4.3 Recording a customer's payment: `order add pay`
+
+Records payment for **all unpaid, non-cancelled orders** belonging to a customer.
+Orders start unpaid. The customer must already appear in the order history; there is no
+separate customer registration command. Full names are matched without case sensitivity.
+
+Format: `order add pay c/CUSTOMER a/AMOUNT`
+
+Enter the customer before the amount. Names may contain spaces. The amount must be a
+non-negative integer or decimal with at most two decimal places, such as `20` or `20.50`.
+
+Example: `order add pay c/BigChungus a/20.50`
+
+For an outstanding total of $20.40:
+
+```text
+    BigChungus has paid $20.50! The change to return is: $0.10.
+```
+
+If the customer has no order history:
+
+```text
+    Sorry! Customer BigChungus is not a registered customer.
+```
+
+Insufficient payment is rejected with the remaining amount required; no orders are marked paid.
+Successful payment marks every eligible order paid. Already-paid and cancelled orders are
+excluded from subsequent payments. If no eligible orders remain, no payment is accepted.
+Payment does not change stock, record an expense, or implement refunds. Payment status is held
+in memory for the current session, like the existing order history.
+
+### 4.4 Viewing a customer's order details: `order details`
+
+Displays each order for a customer, oldest first, including cancelled orders.
+
+Format: `order details c/CUSTOMER`
+
+Example: `order details c/You Jie`
+
+Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
+Each order has its own order number, Active or Cancelled status, and a table of products,
+quantities and line costs. The final row shows the total item count and cost for that order.
+Cancelled orders show their original contents and total for reference.
+
+If no orders match, the app displays `No orders found for You Jie.`
+Viewing details does not change orders, stock or sales. Missing customer names and extra fields
+are rejected with the command format.
+
 ### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
@@ -292,6 +534,32 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+
+### 6.1 Getting command help: `help`
+
+Format: `help {AREA}`
+
+Example: `help stock`
+
+Shows all commands for the selected area, with a numbered description and command format.
+Optional parameters are shown in square brackets. Area names are case-insensitive.
+
+Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Use `help generate` for receipt commands and `help general` for help and exit commands.
+Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
+areas produce a helpful error with the usage format.
+
+Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist in the
+catalogue, and its selling price is used. No separate price parameter is required.
+
+
+### 6.2 Exiting the program: `bye`
+
+Exits the BMS program.
+
+Format: `bye`
+
+
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?
@@ -300,15 +568,36 @@ Example output:
 
 ## Command Summary
 
-* Add product `product add p/PRODUCT a/AMOUNT`
-* List products `product list`
-* Add stock `stock add p/PRODUCT q/QUANTITY`
-* Remove stock `stock remove p/PRODUCT [q/QUANTITY]`
-* List stock `stock list`
-* Add order `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...`
-* Cancel order `order cancel ORDER_NUMBER`
-* List orders `order list`
-* View sales: `sales list`
-* Generate receipts `generate receipts c/CUSTOMER`
-* Add expense `expense add p/PRODUCT a/AMOUNT`
-* List expenses `expense list`
+| Description | Command |
+| --- | --- |
+| **<ins>Product<ins>** | |
+| Add product | `product add p/PRODUCT a/AMOUNT` |
+| List products | `product list` |
+| | |
+| **<ins>Stock<ins>** | |
+| Add stock | `stock add p/PRODUCT q/QUANTITY` |
+| Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
+| List stock | `stock list` |
+| | |
+| **<ins>Order<ins>** | |
+| Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |
+| Cancel order | `order cancel ORDER_NUMBER` |
+| List orders | `order list` |
+| Edit order | `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]` |
+| Discount order | `order discount ORDER_NUMBER d/PERCENTAGE` |
+| Pay outstanding orders | `order add pay c/CUSTOMER a/AMOUNT` |
+| View customer order details | `order details c/CUSTOMER` |
+| | |
+| **<ins>Sales<ins>** | |
+| View sales | `sales list` |
+| | |
+| **<ins>Generate<ins>** | |
+| Generate receipts | `generate receipts c/CUSTOMER` |
+| | |
+| **<ins>Expense<ins>** | |
+| Add expense | `expense add p/PRODUCT a/AMOUNT` |
+| List expenses | `expense list` |
+| | |
+| **<ins>General<ins>** | |
+| View help | `help [AREA]` |
+| Exit the program | `bye` |

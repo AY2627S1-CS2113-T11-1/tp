@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -202,6 +203,89 @@ class UiTest {
         ui.showStockRemoved("Apple", 5, false);
 
         assertEquals(indentedLines("Removes 5 units of Apple"), outputLines());
+    }
+
+    @Test
+    public void showOrderUpdated_editedOrder_printsCustomerUnitsTotalAndStatus() throws SystemException {
+        Product carrot = new Product("Carrot", 1.88);
+        Order order = new Order(2, "Jonas Low", List.of(new OrderItem(carrot, 4)));
+        order.update("Mei Tan", List.of(new OrderItem(carrot, 5)));
+
+        ui.showOrderUpdated(order);
+
+        assertEquals(indentedLines("Order 2 updated.", "Customer: Mei Tan", "Units: 5", "Total: $9.40",
+                "Status: Active"), outputLines());
+    }
+
+    @Test
+    public void showError_multiLineMessage_indentsEveryLine() {
+        ui.showError("Unable to edit order: insufficient stock.\nNo changes were made to the order or stock.");
+
+        assertEquals(indentedLines("Sorry! Unable to edit order: insufficient stock.",
+                "No changes were made to the order or stock."), outputLines());
+    }
+
+    @Test
+    public void showDiscountUpdated_tenPercent_printsSubtotalDiscountAndTotal() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("10"));
+
+        ui.showDiscountUpdated(order);
+
+        assertEquals(indentedLines("Discount updated for order 2.", "Subtotal: $9.40", "Discount: 10% ($0.94)",
+                "Total: $8.46"), outputLines());
+    }
+
+    @Test
+    public void showDiscountUpdated_zeroPercent_printsRemovedMessage() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("10"));
+        order.setDiscountPercent(BigDecimal.ZERO);
+
+        ui.showDiscountUpdated(order);
+
+        assertEquals(indentedLines("Discount removed from order 2.", "Subtotal: $9.40", "Discount: 0% ($0.00)",
+                "Total: $9.40"), outputLines());
+    }
+
+    @Test
+    public void showReceipts_discountedOrder_showsSubtotalRowThenDiscountAndTotal() throws SystemException {
+        Order order = new Order(2, "Mei Tan",
+                List.of(new OrderItem(new Product("Carrot", 1.88), 5)));
+        order.setDiscountPercent(new BigDecimal("12.50"));
+
+        ui.showReceipts("Mei Tan", List.of(order));
+
+        List<String> lines = outputLines();
+        assertEquals("    | Subtotal |   5 |            |    $9.40 |", lines.get(lines.size() - 4));
+        assertEquals("    Discount: 12.5% ($1.18)", lines.get(lines.size() - 2));
+        assertEquals("    Total: $8.22", lines.get(lines.size() - 1));
+    }
+
+    @Test
+    public void showLowStock_emptyStockList_printsNoStockMessage() {
+        ui.showLowStock(List.of(), 5, true);
+
+        assertEquals(indentedLines("There are currently no stocks in the list."), outputLines());
+    }
+
+    @Test
+    public void showLowStock_noLowStockItems_printsAllSufficientMessage() {
+        ui.showLowStock(List.of(), 5, false);
+
+        assertEquals(indentedLines("All products have sufficient stock (more than 5)."), outputLines());
+    }
+
+    @Test
+    public void showLowStock_itemsFound_printsLowStockHeaderAndTable() {
+        ui.showLowStock(List.of(new Stock("Apple", 2.0, 3)), 5, false);
+
+        List<String> lines = outputLines();
+        assertEquals("    Low stock items (quantity <= 5):", lines.get(0));
+        assertEquals("    | Product | Qty |", lines.get(2));
+        assertEquals("    | Apple   |   3 |", lines.get(4));
     }
 
     /**

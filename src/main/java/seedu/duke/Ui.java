@@ -2,6 +2,7 @@ package seedu.duke;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -139,6 +140,32 @@ public class Ui {
         printTable(headers, rows, null, isLeftAligned);
     }
 
+    /**
+     * Displays products with stock levels at or below the given threshold.
+     *
+     * @param lowStocks the list of low stock items to display
+     * @param threshold the threshold used for filtering
+     * @param isStockListEmpty whether the entire stock list is empty
+     */
+    public void showLowStock(List<Stock> lowStocks, int threshold, boolean isStockListEmpty) {
+        if (isStockListEmpty) {
+            printIndent("There are currently no stocks in the list.");
+            return;
+        }
+        if (lowStocks.isEmpty()) {
+            printIndent("All products have sufficient stock (more than " + threshold + ").");
+            return;
+        }
+        printIndent("Low stock items (quantity <= " + threshold + "):");
+        String[] headers = {"Product", "Qty"};
+        List<String[]> rows = new ArrayList<>();
+        for (Stock stock : lowStocks) {
+            rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
+        }
+        boolean[] isLeftAligned = {true, false};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
     public void showGoodbye() {
         printDivider();
         printIndent("Goodbye!");
@@ -207,6 +234,35 @@ public class Ui {
         printIndent("Stock restored:");
         printOrderTable(order, "Restored");
         printIndent("Amount excluded from recorded sales: " + formatMoney(order.getTotal()));
+    }
+
+    /**
+     * Shows the confirmation for an edited order: its customer, units, total and status.
+     *
+     * @param order the order that was just edited
+     */
+    public void showOrderUpdated(Order order) {
+        printIndent("Order " + order.getId() + " updated.");
+        printIndent("Customer: " + order.getCustomer());
+        printIndent("Units: " + order.getTotalUnits());
+        printIndent("Total: " + formatMoney(order.getTotal()));
+        printIndent("Status: " + (order.isCancelled() ? "Cancelled" : "Active"));
+    }
+
+    /**
+     * Shows the confirmation for a new, replaced or removed discount, with the amounts it produces.
+     *
+     * @param order the order whose discount was just set
+     */
+    public void showDiscountUpdated(Order order) {
+        if (order.hasDiscount()) {
+            printIndent("Discount updated for order " + order.getId() + ".");
+        } else {
+            printIndent("Discount removed from order " + order.getId() + ".");
+        }
+        printIndent("Subtotal: " + formatMoney(order.getSubtotal()));
+        printIndent(discountLine(order));
+        printIndent("Total: " + formatMoney(order.getTotal()));
     }
 
     /**
@@ -285,9 +341,23 @@ public class Ui {
             totalUnits += item.getQuantity();
         }
         String[] headers = {"Product", quantityHeader, "Unit price", "Subtotal"};
-        String[] totalRow = {"Total", String.valueOf(totalUnits), "", formatMoney(order.getTotal())};
+        String footerLabel = order.hasDiscount() ? "Subtotal" : "Total";
+        String[] totalRow = {footerLabel, String.valueOf(totalUnits), "", formatMoney(order.getSubtotal())};
         boolean[] isLeftAligned = {true, false, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
+        if (order.hasDiscount()) {
+            printIndent(discountLine(order));
+            printIndent("Total: " + formatMoney(order.getTotal()));
+        }
+    }
+
+    /**
+     * Returns the discount summary line, e.g. "Discount: 12.5% ($1.18)".
+     */
+    private static String discountLine(Order order) {
+        // stripTrailingZeros turns 10.00 into 1E+1; toPlainString then prints it as "10".
+        String percent = order.getDiscountPercent().stripTrailingZeros().toPlainString();
+        return "Discount: " + percent + "% (" + formatMoney(order.getDiscountAmount()) + ")";
     }
 
     /**
@@ -369,8 +439,86 @@ public class Ui {
         }
     }
 
+    /**
+     * Displays the payment amount and change to return to the customer.
+     *
+     * @param customer customer who paid
+     * @param amount amount received, in dollars
+     * @param change change to return, in dollars
+     */
+    public void showPayment(String customer, BigDecimal amount, BigDecimal change) {
+        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString()
+                + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
+    }
+
+    /**
+     * Displays the customer's orders with individual totals and cancellation status.
+     *
+     * @param customer requested customer name
+     * @param orders matching orders in creation order
+     */
+    public void showOrderDetails(String customer, List<Order> orders) {
+        if (orders.isEmpty()) {
+            printIndent("No orders found for " + customer + ".");
+            return;
+        }
+        printIndent("Here are " + customer + "'s order details:");
+        for (Order order : orders) {
+            String status = order.isCancelled() ? "Cancelled" : "Active";
+            printIndent("Order " + order.getId() + " (" + status + "):");
+            List<String[]> rows = new ArrayList<>();
+            long totalUnits = 0;
+            for (OrderItem item : order.getItems()) {
+                rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
+                    formatMoney(item.getSubtotal())});
+                totalUnits += item.getQuantity();
+            }
+            String[] headers = {"Product", "Qty", "Cost"};
+            String unitLabel = totalUnits == 1 ? " item" : " items";
+            String[] totalRow = {"Total", totalUnits + unitLabel, formatMoney(order.getTotal())};
+            boolean[] isLeftAligned = {true, false, false};
+            printTable(headers, rows, totalRow, isLeftAligned);
+        }
+    }
+
+    /**
+     * Displays the available help areas and command format.
+     *
+     * @param usage format and list of supported areas
+     */
+    public void showHelpOverview(String usage) {
+        printIndent(usage);
+        printIndent("Example: help stock");
+        printIndent("Use help general for help and exit commands.");
+    }
+
+    /**
+     * Displays numbered descriptions followed by each command's format.
+     *
+     * @param area display name of the selected area
+     * @param commands description and syntax pairs
+     */
+    public void showHelp(String area, List<String[]> commands) {
+        printIndent(area + " commands:");
+        for (int i = 0; i < commands.size(); i++) {
+            String[] command = commands.get(i);
+            printIndent((i + 1) + ". " + command[0]);
+            printIndent("   " + command[1]);
+        }
+    }
+
+    /**
+     * Shows an error message. A message may span several lines; each line is indented like other output,
+     * and only the first carries the "Sorry!" lead-in.
+     *
+     * @param message the message to show, with lines separated by {@code \n}
+     */
     public void showError(String message) {
-        printIndent("Sorry! " + message);
+        String[] lines = message.split("\n");
+        printIndent("Sorry! " + lines[0]);
+        for (int i = 1; i < lines.length; i++) {
+            printIndent(lines[i]);
+        }
     }
 
     /**
