@@ -144,6 +144,292 @@ still adds up. Orders without a discount print exactly as before.
   calculation gives exact results with a much smaller change.
 
 
+### Sales and customer commands
+
+These features let users view sales, generate receipts, record customer payments, inspect a customer's
+orders and look up command usage. They use the existing `Command` structure and the shared order history.
+
+* `Parser` routes input to a command or a feature-specific parser. Parsers check command syntax before
+  execution, while commands check conditions that depend on stored orders.
+* `OrderList` supplies the order history. A customer is recognised through an order bearing that name;
+  these features do not maintain a separate customer database.
+* `Order` stores the order's contents, cancellation status and payment status. Customer names are matched
+  using the full name, ignoring case, rather than by partial matches.
+* `Ui` handles messages and tables. Commands select or update data without constructing table borders.
+
+The sequence diagrams below focus on execution after parsing. `Duke` represents the application's command
+loop; unrelated command arguments and formatting calls are omitted.
+
+#### Listing sales
+
+`sales list` is handled by `Parser#parseSalesCommand`, `ListSalesCommand` and `Ui#showSales`.
+
+**Parsing.** The parser accepts `list` with no further arguments. Extra input is rejected rather than
+silently ignored, so a mistyped filter cannot appear to have been applied.
+
+**Execution.** The command asks `OrderList#getConfirmedSales()` for all non-cancelled orders, oldest first,
+then passes the result to `Ui`. This is a newly collected, unmodifiable list, but its elements still refer
+to the existing `Order` objects. It is not a deep copy of the order history.
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant C as ListSalesCommand
+    participant L as OrderList
+    participant U as Ui
+    D->>C: execute(...)
+    C->>L: getConfirmedSales()
+    Note over L: Select non-cancelled orders in creation order
+    L-->>C: sales
+    C->>U: showSales(sales)
+    Note over U: Build rows and sum order totals
+    U-->>C: return
+    C-->>D: return
+```
+
+**Display.** `Ui` sums the quantities in each order and reads its amount through `Order#getTotal()`, which
+includes any order discount. The column labelled `Subtotal` represents that row's contribution to the
+overall sales total; it is not the order's undiscounted subtotal. The last row and the `Total sales:`
+message show the sum of those amounts. An empty list produces a usage hint and a total of `$0.00`.
+
+The `No.` column shows display positions starting at 1. For example, if order 1 is cancelled, orders 2
+and 3 occupy sales rows 1 and 2. Their actual order IDs remain 2 and 3, and commands that take an order
+number must use those original IDs from `order list`.
+
+**Design considerations.**
+
+* *Filtering on demand vs. storing a second sales ledger.* Reading the order history each time means a
+  cancellation is reflected on the next listing without synchronising another collection.
+* *Display positions vs. order IDs.* Consecutive positions keep the sales table easy to read after
+  cancellations. Keeping the original IDs on the orders preserves references used by other commands.
+
+**Current limitation.** Confirmed sales currently means non-cancelled orders, regardless of `isPaid`.
+This report should not be interpreted as a cash-received report. Restricting it to paid orders would
+require a change to the selection rule, not just a different table label.
+
+#### Generating receipts
+
+`generate receipts c/CUSTOMER` is handled by `ReceiptParser`, `GenerateReceiptsCommand` and
+`ReceiptGenerator`.
+
+**Parsing.** `Parser` delegates the complete input to `ReceiptParser`. The command words are matched
+without case sensitivity, while the customer field uses `c/`. Leading and trailing spaces are removed
+from the name, but spaces inside it are preserved. Missing names and additional prefix-shaped fields
+are rejected with the command format.
+
+**Execution.** `GenerateReceiptsCommand` delegates selection to `ReceiptGenerator#generate`. The generator
+scans `OrderList#getAll()`, tracking whether any order matches the customer and collecting only matching
+orders that are not cancelled. Tracking customer existence separately distinguishes two outcomes:
+
+1. *Unknown customer.* No matching order exists, so a `SystemException` reports `Customer not in database.`
+2. *Known customer with no eligible orders.* Matching orders exist but all are cancelled, so the generator
+   returns an empty list and the UI explains that there are no eligible receipts.
+
+The following sequence shows receipt selection and the two display paths.
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant C as GenerateReceiptsCommand
+    participant G as ReceiptGenerator
+    participant L as OrderList
+    participant U as Ui
+    D->>C: execute(...)
+    C->>G: generate(orders, customer)
+    G->>L: getAll()
+    L-->>G: order history
+    Note over G: Match full name and exclude cancelled orders
+    alt Customer exists
+        G-->>C: receipt orders (possibly empty)
+        C->>U: showReceipts(customer, receipts)
+        Note over U: Show separate receipts or the empty-result message
+        U-->>C: return
+        C-->>D: return
+    else Customer has no order history
+        Note over G,D: SystemException propagates to Duke
+        D->>U: showError(message)
+    end
+```
+
+**Display.** Each receipt includes its original order number and customer name. `Ui#showReceipts` reuses
+`printOrderTable`, the same helper used for order creation, so quantities, stored unit prices and totals
+share the existing layout. Discounted orders include the subtotal, discount and final total. Generating
+receipts does not mark an order paid or modify stock, and can be repeated.
+
+**Design considerations.**
+
+* *Separate selection from presentation.* `ReceiptGenerator` decides which orders qualify; `Ui` decides
+  how to display them. Changing the receipt layout does not require changing customer lookup.
+* *Returning a list vs. printing during the search.* `List.copyOf` prevents callers from adding or removing
+  entries in the result and allows lookup to finish before output begins. The orders themselves are shared
+  references, so this is a snapshot of membership, not an immutable copy of each order.
+
+**Current limitation.** Receipt selection checks cancellation but does not yet check `Order#isPaid()`.
+The empty-result message mentions paid orders, but that wording is not an enforced payment condition.
+To support paid-only receipts, selection must also require payment status while retaining the separate
+customer-existence check.
+
+#### Recording customer payments
+
+`order add pay c/CUSTOMER a/AMOUNT` is handled by `PaymentParser` and `AddPaymentCommand`.
+
+**Parsing.** The order-add parser recognises `pay` before parsing an ordinary order. `PaymentParser`
+requires a non-empty customer followed by the amount. Names may contain spaces; repeated or additional
+prefix-shaped fields are rejected. Amounts must contain digits with an optional decimal part of one or
+two digits. Negative values, currency symbols and scientific notation are rejected. A valid amount is
+converted directly from its text to `BigDecimal` and normalised to two decimal places.
+
+**Execution.** Payment covers all of the customer's unpaid, non-cancelled orders. The command works in two
+stages:
+
+1. *Check.* Scan the history, identify the customer and collect eligible orders. Calculate the complete
+   amount due, then reject an unknown customer, an empty eligible list or insufficient payment. No order
+   is marked paid during these checks.
+2. *Apply.* Call `Order#markPaid()` on each eligible order, then pass the payment and calculated change to
+   `Ui#showPayment`. Cancelled and already-paid orders are excluded from later payment attempts.
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant C as AddPaymentCommand
+    participant L as OrderList
+    participant O as Order
+    participant U as Ui
+    D->>C: execute(...)
+    C->>L: getAll()
+    L-->>C: order history
+    Note over C: Find customer, collect unpaid active orders and calculate amount due
+    alt Customer exists, eligible orders exist and payment is sufficient
+        loop Each eligible order
+            C->>O: markPaid()
+            O-->>C: return
+        end
+        C->>U: showPayment(customer, amount, change)
+        U-->>C: return
+        C-->>D: return
+    else Payment rejected
+        Note over C,D: SystemException propagates to Duke<br/>Payment status is unchanged
+        D->>U: showError(message)
+    end
+```
+
+**Money and state.** `getAmountDue` multiplies each saved unit price by its quantity using `BigDecimal`,
+then rounds to cents with `RoundingMode.HALF_UP`. Invalid saved prices are rejected before payment is
+applied. Change is the amount received minus the outstanding amount; an insufficient payment reports
+the shortfall without recording a partial payment. `Ui` displays both payment and change to two decimals.
+
+Payment updates the in-memory paid flag. It does not change stock, create an expense, store a payment
+ledger or implement refunds. Restarting the application does not preserve this payment state.
+
+**Design considerations.**
+
+* *All outstanding orders vs. one selected order.* The command identifies a customer rather than an order
+  number, so it pays all eligible orders together. Selecting one order would require an additional identifier.
+* *Validate before updating vs. partial payment.* Checking the full amount first avoids marking some orders
+  paid when the payment cannot cover the rest. Supporting instalments would need a remaining-balance model.
+* *Decimal arithmetic vs. floating-point subtraction.* Parsing money directly as `BigDecimal` avoids
+  binary rounding errors when checking payment sufficiency and calculating change.
+
+**Current limitation.** `getAmountDue` sums stored item prices and quantities without applying the order's
+discount. Payment can therefore request more than the discounted total shown elsewhere. Integration with
+discounts should use a shared monetary calculation rather than maintaining two different definitions of
+the amount due. This section describes the existing behaviour, not a completed discount integration.
+
+#### Viewing a customer's order details
+
+`order details c/CUSTOMER` is handled by `OrderDetailsParser`, `OrderDetailsCommand` and
+`Ui#showOrderDetails`.
+
+**Parsing.** The parser requires one `c/` field, trims surrounding whitespace and preserves spaces within
+the name. Missing or blank names and additional prefix-shaped fields produce a `SystemException` with
+the expected command format.
+
+**Execution.** The command scans `OrderList#getAll()` for full-name matches, ignoring case, and collects
+them in creation order. Unlike receipt selection, it retains cancelled orders because this view explains
+the customer's order history. It passes the requested customer and matching orders to the UI without
+changing any order, stock quantity or payment status.
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant C as OrderDetailsCommand
+    participant L as OrderList
+    participant U as Ui
+    D->>C: execute(...)
+    C->>L: getAll()
+    L-->>C: order history
+    Note over C: Collect full-name matches, including cancelled orders
+    C->>U: showOrderDetails(customer, matches)
+    alt Matches exist
+        Note over U: Show each order ID, status, item rows and total
+    else No matches
+        Note over U: Show customer-specific no-orders message
+    end
+    U-->>C: return
+    C-->>D: return
+```
+
+**Display.** Each order has its own heading with the original ID and `Active` or `Cancelled` status.
+Its table shows product names, quantities and line costs. The footer gives the item count and
+`Order#getTotal()`. The shared `printTable` helper sizes the columns and aligns numeric values. When no
+orders match, the UI displays `No orders found for CUSTOMER.` rather than an empty table.
+
+**Design considerations.**
+
+* *Separate orders vs. a combined customer total.* Separate tables preserve which products belong to which
+  purchase and prevent cancelled orders from being mistaken for part of an active purchase.
+* *Keeping cancelled history vs. hiding it.* Showing status alongside the original ID makes the view useful
+  for tracing past orders. Sales and receipts apply their own eligibility rules instead.
+
+**Current limitation.** Line costs are undiscounted, while the footer uses the potentially discounted
+order total. This view does not yet show a separate discount breakdown, so its footer can differ from
+the sum of the displayed line costs.
+
+#### Getting command help
+
+`help [AREA]` is handled by `Parser`, `HelpCommand` and `Ui#showHelp`.
+
+**Parsing.** The parser accepts no area or one area and rejects multiple area arguments. `HelpCommand`
+normalises the area using `Locale.ROOT`, so input such as `help STOCK` selects the same area as
+`help stock` without depending on the machine's language settings.
+
+**Execution.** With no area, the command calls `Ui#showHelpOverview` to show the format, available areas
+and an example. Otherwise, a switch selects description-and-syntax pairs for `product`, `stock`, `order`,
+`sales`, `expense`, `generate` or `general`. An unknown area produces an error containing the supported
+areas. Help reads no order data and does not change application state.
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant C as HelpCommand
+    participant U as Ui
+    D->>C: execute(...)
+    alt No area supplied
+        C->>U: showHelpOverview(usage)
+    else Supported area
+        Note over C: Select description and syntax pairs
+        C->>U: showHelp(title, commands)
+    else Unknown area
+        Note over C,D: SystemException propagates to Duke
+        D->>U: showError(message)
+    end
+```
+
+**Display.** `Ui` prints the area heading followed by numbered descriptions and command syntax. Optional
+parameters are shown in square brackets. `generate` covers receipts, while `general` covers help and exit.
+The command descriptions use the application's existing indentation through `Ui`.
+
+**Design considerations.**
+
+* *Explicit help entries vs. automatic discovery.* A switch and description-and-syntax pairs are simple
+  for the current number of commands and allow explanations of defaults. Automatic discovery would need
+  shared command metadata that the current parser and command classes do not expose.
+* *Keeping text separate from formatting.* `HelpCommand` supplies the content, while `Ui` numbers and prints
+  it. A layout change therefore does not require modifying every help entry.
+
+Help text is maintained manually. When a command is added or its arguments change, its corresponding
+help entry must also be updated; the parser does not generate these descriptions automatically.
+
 ## Product scope
 ### Target user profile
 
