@@ -128,15 +128,15 @@ public class Parser {
         if (noun.equals("sales")) {
             return parseSalesCommand(words);
         }
+        if (noun.equals("exit")) {
+            return new ExitCommand();
+        }
         if (noun.equals("finances")) {
             if (words.length > 1) {
                 throw new SystemException("\"finances\" takes no extra input, but I found: "
                         + input.substring("finances".length()).trim());
             }
             return new FinancesCommand();
-        }
-        if (noun.equals("bye")) {
-            return new ExitCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
                 + "\". Known commands: product, order, expense, stock, sales, finances, generate, help, bye");

@@ -598,11 +598,11 @@ Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist
 catalogue, and its selling price is used. No separate price parameter is required.
 
 
-### 6.2 Exiting the program: `bye`
+### 6.2 Exiting the program: `exit`
 
 Exits the BMS program.
 
-Format: `bye`
+Format: `exit`
 
 
 ## FAQ
@@ -648,4 +648,4 @@ Format: `bye`
 | | |
 | **<ins>General<ins>** | |
 | View help | `help [AREA]` |
-| Exit the program | `bye` |
+| Exit the program | `exit` |

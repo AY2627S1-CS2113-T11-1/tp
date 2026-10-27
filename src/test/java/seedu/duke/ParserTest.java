@@ -24,6 +24,7 @@ import seedu.duke.command.ListStockCommand;
 import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.EditOrderCommand;
 import seedu.duke.command.DiscountOrderCommand;
+import seedu.duke.command.ExitCommand;
 import seedu.duke.command.LowStockCommand;
 import seedu.duke.command.FinancesCommand;
 
@@ -171,6 +172,19 @@ class ParserTest {
     @Test
     public void parse_unknownCommand_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("bake bread"));
+    }
+
+    @Test
+    public void parse_exitCommand_returnsExitCommand() throws SystemException {
+        Command command = parser.parse("exit");
+
+        assertInstanceOf(ExitCommand.class, command);
+        assertTrue(command.isExit());
+    }
+
+    @Test
+    public void parse_oldByeCommand_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("bye"));
     }
 
     @Test
