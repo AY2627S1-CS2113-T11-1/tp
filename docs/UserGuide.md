@@ -516,7 +516,9 @@ Records an operating expense.
 
 Format: `expense add p/PRODUCT a/AMOUNT`
 
-The amount must be an integer or floating-point number in dollars.
+The amount must be a non-negative amount in dollars with at most two decimal places.
+Amounts are stored using decimal arithmetic so that currency calculations do not depend on
+floating-point approximations.
 
 Example of usage:
 

@@ -27,11 +27,6 @@ public class Expense {
         this.amount = amount.setScale(2);
     }
 
-    /** Convenience boundary overload for callers that still provide a decimal literal. */
-    public Expense(String productName, double amount) {
-        this(productName, BigDecimal.valueOf(amount));
-    }
-
     public String getProductName() {
         return productName;
     }
