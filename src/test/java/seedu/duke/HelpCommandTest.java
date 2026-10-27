@@ -57,7 +57,7 @@ class HelpCommandTest {
             {"sales", "sales list"},
             {"expense", "expense add p/PRODUCT a/AMOUNT", "expense list"},
             {"generate", "generate receipts c/CUSTOMER"},
-            {"general", "help [AREA]", "bye"}
+            {"general", "help [AREA]", "exit"}
         };
         for (String[] topic : topics) {
             output.reset();
@@ -157,7 +157,7 @@ class HelpCommandTest {
         for (String example : List.of("product add p/Apple a/1", "product list", "stock add p/Apple q/1",
                 "stock remove p/Apple", "stock remove p/Apple q/2", "stock list", "order add c/You Jie p/Apple q/1",
                 "order cancel 1", "order list", "sales list", "expense add p/Rent a/10", "expense list",
-                "generate receipts c/You Jie", "help", "help stock", "bye")) {
+                "generate receipts c/You Jie", "help", "help stock", "exit")) {
             new Parser().parse(example);
         }
     }

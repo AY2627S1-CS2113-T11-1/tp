@@ -65,7 +65,7 @@ public class Ui {
     public void showWelcome() {
         printBanner();
         printIndent("Welcome to BMS.");
-        printIndent("Type a command, or \"bye\" to exit.");
+        printIndent("Type a command, or \"exit\" to close BMS.");
     }
 
     private void printBanner() {

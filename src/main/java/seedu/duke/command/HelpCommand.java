@@ -91,7 +91,7 @@ public class HelpCommand extends Command {
         case "general":
             commands = List.of(
                     new String[] {"Lists help areas, or shows commands for the requested area.", "help [AREA]"},
-                    new String[] {"Exits the application.", "bye"});
+                    new String[] {"Exits the application.", "exit"});
             break;
         default:
             throw new SystemException("Unknown help area \"" + area + "\". " + USAGE);

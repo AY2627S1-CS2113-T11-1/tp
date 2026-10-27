@@ -127,11 +127,11 @@ public class Parser {
         if (noun.equals("sales")) {
             return parseSalesCommand(words);
         }
-        if (noun.equals("bye")) {
+        if (noun.equals("exit")) {
             return new ExitCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, stock, sales, generate, help, bye");
+                + "\". Known commands: product, order, expense, stock, sales, generate, help, exit");
     }
 
     /**
