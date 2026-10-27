@@ -184,7 +184,11 @@ class ParserTest {
 
     @Test
     public void parse_oldByeCommand_throwsSystemException() {
-        assertThrows(SystemException.class, () -> parser.parse("bye"));
+        SystemException exception = assertThrows(SystemException.class, () -> parser.parse("bye"));
+
+        assertEquals("I don't recognise \"bye\". Known commands: "
+                + "product, stock, order, sales, generate, expense, finances, help, exit",
+                exception.getMessage());
     }
 
     @Test

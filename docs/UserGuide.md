@@ -591,7 +591,7 @@ Example: `help stock`
 Shows all commands for the selected area, with a numbered description and command format.
 Optional parameters are shown in square brackets. Area names are case-insensitive.
 
-Available areas: `product`, `stock`, `order`, `sales`, `finances`, `expense`, `generate`, `general`.
+Available areas: `product`, `stock`, `order`, `sales`, `generate`, `expense`, `finances`, `general`.
 Use `help generate` for receipt commands and `help general` for help and exit commands.
 Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
 areas produce a helpful error with the usage format.
@@ -617,16 +617,16 @@ Format: `exit`
 
 | Description | Command |
 | --- | --- |
-| **<ins>Product<ins>** | |
+| **<ins>Product</ins>** | |
 | Add product | `product add p/PRODUCT a/AMOUNT` |
 | List products | `product list` |
 | | |
-| **<ins>Stock<ins>** | |
+| **<ins>Stock</ins>** | |
 | Add stock | `stock add p/PRODUCT q/QUANTITY` |
 | Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
 | List stock | `stock list` |
 | | |
-| **<ins>Order<ins>** | |
+| **<ins>Order</ins>** | |
 | Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |
 | Cancel order | `order cancel ORDER_NUMBER` |
 | List orders | `order list` |
@@ -635,19 +635,19 @@ Format: `exit`
 | Pay outstanding orders | `order add pay c/CUSTOMER a/AMOUNT` |
 | View customer order details | `order details c/CUSTOMER` |
 | | |
-| **<ins>Sales<ins>** | |
+| **<ins>Sales</ins>** | |
 | View sales | `sales list` |
 | | |
-| **<ins>Finances<ins>** | |
-| View financial report | `finances` |
-| | |
-| **<ins>Generate<ins>** | |
+| **<ins>Generate</ins>** | |
 | Generate receipts | `generate receipts c/CUSTOMER` |
 | | |
-| **<ins>Expense<ins>** | |
+| **<ins>Expense</ins>** | |
 | Add expense | `expense add p/PRODUCT a/AMOUNT` |
 | List expenses | `expense list` |
 | | |
-| **<ins>General<ins>** | |
+| **<ins>Finances</ins>** | |
+| View financial report | `finances` |
+| | |
+| **<ins>General</ins>** | |
 | View help | `help [AREA]` |
 | Exit the program | `exit` |
