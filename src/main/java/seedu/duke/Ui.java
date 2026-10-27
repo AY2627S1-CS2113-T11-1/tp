@@ -181,6 +181,16 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for a newly recorded expense.
+     *
+     * @param expense the expense that was just recorded
+     */
+    public void showExpenseAdded(Expense expense) {
+        printIndent("Expense added:");
+        printIndent(String.format("%s: $%.2f", expense.getProductName(), expense.getAmount()));
+    }
+
+    /**
      * Shows the catalogue, one product per line, in the order given.
      *
      * @param products the products to display, already sorted by the caller
@@ -203,6 +213,12 @@ public class Ui {
      * @param expenses the expenses to display
      */
     public void showExpenses(List<Expense> expenses) {
+        printIndent("Expenses:");
+        if (expenses.isEmpty()) {
+            printIndent("No expenses have been added");
+            return;
+        }
+
         for (int i = 0; i < expenses.size(); i++) {
             Expense expense = expenses.get(i);
             printIndent((i + 1) + ". " + expense.getProductName() + ": " + formatMoney(expense.getAmount()));

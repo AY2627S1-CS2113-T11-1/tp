@@ -522,6 +522,15 @@ Example of usage:
 
 `expense add p/Bread a/100.50`
 
+After the expense is recorded, the app confirms it:
+
+```text
+    ____________________________________________________________
+    Expense added:
+    Bread: $100.50
+    ____________________________________________________________
+```
+
 ### 5.2 Listing expenses: `expense list`
 
 Lists all recorded expenses in the order they were added.
@@ -531,8 +540,20 @@ Format: `expense list`
 Example output:
 
 ```text
-1. Bread: $100.50
-2. Lettuce: $42.30
+    ____________________________________________________________
+    Expenses:
+    1. Bread: $100.50
+    2. Lettuce: $42.30
+    ____________________________________________________________
+```
+
+If no expenses have been recorded, the app displays:
+
+```text
+    ____________________________________________________________
+    Expenses:
+    No expenses have been added
+    ____________________________________________________________
 ```
 
 ### 5.3 View financial report: `finances`
