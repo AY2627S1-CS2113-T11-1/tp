@@ -1,6 +1,25 @@
 # Developer Guide
 
-## Acknowledgements
+## Contents
+
+- [1. Acknowledgements](#1-acknowledgements)
+- [2. Design and implementation](#2-design-and-implementation)
+  - [2.1 Orders](#21-orders)
+  - [2.2 Sales and customer commands](#22-sales-and-customer-commands)
+  - [2.3 Expense and financial management](#23-expense-and-financial-management)
+    - [Adding an expense](#adding-an-expense)
+    - [Listing expenses](#listing-expenses)
+    - [Financial report](#financial-report)
+    - [Design considerations and testing](#design-considerations-and-testing)
+- [3. Product scope](#3-product-scope)
+  - [Target user profile](#target-user-profile)
+  - [Value proposition](#value-proposition)
+- [4. User stories](#4-user-stories)
+- [5. Non-functional requirements](#5-non-functional-requirements)
+- [6. Glossary](#6-glossary)
+- [7. Instructions for manual testing](#7-instructions-for-manual-testing)
+
+## 1. Acknowledgements
 
 {list here sources of all reused/adapted ideas, code, documentation, and third-party libraries -- include links to the original source as well}
 
@@ -8,11 +27,15 @@
   `Product`, `ProductList` and `AddProductCommand`, the related `ProductTest` cases, and the first draft of the
   product catalogue sections of the User Guide.
 
-## Design & implementation
+* **Developer Guide structure:** The organisation of this Developer Guide, including its contents section and
+  section hierarchy, was adapted from the [AddressBook-Level3 Developer Guide](https://se-education.org/addressbook-level3/DeveloperGuide.html)
+  from SE-EDUCATION.
+
+## 2. Design and implementation
 
 {Describe the design and implementation of the product. Use UML diagrams and short code snippets where applicable.}
 
-### Orders
+### 2.1 Orders
 
 The order feature records what customers buy and keeps stock in step with it. It supports five commands:
 `order add`, `order cancel`, `order list`, `order edit` and `order discount`.
@@ -144,7 +167,7 @@ still adds up. Orders without a discount print exactly as before.
   calculation gives exact results with a much smaller change.
 
 
-### Sales and customer commands
+### 2.2 Sales and customer commands
 
 These features let users view sales, generate receipts, record customer payments, inspect a customer's
 orders and look up command usage. They use the existing `Command` structure and the shared order history.
@@ -430,7 +453,7 @@ The command descriptions use the application's existing indentation through `Ui`
 Help text is maintained manually. When a command is added or its arguments change, its corresponding
 help entry must also be updated; the parser does not generate these descriptions automatically.
 
-### Expense and financial management
+### 2.3 Expense and financial management
 
 These features let the manager add expenses, view them, and compare expenses with payments received.
 Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
@@ -494,7 +517,7 @@ expense data independent from products and orders, while returning a copy protec
 The tests cover valid expenses, name trimming, invalid amounts, insertion order, expense display,
 profit, loss, equal totals, and partial payments.
 
-## Product scope
+## 3. Product scope
 ### Target user profile
 
 {Describe the target user profile}
@@ -507,7 +530,7 @@ This product is for growing business owners who currently lack a central enterpr
 
 It provides an easy to use platform to maintain and oversee the status of a business. It allows control over the system by recording the status of supply chain operations like procurement, as well as sales and inventory of the branch. Users include managers, logisticians and sales employees.
 
-## User Stories
+## 4. User stories
 
 |Version| As a ... | I want to ... | So that I can ...|
 |--------|----------|---------------|------------------|
@@ -522,14 +545,14 @@ Sample:
 |v1.0|new user|see usage instructions|refer to them when I forget how to use the application|
 |v2.0|user|find a to-do item by name|locate a to-do without having to go through the entire list|
 
-## Non-Functional Requirements
+## 5. Non-functional requirements
 
 {Give non-functional requirements}
 
-## Glossary
+## 6. Glossary
 
 * *glossary item* - Definition
 
-## Instructions for manual testing
+## 7. Instructions for manual testing
 
 {Give instructions on how to do a manual product testing e.g., how to load sample data to be used for testing}
