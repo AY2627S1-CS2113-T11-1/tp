@@ -26,6 +26,7 @@ import seedu.duke.command.EditOrderCommand;
 import seedu.duke.command.DiscountOrderCommand;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.LowStockCommand;
+import seedu.duke.command.FinancesCommand;
 
 class ParserTest {
     private static final double DELTA = 1e-9;
@@ -38,7 +39,7 @@ class ParserTest {
 
         AddProductCommand addCommand = assertInstanceOf(AddProductCommand.class, command);
         assertEquals("Oat Milk", addCommand.getName());
-        assertEquals(3.50, addCommand.getPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(3.50).setScale(2), addCommand.getPrice());
     }
 
     @Test
@@ -47,7 +48,7 @@ class ParserTest {
 
         AddProductCommand addCommand = assertInstanceOf(AddProductCommand.class, command);
         assertEquals("Oat Milk", addCommand.getName());
-        assertEquals(3.50, addCommand.getPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(3.50).setScale(2), addCommand.getPrice());
     }
 
     @Test
@@ -56,7 +57,7 @@ class ParserTest {
 
         AddProductCommand addCommand = assertInstanceOf(AddProductCommand.class, command);
         assertEquals("Oat Milk", addCommand.getName());
-        assertEquals(3.50, addCommand.getPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(3.50).setScale(2), addCommand.getPrice());
     }
 
     @Test
@@ -64,7 +65,7 @@ class ParserTest {
         Command command = parser.parse("product add p/Paper Bag a/12");
 
         AddProductCommand addCommand = assertInstanceOf(AddProductCommand.class, command);
-        assertEquals(12.0, addCommand.getPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(12.0).setScale(2), addCommand.getPrice());
     }
 
     @Test
@@ -105,7 +106,7 @@ class ParserTest {
                 parser.parse("expense add p/Bread a/100.50"));
 
         assertEquals("Bread", command.getProductName());
-        assertEquals(100.50, command.getAmount(), DELTA);
+        assertEquals(BigDecimal.valueOf(100.50).setScale(2), command.getAmount());
     }
 
     @Test
@@ -151,6 +152,16 @@ class ParserTest {
     @Test
     public void parse_salesListCommandWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("sales list today"));
+    }
+
+    @Test
+    public void parse_financesCommand_returnsFinancesCommand() throws SystemException {
+        assertInstanceOf(FinancesCommand.class, parser.parse("finances"));
+    }
+
+    @Test
+    public void parse_financesCommandWithExtraInput_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("finances today"));
     }
 
     @Test

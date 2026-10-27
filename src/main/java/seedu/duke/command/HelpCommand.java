@@ -15,7 +15,7 @@ import seedu.duke.Ui;
  */
 public class HelpCommand extends Command {
     public static final String USAGE = "Format: help {AREA}. Available areas: "
-            + "product, stock, order, sales, expense, generate, general.";
+            + "product, stock, order, sales, finances, expense, generate, general.";
     private final String area;
 
     /**
@@ -77,6 +77,10 @@ public class HelpCommand extends Command {
         case "sales":
             commands = List.<String[]>of(new String[] {
                 "Lists confirmed sales and their total, excluding cancelled orders.", "sales list"});
+            break;
+        case "finances":
+            commands = List.<String[]>of(new String[] {
+                "Shows total orders, payments received, expenses and the overall profit or loss.", "finances"});
             break;
         case "expense":
             commands = List.of(

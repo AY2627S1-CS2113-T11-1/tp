@@ -463,7 +463,8 @@ Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, i
 
 ### 4.3 Recording a customer's payment: `order add pay`
 
-Records payment for **all unpaid, non-cancelled orders** belonging to a customer.
+Records a payment for the customer's unpaid, non-cancelled orders. Payments are applied in
+order-history order and may be partial; a later payment can settle the remaining balance.
 Orders start unpaid. The customer must already appear in the order history; there is no
 separate customer registration command. Full names are matched without case sensitivity.
 
@@ -486,9 +487,9 @@ If the customer has no order history:
     Sorry! Customer BigChungus is not a registered customer.
 ```
 
-Insufficient payment is rejected with the remaining amount required; no orders are marked paid.
-Successful payment marks every eligible order paid. Already-paid and cancelled orders are
-excluded from subsequent payments. If no eligible orders remain, no payment is accepted.
+If the payment is smaller than the outstanding balance, it is applied across eligible orders
+until it is exhausted. Already-paid and cancelled orders are excluded from subsequent payments.
+Any excess is returned as change. If no eligible orders remain, no payment is accepted.
 Payment does not change stock, record an expense, or implement refunds. Payment status is held
 in memory for the current session, like the existing order history.
 
@@ -534,6 +535,29 @@ Example output:
 2. Lettuce: $42.30
 ```
 
+### 5.3 View financial report: `finances`
+
+Calculates and displays the total value of all recorded orders, total payments received, total
+recorded expenses and the overall profit or loss. Total Orders includes unpaid orders. Cancelled
+orders remain in order history and are included in Total Orders, but are excluded from Total Sales.
+Partial payments are included in Total Sales, so an order's full value can be larger than its
+reported sales amount until the remaining balance is paid.
+
+Format: `finances`
+
+Example output:
+
+```text
+Total Orders (including unpaid): $500.00
+Total Sales: $500.00
+Total Expenses: $1000.00
+______________________________
+Overall Loss: $500.00
+```
+
+The report uses the same two-decimal currency format as the rest of the application. A zero
+difference is displayed as `Profit`.
+
 
 ### 6.1 Getting command help: `help`
 
@@ -544,7 +568,7 @@ Example: `help stock`
 Shows all commands for the selected area, with a numbered description and command format.
 Optional parameters are shown in square brackets. Area names are case-insensitive.
 
-Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Available areas: `product`, `stock`, `order`, `sales`, `finances`, `expense`, `generate`, `general`.
 Use `help generate` for receipt commands and `help general` for help and exit commands.
 Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
 areas produce a helpful error with the usage format.
@@ -590,6 +614,9 @@ Format: `exit`
 | | |
 | **<ins>Sales<ins>** | |
 | View sales | `sales list` |
+| | |
+| **<ins>Finances<ins>** | |
+| View financial report | `finances` |
 | | |
 | **<ins>Generate<ins>** | |
 | Generate receipts | `generate receipts c/CUSTOMER` |

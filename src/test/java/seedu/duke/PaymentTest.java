@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -102,14 +104,14 @@ class PaymentTest {
     }
 
     @Test
-    public void execute_insufficientPayment_keepsEveryOrderUnpaid() throws SystemException {
+    public void execute_partialPayment_allocatesAcrossOrders() throws SystemException {
         Order first = addOrder("You Jie", 4, 1);
         Order second = addOrder("You Jie", 6, 1);
-        SystemException error = assertThrows(SystemException.class, () -> pay("You Jie", "5"));
-        assertEquals("Insufficient payment. Customer You Jie still needs to pay $5.00.", error.getMessage());
-        assertFalse(first.isPaid());
+        pay("You Jie", "5");
+        assertTrue(first.isPaid());
         assertFalse(second.isPaid());
-        assertEquals("", output.toString(StandardCharsets.UTF_8));
+        assertEquals(BigDecimal.valueOf(1).setScale(2), second.getPaidAmount());
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("change to return is: $0.00"));
     }
 
     @Test
@@ -168,7 +170,7 @@ class PaymentTest {
         pay("You Jie", "3");
         assertEquals(10, product.getStock());
         assertEquals(2, order.getItems().get(0).getQuantity());
-        assertEquals(2.50, order.getTotal());
+        assertEquals(BigDecimal.valueOf(2.50).setScale(2), order.getTotal());
         assertFalse(order.isCancelled());
     }
 

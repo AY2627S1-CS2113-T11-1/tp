@@ -25,6 +25,7 @@ import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.EditOrderCommand;
 import seedu.duke.command.DiscountOrderCommand;
 import seedu.duke.command.LowStockCommand;
+import seedu.duke.command.FinancesCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -132,6 +133,15 @@ public class Parser {
         }
         throw new SystemException("I don't recognise \"" + words[0]
                 + "\". Known commands: product, order, expense, stock, sales, generate, help, exit");
+        if (noun.equals("finances")) {
+            if (words.length > 1) {
+                throw new SystemException("\"finances\" takes no extra input, but I found: "
+                        + input.substring("finances".length()).trim());
+            }
+            return new FinancesCommand();
+        }
+        throw new SystemException("I don't recognise \"" + words[0]
+                + "\". Known commands: product, order, expense, stock, sales, finances, generate, help, bye");
     }
 
     /**
@@ -629,7 +639,7 @@ public class Parser {
      * @param priceText the text after the a/ prefix, e.g. "3.50"
      * @throws SystemException if the text is not a number, is negative, or has too many decimals
      */
-    private double parsePrice(String priceText) throws SystemException {
+    private BigDecimal parsePrice(String priceText) throws SystemException {
         if (priceText.isEmpty()) {
             throw new SystemException("The price cannot be empty. " + ADD_FORMAT);
         }
@@ -639,20 +649,17 @@ public class Parser {
             throw new SystemException("A price can have at most 2 decimal places, but I got: " + priceText);
         }
 
-        double price;
+        BigDecimal price;
         try {
-            price = Double.parseDouble(priceText);
+            price = new BigDecimal(priceText);
         } catch (NumberFormatException e) {
             throw new SystemException("The price must be a number such as 3.50, but I got: " + priceText);
         }
 
-        if (Double.isNaN(price) || Double.isInfinite(price)) {
-            throw new SystemException("The price must be an ordinary number such as 3.50, but I got: " + priceText);
-        }
-        if (price < 0) {
+        if (price.signum() < 0) {
             throw new SystemException("The price cannot be negative, but I got: " + priceText);
         }
-        return price;
+        return price.setScale(MAX_DECIMAL_PLACES);
     }
 
     private Command parseStockCommand(String[] words) throws SystemException {
