@@ -432,12 +432,10 @@ help entry must also be updated; the parser does not generate these descriptions
 
 ### Expense and financial management
 
-The expense and financial management features allow the manager to record operating expenses, review
-them, and compare recorded payments with expenses. The application keeps expenses in a dedicated
-`ExpenseList`, separate from the product catalogue, stock records and order history. `Duke` creates
-the shared list once and passes it to every command during the command loop.
+These features let the manager add expenses, view them, and compare expenses with payments received.
+Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
 
-At a high level, the feature follows the application's existing command architecture:
+The overall flow is:
 
 ```mermaid
 flowchart LR
@@ -449,21 +447,18 @@ flowchart LR
     Commands --> Ui
 ```
 
-`Parser` turns user input into a command. The command reads or updates the relevant data collection,
-then delegates presentation to `Ui`.
+`Parser` creates the appropriate command. The command reads or updates the data, and `Ui` displays the
+result.
 
 #### Adding an expense
 
-`expense add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddExpense` and
-`AddExpenseCommand`. The parser extracts the product name and amount, validates the command syntax,
-and converts the amount directly from its text representation to `BigDecimal`. This avoids introducing
-a binary floating-point approximation at the input boundary.
+The command `expense add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddExpense` and
+`AddExpenseCommand`. The parser extracts the product and amount, checks the syntax, and converts the
+amount to `BigDecimal`.
 
-`AddExpenseCommand` then constructs an `Expense` and adds it to `ExpenseList`. The `Expense` class
-stores the amount as a `BigDecimal` with scale two. It rejects null or negative amounts and amounts
-with more than two decimal places. It also rejects blank product names. This validation is kept in the
-model so that expenses created by tests or future commands obey the same invariants as expenses created
-through the parser.
+`AddExpenseCommand` creates an `Expense` and adds it to `ExpenseList`. `Expense` stores the amount as
+a two-decimal `BigDecimal` and rejects blank product names, negative amounts, and amounts with more than
+two decimal places. Keeping these checks in `Expense` means all callers follow the same rules.
 
 ```mermaid
 sequenceDiagram
@@ -478,21 +473,19 @@ sequenceDiagram
     D->>P: parse(...)
     P-->>D: AddExpenseCommand
     D->>C: execute(...)
-    C->>L: add new Expense
+    C->>L: add Expense
     C->>U: show confirmation
     U-->>User: Expense added
 ```
 
-The UI formats the stored `BigDecimal` using the shared `formatMoney` method. It does not convert the
-amount back to `double`, ensuring that the confirmation shown to the user is based on the exact stored
-decimal value.
+The UI uses the shared money formatter to display the stored amount. It does not convert the amount back
+to `double`, so the displayed value remains consistent with the stored value.
 
 #### Listing expenses
 
-`expense list` is handled by `ListExpenseCommand`. The command obtains the expenses from
-`ExpenseList#getExpenses()` and passes them to `Ui#showExpenses`. `ExpenseList` returns a new list
-rather than exposing its internal `ArrayList`, so the UI can display the result without being able to
-insert or remove records from the stored collection. Records are displayed in insertion order.
+`expense list` is handled by `ListExpenseCommand`. It obtains the expenses from
+`ExpenseList#getExpenses()` and passes them to `Ui#showExpenses`. `ExpenseList` returns a copy of its
+list, so the UI cannot change the stored records. Expenses are displayed in insertion order.
 
 ```mermaid
 sequenceDiagram
@@ -512,8 +505,10 @@ sequenceDiagram
 
 #### Financial report
 
-`finances` is handled by `FinancesCommand`, which collects all orders, paid sales and recorded
-expenses. `Ui#showFinances` calculates the report using `BigDecimal` values:
+`finances` is handled by `FinancesCommand`. It collects all orders, paid sales, and expenses, then
+passes them to `Ui#showFinances`.
+
+The report uses these calculations:
 
 ```text
 Total Orders = sum of every order total, including unpaid and cancelled orders
@@ -522,10 +517,9 @@ Total Expenses = sum of recorded expenses
 Profit/Loss = Total Sales - Total Expenses
 ```
 
-The distinction between total orders and total sales is intentional. Total orders describes the value
-of business recorded in the system, while total sales describes money actually received. Partial
-payments therefore contribute only the amount paid to Total Sales. The result is labelled `Profit`
-when the difference is zero or positive, and `Loss` otherwise.
+Total Orders shows the value of all orders, including unpaid and cancelled orders. Total Sales shows
+money received from paid, non-cancelled orders. Therefore, partial payments contribute only the amount
+paid. A zero or positive difference is labelled `Profit`; a negative difference is labelled `Loss`.
 
 ```mermaid
 sequenceDiagram
@@ -550,12 +544,12 @@ sequenceDiagram
 
 #### Design considerations and testing
 
-`BigDecimal` is used for expense amounts because `double` cannot represent many decimal fractions
-exactly. Keeping the amount as `BigDecimal` from parsing through storage, reporting and display avoids
-rounding differences between expense totals and payment totals. The expense tests cover valid values,
-name trimming, negative amounts and amounts with more than two decimal places. Command tests cover
-expense insertion and display, while `FinancesCommandTest` covers profit, loss, equal totals and
-partial-payment reporting.
+`BigDecimal` is used because `double` cannot represent many currency values exactly. Using
+`BigDecimal` from parsing through display avoids inconsistent totals. A separate `ExpenseList` keeps
+expense data independent from products and orders, while returning a copy protects the stored list.
+
+The tests cover valid expenses, name trimming, invalid amounts, insertion order, expense display,
+profit, loss, equal totals, and partial payments.
 
 ## Product scope
 ### Target user profile
