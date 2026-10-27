@@ -430,6 +430,127 @@ The command descriptions use the application's existing indentation through `Ui`
 Help text is maintained manually. When a command is added or its arguments change, its corresponding
 help entry must also be updated; the parser does not generate these descriptions automatically.
 
+### Expense and financial management
+
+These features let the manager add expenses, view them, and compare expenses with payments received.
+Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
+
+The overall flow is:
+
+```mermaid
+flowchart LR
+    User --> Duke
+    Duke --> Parser
+    Parser --> Commands
+    Commands --> ExpenseList
+    Commands --> OrderList
+    Commands --> Ui
+```
+
+`Parser` creates the appropriate command. The command reads or updates the data, and `Ui` displays the
+result.
+
+#### Adding an expense
+
+The command `expense add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddExpense` and
+`AddExpenseCommand`. The parser extracts the product and amount, checks the syntax, and converts the
+amount to `BigDecimal`.
+
+`AddExpenseCommand` creates an `Expense` and adds it to `ExpenseList`. `Expense` stores the amount as
+a two-decimal `BigDecimal` and rejects blank product names, negative amounts, and amounts with more than
+two decimal places. Keeping these checks in `Expense` means all callers follow the same rules.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant D as Duke
+    participant P as Parser
+    participant C as AddExpenseCommand
+    participant L as ExpenseList
+    participant U as Ui
+
+    User->>D: expense add p/Bread a/100.50
+    D->>P: parse(...)
+    P-->>D: AddExpenseCommand
+    D->>C: execute(...)
+    C->>L: add Expense
+    C->>U: show confirmation
+    U-->>User: Expense added
+```
+
+The UI uses the shared money formatter to display the stored amount. It does not convert the amount back
+to `double`, so the displayed value remains consistent with the stored value.
+
+#### Listing expenses
+
+`expense list` is handled by `ListExpenseCommand`. It obtains the expenses from
+`ExpenseList#getExpenses()` and passes them to `Ui#showExpenses`. `ExpenseList` returns a copy of its
+list, so the UI cannot change the stored records. Expenses are displayed in insertion order.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant D as Duke
+    participant C as ListExpenseCommand
+    participant L as ExpenseList
+    participant U as Ui
+
+    User->>D: expense list
+    D->>C: execute(...)
+    C->>L: getExpenses()
+    L-->>C: copy of expense records
+    C->>U: show expenses
+    U-->>User: numbered list
+```
+
+#### Financial report
+
+`finances` is handled by `FinancesCommand`. It collects all orders, paid sales, and expenses, then
+passes them to `Ui#showFinances`.
+
+The report uses these calculations:
+
+```text
+Total Orders = sum of every order total, including unpaid and cancelled orders
+Total Sales = sum of recorded payments from non-cancelled orders
+Total Expenses = sum of recorded expenses
+Profit/Loss = Total Sales - Total Expenses
+```
+
+Total Orders shows the value of all orders, including unpaid and cancelled orders. Total Sales shows
+money received from paid, non-cancelled orders. Therefore, partial payments contribute only the amount
+paid. A zero or positive difference is labelled `Profit`; a negative difference is labelled `Loss`.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant P as Parser
+    participant C as FinancesCommand
+    participant O as OrderList
+    participant E as ExpenseList
+    participant U as Ui
+
+    User->>P: finances
+    P-->>C: FinancesCommand
+    C->>O: getAll()
+    O-->>C: all orders
+    C->>O: getPaidSales()
+    O-->>C: paid, non-cancelled sales
+    C->>E: getExpenses()
+    E-->>C: expense records
+    C->>U: show financial report
+    U-->>User: financial report
+```
+
+#### Design considerations and testing
+
+`BigDecimal` is used because `double` cannot represent many currency values exactly. Using
+`BigDecimal` from parsing through display avoids inconsistent totals. A separate `ExpenseList` keeps
+expense data independent from products and orders, while returning a copy protects the stored list.
+
+The tests cover valid expenses, name trimming, invalid amounts, insertion order, expense display,
+profit, loss, equal totals, and partial payments.
+
 ## Product scope
 ### Target user profile
 
@@ -452,6 +573,7 @@ It provides an easy to use platform to maintain and oversee the status of a busi
 |v2.0|manager|view net profits/losses|manage the finances with a clearer overview|
 
 Sample:
+
 |Version| As a ... | I want to ... | So that I can ...|
 |--------|----------|---------------|------------------|
 |v1.0|new user|see usage instructions|refer to them when I forget how to use the application|

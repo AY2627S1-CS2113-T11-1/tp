@@ -22,7 +22,7 @@ class AddExpenseCommandTest {
     @Test
     public void execute_validExpense_addsExpense() throws SystemException {
         ExpenseList expenses = new ExpenseList();
-        AddExpenseCommand command = new AddExpenseCommand("Bread", 100.50);
+        AddExpenseCommand command = new AddExpenseCommand("Bread", new BigDecimal("100.50"));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
                 new PrintStream(output, true, StandardCharsets.UTF_8));
@@ -31,7 +31,7 @@ class AddExpenseCommandTest {
 
         assertEquals(1, expenses.size());
         assertEquals("Bread", expenses.getExpenses().get(0).getProductName());
-        assertEquals(BigDecimal.valueOf(100.50).setScale(2), expenses.getExpenses().get(0).getAmount());
+        assertEquals(new BigDecimal("100.50"), expenses.getExpenses().get(0).getAmount());
         assertEquals(List.of("    Expense added:", "    Bread: $100.50"),
                 output.toString(StandardCharsets.UTF_8).lines().toList());
     }

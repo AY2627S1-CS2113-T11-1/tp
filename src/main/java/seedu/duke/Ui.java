@@ -187,7 +187,7 @@ public class Ui {
      */
     public void showExpenseAdded(Expense expense) {
         printIndent("Expense added:");
-        printIndent(String.format("%s: $%.2f", expense.getProductName(), expense.getAmount()));
+        printIndent(expense.getProductName() + ": " + formatMoney(expense.getAmount()));
     }
 
     /**

@@ -27,7 +27,7 @@ class FinancesCommandTest {
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 2.50), 2)));
         order.recordPayment(java.math.BigDecimal.valueOf(5).setScale(2));
         ExpenseList expenses = new ExpenseList();
-        expenses.add(new Expense("Rent", 10.00));
+        expenses.add(new Expense("Rent", new java.math.BigDecimal("10.00")));
 
         String output = executeReport(orders, expenses);
 
@@ -43,7 +43,7 @@ class FinancesCommandTest {
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 10.00), 2)));
         order.recordPayment(java.math.BigDecimal.valueOf(20).setScale(2));
         ExpenseList expenses = new ExpenseList();
-        expenses.add(new Expense("Rent", 5.00));
+        expenses.add(new Expense("Rent", new java.math.BigDecimal("5.00")));
 
         String output = executeReport(orders, expenses);
 
@@ -56,7 +56,7 @@ class FinancesCommandTest {
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 10.00), 1)));
         order.recordPayment(java.math.BigDecimal.valueOf(10).setScale(2));
         ExpenseList expenses = new ExpenseList();
-        expenses.add(new Expense("Rent", 10.00));
+        expenses.add(new Expense("Rent", new java.math.BigDecimal("10.00")));
 
         String output = executeReport(orders, expenses);
 

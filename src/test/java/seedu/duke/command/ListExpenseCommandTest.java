@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -21,8 +23,8 @@ class ListExpenseCommandTest {
     @Test
     public void execute_expensesExist_displaysExpensesInInsertionOrder() throws SystemException {
         ExpenseList expenses = new ExpenseList();
-        expenses.add(new Expense("Bread", 100.50));
-        expenses.add(new Expense("Lettuce", 42.30));
+        expenses.add(new Expense("Bread", new BigDecimal("100.50")));
+        expenses.add(new Expense("Lettuce", new BigDecimal("42.30")));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
                 new PrintStream(output, true, StandardCharsets.UTF_8));
