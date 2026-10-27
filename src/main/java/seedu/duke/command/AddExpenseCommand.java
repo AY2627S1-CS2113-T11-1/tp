@@ -38,6 +38,10 @@ public class AddExpenseCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) {
         assert expenses != null : "Expense list must be available when adding an expense";
-        expenses.add(new Expense(productName, amount));
+        assert ui != null : "UI must be available when adding an expense";
+
+        Expense expense = new Expense(productName, amount);
+        expenses.add(expense);
+        ui.showExpenseAdded(expense);
     }
 }
