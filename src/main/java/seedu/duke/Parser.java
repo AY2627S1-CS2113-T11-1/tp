@@ -139,7 +139,7 @@ public class Parser {
             return new FinancesCommand();
         }
         throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, stock, sales, finances, generate, help, bye");
+                + "\". Known commands: product, stock, order, sales, generate, expense, finances, help, exit");
     }
 
     /**

@@ -15,7 +15,7 @@ import seedu.duke.Ui;
  */
 public class HelpCommand extends Command {
     public static final String USAGE = "Format: help {AREA}. Available areas: "
-            + "product, stock, order, sales, finances, expense, generate, general.";
+            + "product, stock, order, sales, generate, expense, finances, general.";
     private final String area;
 
     /**
