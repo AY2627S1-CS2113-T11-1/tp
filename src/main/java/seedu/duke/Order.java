@@ -15,6 +15,7 @@ public class Order {
     private String customer;
     private List<OrderItem> items;
     private boolean isCancelled;
+    private boolean isPaid;
     private BigDecimal discountPercent = BigDecimal.ZERO;
 
     /**
@@ -48,6 +49,31 @@ public class Order {
     }
 
     /**
+     * Returns whether payment has been recorded for this order.
+     *
+     * @return true when the order has been paid
+     */
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    /**
+     * Marks an active, unpaid order as paid after the payment amount has been checked.
+     *
+     * @throws SystemException if the order is cancelled or already paid
+     */
+    public void markPaid() throws SystemException {
+        if (isCancelled) {
+            throw new SystemException("Cannot pay for cancelled order " + id + ".");
+        }
+        if (isPaid) {
+            throw new SystemException("Order " + id + " has already been paid.");
+        }
+        isPaid = true;
+    }
+
+    /**
+     * Returns the total cost of the order, summed over all its lines.
      * Returns the number of units bought, summed over all lines of the order.
      */
     public int getTotalUnits() {

@@ -24,6 +24,7 @@ import seedu.duke.command.RemoveStockCommand;
 import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.EditOrderCommand;
 import seedu.duke.command.DiscountOrderCommand;
+import seedu.duke.command.LowStockCommand;
 
 /**
  * Turns a line of user input into the {@link Command} it describes.
@@ -68,6 +69,8 @@ public class Parser {
             "Format: stock add p/PRODUCT q/QUANTITY";
     private static final String STOCK_REMOVE_FORMAT =
             "Format: stock remove p/PRODUCT [q/QUANTITY]";
+    private static final String STOCK_LOW_FORMAT =
+            "Format: stock low [q/THRESHOLD]";
     private static final String[] STOCK_PREFIXES = {"p/", "q/"};
 
     /**
@@ -258,6 +261,12 @@ public class Parser {
      * @throws SystemException if the arguments do not follow the format, or a value is invalid
      */
     private Command parseAddOrder(String arguments) throws SystemException {
+
+        String[] paymentParts = arguments.split("\\s+", 2);
+        if (paymentParts[0].equalsIgnoreCase("pay")) {
+            return new PaymentParser().parse(paymentParts.length == 2 ? paymentParts[1] : "");
+        }
+
         List<String[]> pairs = splitToPrefix(arguments);
 
         if (pairs.isEmpty() || !pairs.get(0)[0].equals(CUSTOMER_PREFIX)) {
@@ -648,7 +657,8 @@ public class Parser {
 
     private Command parseStockCommand(String[] words) throws SystemException {
         if (words.length < 2) {
-            throw new SystemException("What should I do with stock? Try: stock add, stock remove, or stock list");
+            throw new SystemException("What should I do with stock? Try: stock add, stock remove, stock list,"
+                    + " or stock low");
         }
 
         String verb = words[1].toLowerCase();
@@ -666,7 +676,44 @@ public class Parser {
             }
             return new ListStockCommand();
         }
-        throw new SystemException("I don't know how to \"stock " + words[1] + "\". Try: add, remove, or list");
+        if (verb.equals("low")) {
+            return parseLowStock(arguments);
+        }
+        throw new SystemException("I don't know how to \"stock " + words[1] + "\". Try: add, remove, list, or low");
+    }
+
+    private Command parseLowStock(String arguments) throws SystemException {
+        arguments = arguments.trim();
+        if (arguments.isEmpty()) {
+            return new LowStockCommand();
+        }
+
+        String thresholdText;
+        if (arguments.startsWith(QUANTITY_PREFIX)) {
+            thresholdText = arguments.substring(QUANTITY_PREFIX.length()).trim();
+        } else {
+            thresholdText = arguments;
+        }
+
+        int threshold = parseThreshold(thresholdText);
+        return new LowStockCommand(threshold);
+    }
+
+    private int parseThreshold(String thresholdText) throws SystemException {
+        if (thresholdText.isEmpty()) {
+            throw new SystemException("The threshold cannot be empty. " + STOCK_LOW_FORMAT);
+        }
+        int threshold;
+        try {
+            threshold = Integer.parseInt(thresholdText);
+        } catch (NumberFormatException e) {
+            throw new SystemException("A threshold must be a whole number such as 5, but I got: \""
+                    + thresholdText + "\"");
+        }
+        if (threshold < 0) {
+            throw new SystemException("A threshold must be at least 0, but I got: " + thresholdText);
+        }
+        return threshold;
     }
 
     private Command parseAddStock(String arguments) throws SystemException {

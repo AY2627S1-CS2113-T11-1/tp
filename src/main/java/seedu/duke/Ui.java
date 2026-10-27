@@ -2,6 +2,7 @@ package seedu.duke;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -133,6 +134,32 @@ public class Ui {
         String[] headers = {"Product", "Qty"};
         List<String[]> rows = new ArrayList<>();
         for (Stock stock : stocks) {
+            rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
+        }
+        boolean[] isLeftAligned = {true, false};
+        printTable(headers, rows, null, isLeftAligned);
+    }
+
+    /**
+     * Displays products with stock levels at or below the given threshold.
+     *
+     * @param lowStocks the list of low stock items to display
+     * @param threshold the threshold used for filtering
+     * @param isStockListEmpty whether the entire stock list is empty
+     */
+    public void showLowStock(List<Stock> lowStocks, int threshold, boolean isStockListEmpty) {
+        if (isStockListEmpty) {
+            printIndent("There are currently no stocks in the list.");
+            return;
+        }
+        if (lowStocks.isEmpty()) {
+            printIndent("All products have sufficient stock (more than " + threshold + ").");
+            return;
+        }
+        printIndent("Low stock items (quantity <= " + threshold + "):");
+        String[] headers = {"Product", "Qty"};
+        List<String[]> rows = new ArrayList<>();
+        for (Stock stock : lowStocks) {
             rows.add(new String[] {stock.product, String.valueOf(stock.quantity)});
         }
         boolean[] isLeftAligned = {true, false};
@@ -410,6 +437,18 @@ public class Ui {
             printIndent("Receipt for order " + order.getId() + " - " + order.getCustomer());
             printOrderTable(order, "Qty");
         }
+    }
+
+    /**
+     * Displays the payment amount and change to return to the customer.
+     *
+     * @param customer customer who paid
+     * @param amount amount received, in dollars
+     * @param change change to return, in dollars
+     */
+    public void showPayment(String customer, BigDecimal amount, BigDecimal change) {
+        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString()
+                + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
     }
 
     /**

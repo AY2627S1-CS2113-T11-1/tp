@@ -54,7 +54,9 @@ public class HelpCommand extends Command {
                         "stock add p/PRODUCT q/QUANTITY"},
                     new String[] {"Removes stock, defaulting to one unit when quantity is omitted."
                             + " Stock cannot fall below zero.", "stock remove p/PRODUCT [q/QUANTITY]"},
-                    new String[] {"Lists products currently in the stock list and their quantities.", "stock list"});
+                    new String[] {"Lists products currently in the stock list and their quantities.", "stock list"},
+                    new String[] {"Lists products with stock at or below a threshold (default 5).",
+                        "stock low [q/THRESHOLD]"});
             break;
         case "order":
             commands = List.of(
@@ -62,7 +64,15 @@ public class HelpCommand extends Command {
                         "order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]..."},
                     new String[] {"Cancels an order and restores its stock. Order numbers are kept in the history.",
                         "order cancel ORDER_NUMBER"},
-                    new String[] {"Lists all orders, including cancelled orders, oldest first.", "order list"});
+                    new String[] {"Lists all orders, including cancelled orders, oldest first.", "order list"},
+                    new String[] {"Edits an active order's customer, product or quantity, adjusting stock to match.",
+                        "order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]"},
+                    new String[] {"Applies, replaces or removes (d/0) a percentage discount on an active order.",
+                        "order discount ORDER_NUMBER d/PERCENTAGE"},
+                    new String[] {"Records a customer's payment for all of their unpaid, non-cancelled orders.",
+                        "order add pay c/CUSTOMER a/AMOUNT"},
+                    new String[] {"Shows each of a customer's orders with its items, total and status.",
+                        "order details c/CUSTOMER"});
             break;
         case "sales":
             commands = List.<String[]>of(new String[] {
