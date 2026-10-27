@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -12,7 +14,7 @@ class ExpenseTest {
         Expense expense = new Expense("Bread", 100.50);
 
         assertEquals("Bread", expense.getProductName());
-        assertEquals(100.50, expense.getAmount());
+        assertEquals(BigDecimal.valueOf(100.50).setScale(2), expense.getAmount());
     }
 
     @Test

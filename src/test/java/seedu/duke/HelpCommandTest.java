@@ -38,7 +38,7 @@ class HelpCommandTest {
     public void execute_noArea_listsAreasAndUsage() throws SystemException {
         String text = runHelp("help");
         assertTrue(text.contains("Format: help {AREA}"));
-        assertTrue(text.contains("product, stock, order, sales, expense, generate, general"));
+        assertTrue(text.contains("product, stock, order, sales, finances, expense, generate, general"));
         assertTrue(text.contains("Example: help stock"));
     }
 
