@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -54,7 +56,7 @@ class AddOrderCommandTest {
         assertEquals(4, carrot.getStock());
         Order order = orders.findById(1);
         assertEquals("Jonas Low", order.getCustomer());
-        assertEquals(6.38, order.getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(6.38).setScale(2), order.getTotal());
     }
 
     @Test
@@ -94,7 +96,8 @@ class AddOrderCommandTest {
     @Test
     public void execute_priceEditedAfterOrder_orderKeepsPricePaid() throws SystemException {
         orderOf(item("Apple", 2)).execute(products, orders, ui);
-        assertEquals(1.50, orders.findById(1).getItems().get(0).getUnitPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.50).setScale(2),
+                orders.findById(1).getItems().get(0).getUnitPrice());
     }
 
     private static AddOrderCommand orderOf(AddOrderCommand.RequestedItem... items) {
