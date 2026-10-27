@@ -129,7 +129,7 @@ class HelpCommandTest {
     }
 
     @Test
-    public void execute_help_doesNotAdvertiseOtherFeatureBranches() throws SystemException {
+    public void execute_orderHelp_advertisesSupportedCommands() throws SystemException {
         String text = runHelp("help order");
         assertTrue(text.contains("order edit"));
         assertTrue(text.contains("order discount"));
