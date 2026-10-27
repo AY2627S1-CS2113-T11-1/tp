@@ -95,9 +95,7 @@ public class Ui {
      * @param stock the stock entry that was created
      */
     public void showStockCreated(Stock stock) {
-        String formattedPrice = (stock.price == (long) stock.price)
-                ? String.format("%d", (long) stock.price)
-                : String.format("%.2f", stock.price);
+        String formattedPrice = stock.price.stripTrailingZeros().toPlainString();
         printIndent("Creates stock for a new product " + stock.product
                 + " with quantity " + stock.quantity + " and cost $" + formattedPrice + " each.");
     }
@@ -223,8 +221,7 @@ public class Ui {
 
         for (int i = 0; i < expenses.size(); i++) {
             Expense expense = expenses.get(i);
-            printIndent(String.format("%d. %s: $%.2f", i + 1,
-                    expense.getProductName(), expense.getAmount()));
+            printIndent((i + 1) + ". " + expense.getProductName() + ": " + formatMoney(expense.getAmount()));
         }
     }
 
@@ -324,13 +321,13 @@ public class Ui {
         }
 
         List<String[]> rows = new ArrayList<>();
-        double totalSales = 0;
+        BigDecimal totalSales = BigDecimal.ZERO;
         for (Order sale : sales) {
             int units = 0;
             for (OrderItem item : sale.getItems()) {
                 units += item.getQuantity();
             }
-            totalSales += sale.getTotal();
+            totalSales = totalSales.add(sale.getTotal());
             rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
                 formatMoney(sale.getTotal())});
         }
@@ -339,6 +336,38 @@ public class Ui {
         boolean[] isLeftAligned = {false, true, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
         printIndent("Total sales: " + formatMoney(totalSales));
+    }
+
+    /**
+     * Shows the total order value, payments received, total expenses and overall profit or loss.
+     *
+     * @param orders   all recorded orders, including unpaid and cancelled orders
+     * @param sales    orders with recorded payments, excluding cancelled orders
+     * @param expenses recorded operating expenses
+     */
+    public void showFinances(List<Order> orders, List<Order> sales, List<Expense> expenses) {
+        BigDecimal totalOrders = BigDecimal.ZERO;
+        for (Order order : orders) {
+            totalOrders = totalOrders.add(order.getTotal());
+        }
+
+        BigDecimal totalSales = BigDecimal.ZERO;
+        for (Order sale : sales) {
+            totalSales = totalSales.add(sale.getPaidAmount());
+        }
+
+        BigDecimal totalExpenses = BigDecimal.ZERO;
+        for (Expense expense : expenses) {
+            totalExpenses = totalExpenses.add(expense.getAmount());
+        }
+
+        BigDecimal difference = totalSales.subtract(totalExpenses);
+        String result = difference.signum() >= 0 ? "Profit" : "Loss";
+        printIndent("Total Orders (including unpaid): " + formatMoney(totalOrders));
+        printIndent("Total Sales: " + formatMoney(totalSales));
+        printIndent("Total Expenses: " + formatMoney(totalExpenses));
+        printIndent("______________________________");
+        printIndent("Overall " + result + ": " + formatMoney(difference.abs()));
     }
 
     /**
@@ -540,7 +569,7 @@ public class Ui {
     /**
      * Returns an amount in dollars with two decimals, e.g. "$6.38".
      */
-    private static String formatMoney(double amount) {
-        return String.format("$%.2f", amount);
+    private static String formatMoney(BigDecimal amount) {
+        return "$" + amount.setScale(2).toPlainString();
     }
 }

@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +31,7 @@ class AddExpenseCommandTest {
 
         assertEquals(1, expenses.size());
         assertEquals("Bread", expenses.getExpenses().get(0).getProductName());
-        assertEquals(100.50, expenses.getExpenses().get(0).getAmount());
+        assertEquals(BigDecimal.valueOf(100.50).setScale(2), expenses.getExpenses().get(0).getAmount());
         assertEquals(List.of("    Expense added:", "    Bread: $100.50"),
                 output.toString(StandardCharsets.UTF_8).lines().toList());
     }

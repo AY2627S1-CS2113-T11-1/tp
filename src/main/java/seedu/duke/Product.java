@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 /**
  * Represents one product in the catalogue.
  *
@@ -8,7 +10,7 @@ package seedu.duke;
  */
 public class Product {
     private final String name;
-    private final double price;
+    private final BigDecimal price;
     private int stock;
 
     /**
@@ -17,21 +19,27 @@ public class Product {
      * @param name  the product name as typed by the user, e.g. "Oat Milk"
      * @param price the unit price in dollars, e.g. 3.50
      */
-    public Product(String name, double price) {
+    public Product(String name, BigDecimal price) {
         // The parser rejects empty names and negative prices, so failing here means a caller skipped validation.
         assert name != null && !name.isBlank() : "Product name must be validated as non-empty before construction";
-        assert price >= 0 : "Product price must be validated as non-negative before construction";
+        assert price != null && price.signum() >= 0 && price.stripTrailingZeros().scale() <= 2
+                : "Product price must be validated as non-negative before construction";
 
         this.name = name;
-        this.price = price;
+        this.price = price.setScale(2);
         this.stock = 0;
+    }
+
+    /** Convenience boundary overload for callers that still provide a decimal literal. */
+    public Product(String name, double price) {
+        this(name, BigDecimal.valueOf(price));
     }
 
     public String getName() {
         return name;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
@@ -39,7 +47,7 @@ public class Product {
      * Returns the unit price formatted for display, always with two decimals, e.g. "$3.50".
      */
     public String getPriceString() {
-        return String.format("$%.2f", price);
+        return "$" + price.setScale(2).toPlainString();
     }
 
     public int getStock() {

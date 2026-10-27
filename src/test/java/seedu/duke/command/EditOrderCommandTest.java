@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -60,7 +62,7 @@ class EditOrderCommandTest {
         assertEquals(1, order.getId());
         assertEquals("Mei Tan", order.getCustomer());
         assertEquals(5, order.getTotalUnits());
-        assertEquals(9.40, order.getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(9.40).setScale(2), order.getTotal());
         assertEquals(5, carrot.getStock());
     }
 
@@ -98,8 +100,8 @@ class EditOrderCommandTest {
 
         OrderItem line = orders.findById(1).getItems().get(0);
         assertSame(apple, line.getProduct());
-        assertEquals(1.50, line.getUnitPrice(), DELTA);
-        assertEquals(4.50, orders.findById(1).getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.50).setScale(2), line.getUnitPrice());
+        assertEquals(BigDecimal.valueOf(4.50).setScale(2), orders.findById(1).getTotal());
         assertEquals(10, carrot.getStock());
         assertEquals(7, apple.getStock());
     }
@@ -142,8 +144,8 @@ class EditOrderCommandTest {
         new EditOrderCommand(2, null, "CARROT", 3).execute(products, orders, ui);
 
         OrderItem line = orders.findById(2).getItems().get(0);
-        assertEquals(1.50, line.getUnitPrice(), DELTA);
-        assertEquals(4.50, orders.findById(2).getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.50).setScale(2), line.getUnitPrice());
+        assertEquals(BigDecimal.valueOf(4.50).setScale(2), orders.findById(2).getTotal());
         assertEquals(5, carrot.getStock());
     }
 
@@ -207,7 +209,7 @@ class EditOrderCommandTest {
         assertEquals("Jonas Low", order.getCustomer());
         assertSame(carrot, order.getItems().get(0).getProduct());
         assertEquals(4, order.getTotalUnits());
-        assertEquals(1.88, order.getItems().get(0).getUnitPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.88).setScale(2), order.getItems().get(0).getUnitPrice());
         assertEquals(6, carrot.getStock());
     }
 }
