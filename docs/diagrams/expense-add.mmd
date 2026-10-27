@@ -1,0 +1,15 @@
+sequenceDiagram
+    actor User
+    participant D as Duke
+    participant P as Parser
+    participant C as AddExpenseCommand
+    participant L as ExpenseList
+    participant U as Ui
+
+    User->>D: expense add p/Bread a/100.50
+    D->>P: parse(...)
+    P-->>D: AddExpenseCommand
+    D->>C: execute(...)
+    C->>L: add Expense
+    C->>U: show confirmation
+    U-->>User: Expense added

@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor User
+    participant P as Parser
+    participant C as FinancesCommand
+    participant O as OrderList
+    participant E as ExpenseList
+    participant U as Ui
+
+    User->>P: finances
+    P-->>C: FinancesCommand
+    C->>O: getAll()
+    O-->>C: all orders
+    C->>O: getPaidSales()
+    O-->>C: paid, non-cancelled sales
+    C->>E: getExpenses()
+    E-->>C: expense records
+    C->>U: show financial report
+    U-->>User: financial report

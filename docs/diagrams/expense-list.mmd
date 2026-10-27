@@ -1,0 +1,13 @@
+sequenceDiagram
+    actor User
+    participant D as Duke
+    participant C as ListExpenseCommand
+    participant L as ExpenseList
+    participant U as Ui
+
+    User->>D: expense list
+    D->>C: execute(...)
+    C->>L: getExpenses()
+    L-->>C: copy of expense records
+    C->>U: show expenses
+    U-->>User: numbered list

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="190" viewBox="0 0 820 190" role="img" aria-labelledby="title desc">
+  <title id="title">Expense and financial management architecture</title>
+  <desc id="desc">User input passes through Duke and Parser to commands, which use ExpenseList, OrderList, and Ui.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#40566f"/>
+    </marker>
+    <style>
+      .box { fill:#eef4fb; stroke:#40566f; stroke-width:1.5; rx:6; }
+      .label { fill:#1f2933; font:15px Arial, sans-serif; text-anchor:middle; dominant-baseline:middle; }
+      .arrow { stroke:#40566f; stroke-width:1.5; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="820" height="190" fill="white"/>
+  <rect class="box" x="20" y="70" width="95" height="44"/><text class="label" x="67" y="92">User</text>
+  <rect class="box" x="145" y="70" width="95" height="44"/><text class="label" x="192" y="92">Duke</text>
+  <rect class="box" x="270" y="70" width="95" height="44"/><text class="label" x="317" y="92">Parser</text>
+  <rect class="box" x="395" y="70" width="105" height="44"/><text class="label" x="447" y="92">Commands</text>
+  <rect class="box" x="555" y="25" width="110" height="44"/><text class="label" x="610" y="47">ExpenseList</text>
+  <rect class="box" x="555" y="78" width="110" height="44"/><text class="label" x="610" y="100">OrderList</text>
+  <rect class="box" x="555" y="131" width="110" height="44"/><text class="label" x="610" y="153">Ui</text>
+  <line class="arrow" x1="115" y1="92" x2="145" y2="92"/>
+  <line class="arrow" x1="240" y1="92" x2="270" y2="92"/>
+  <line class="arrow" x1="365" y1="92" x2="395" y2="92"/>
+  <line class="arrow" x1="500" y1="82" x2="555" y2="47"/>
+  <line class="arrow" x1="500" y1="92" x2="555" y2="100"/>
+  <line class="arrow" x1="500" y1="102" x2="555" y2="153"/>
+</svg>

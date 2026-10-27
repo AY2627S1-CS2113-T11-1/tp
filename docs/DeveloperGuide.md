@@ -437,15 +437,7 @@ Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and pa
 
 The overall flow is:
 
-```mermaid
-flowchart LR
-    User --> Duke
-    Duke --> Parser
-    Parser --> Commands
-    Commands --> ExpenseList
-    Commands --> OrderList
-    Commands --> Ui
-```
+![Expense and financial management architecture](images/expense-finance-architecture.svg)
 
 `Parser` creates the appropriate command. The command reads or updates the data, and `Ui` displays the
 result.
@@ -460,23 +452,7 @@ amount to `BigDecimal`.
 a two-decimal `BigDecimal` and rejects blank product names, negative amounts, and amounts with more than
 two decimal places. Keeping these checks in `Expense` means all callers follow the same rules.
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant D as Duke
-    participant P as Parser
-    participant C as AddExpenseCommand
-    participant L as ExpenseList
-    participant U as Ui
-
-    User->>D: expense add p/Bread a/100.50
-    D->>P: parse(...)
-    P-->>D: AddExpenseCommand
-    D->>C: execute(...)
-    C->>L: add Expense
-    C->>U: show confirmation
-    U-->>User: Expense added
-```
+![Expense add sequence diagram](images/expense-add.svg)
 
 The UI uses the shared money formatter to display the stored amount. It does not convert the amount back
 to `double`, so the displayed value remains consistent with the stored value.
@@ -487,21 +463,7 @@ to `double`, so the displayed value remains consistent with the stored value.
 `ExpenseList#getExpenses()` and passes them to `Ui#showExpenses`. `ExpenseList` returns a copy of its
 list, so the UI cannot change the stored records. Expenses are displayed in insertion order.
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant D as Duke
-    participant C as ListExpenseCommand
-    participant L as ExpenseList
-    participant U as Ui
-
-    User->>D: expense list
-    D->>C: execute(...)
-    C->>L: getExpenses()
-    L-->>C: copy of expense records
-    C->>U: show expenses
-    U-->>User: numbered list
-```
+![Expense list sequence diagram](images/expense-list.svg)
 
 #### Financial report
 
@@ -521,26 +483,7 @@ Total Orders shows the value of all orders, including unpaid and cancelled order
 money received from paid, non-cancelled orders. Therefore, partial payments contribute only the amount
 paid. A zero or positive difference is labelled `Profit`; a negative difference is labelled `Loss`.
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant P as Parser
-    participant C as FinancesCommand
-    participant O as OrderList
-    participant E as ExpenseList
-    participant U as Ui
-
-    User->>P: finances
-    P-->>C: FinancesCommand
-    C->>O: getAll()
-    O-->>C: all orders
-    C->>O: getPaidSales()
-    O-->>C: paid, non-cancelled sales
-    C->>E: getExpenses()
-    E-->>C: expense records
-    C->>U: show financial report
-    U-->>User: financial report
-```
+![Financial report sequence diagram](images/finances.svg)
 
 #### Design considerations and testing
 
