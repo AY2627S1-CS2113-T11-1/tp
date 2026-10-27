@@ -131,8 +131,6 @@ public class Parser {
         if (noun.equals("exit")) {
             return new ExitCommand();
         }
-        throw new SystemException("I don't recognise \"" + words[0]
-                + "\". Known commands: product, order, expense, stock, sales, generate, help, exit");
         if (noun.equals("finances")) {
             if (words.length > 1) {
                 throw new SystemException("\"finances\" takes no extra input, but I found: "
