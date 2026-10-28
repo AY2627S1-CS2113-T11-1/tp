@@ -34,14 +34,23 @@ classDiagram
         -ArrayList~Stock~ stocks
         +add(Stock) void
         +findByProduct(String) Stock
-        +getStocks() ArrayList~Stock~
+        +getStocks() List~Stock~
+        +size() int
     }
 
     class Stock {
+        -Product productRef
         +String product
         +BigDecimal price
         +int quantity
-        +Stock(product, price, quantity)
+        +Stock(Product, int)
+        +Stock(String, BigDecimal, int)
+        +Stock(String, double, int)
+        +getProduct() String
+        +getPrice() BigDecimal
+        +getQuantity() int
+        +setQuantity(int) void
+        +setPrice(BigDecimal) void
     }
 
     class ProductList {
@@ -56,6 +65,8 @@ classDiagram
         -int stock
         +getName() String
         +getStock() int
+        +setStock(int) void
+        +getPrice() BigDecimal
     }
 
     Command <|-- AddStockCommand
@@ -68,4 +79,4 @@ classDiagram
 
     StockList "1" *-- "*" Stock
     ProductList "1" *-- "*" Product
-
+    Stock "1" --> "0..1" Product : productRef
