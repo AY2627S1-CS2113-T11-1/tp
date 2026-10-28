@@ -4,7 +4,17 @@ sequenceDiagram
     participant P1 as OrderDetailsCommand
     participant P2 as OrderList
     participant P3 as Ui
+    activate P0
     P0->>P1: execute(...)
+    activate P1
     P1->>P2: getAll()
+    activate P2
     P2-->>P1: Order history
+    deactivate P2
     P1->>P3: showOrderDetails(...)
+    activate P3
+    P3-->>P1: return
+    deactivate P3
+    P1-->>P0: return
+    deactivate P1
+    deactivate P0
