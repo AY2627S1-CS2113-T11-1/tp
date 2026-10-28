@@ -1,0 +1,13 @@
+sequenceDiagram
+    %% Main successful flow; validation and alternatives are described in the guide.
+    participant P0 as Duke
+    participant P1 as GenerateReceiptsCommand
+    participant P2 as ReceiptGenerator
+    participant P3 as OrderList
+    participant P4 as Ui
+    P0->>P1: execute(...)
+    P1->>P2: generate(orders, customer)
+    P2->>P3: getAll()
+    P3-->>P2: Order history
+    P2-->>P1: Matching active orders
+    P1->>P4: showReceipts(...)

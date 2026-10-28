@@ -1,0 +1,10 @@
+sequenceDiagram
+    %% Main successful flow; validation and alternatives are described in the guide.
+    participant P0 as Duke
+    participant P1 as ListSalesCommand
+    participant P2 as OrderList
+    participant P3 as Ui
+    P0->>P1: execute(...)
+    P1->>P2: getConfirmedSales()
+    P2-->>P1: Non-cancelled orders
+    P1->>P3: showSales(sales)
