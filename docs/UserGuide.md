@@ -2,20 +2,19 @@
 
 ## Introduction
 
-{Give a product intro}
-
-BMS can be used to manage products, stocks, orders, sales, and expenses.
+BMS (Business Management System) is a desktop CLI (Command Line Interface) application used by store managers, sales staff, and logistics personnel to administer products, inventory stocks, customer orders, sales revenues, and operating expenses.
 
 ## Quick Start
 
-{Give steps to get started quickly}
-
-1. Ensure that you have Java 25 or above installed.
-2. Download the latest version of `Duke` from [here](http://link.to/duke).
+1. Ensure that you have Java 25 or above installed on your computer.
+2. Download the latest `duke.jar` from our releases page.
+3. Open a terminal or command prompt, navigate (`cd`) to the folder containing `duke.jar`, and run:
+   ```bash
+   java -jar duke.jar
+   ```
+4. When the application starts, you will see a welcome message. Type `help` to see available commands or refer to the [Features](#features) section below.
 
 ## Features
-
-{Give detailed description of each feature}
 
 ### 1. Product catalogue
 
@@ -611,7 +610,7 @@ Format: `exit`
 
 **Q**: How do I transfer my data to another computer?
 
-**A**: {your answer here}
+**A**: Currently, data is held in memory during the active application session. Persistent data storage is planned for an upcoming release. To transfer data across sessions or machines currently, save your series of commands into a text file and re-run them sequentially.
 
 ## Command Summary
 
@@ -625,6 +624,7 @@ Format: `exit`
 | Add stock | `stock add p/PRODUCT q/QUANTITY` |
 | Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
 | List stock | `stock list` |
+| View low stock | `stock low [q/THRESHOLD]` |
 | | |
 | **<ins>Order</ins>** | |
 | Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |

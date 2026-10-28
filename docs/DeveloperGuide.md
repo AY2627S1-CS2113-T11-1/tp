@@ -11,6 +11,13 @@
     - [Listing expenses](#listing-expenses)
     - [Financial report](#financial-report)
     - [Design considerations and testing](#design-considerations-and-testing)
+  - [2.4 Stock and inventory management](#24-stock-and-inventory-management)
+    - [Design and class structure](#design-and-class-structure)
+    - [Stock representation and tracking](#stock-representation-and-tracking)
+    - [Stock synchronization with Orders](#stock-synchronization-with-orders)
+    - [Adding and removing stock](#adding-and-removing-stock)
+    - [Low stock monitoring](#low-stock-monitoring)
+    - [Design considerations and alternatives](#design-considerations-and-alternatives)
 - [3. Product scope](#3-product-scope)
   - [Target user profile](#target-user-profile)
   - [Value proposition](#value-proposition)
@@ -18,22 +25,26 @@
 - [5. Non-functional requirements](#5-non-functional-requirements)
 - [6. Glossary](#6-glossary)
 - [7. Instructions for manual testing](#7-instructions-for-manual-testing)
+  - [7.1 Initial launch and shutdown](#71-initial-launch-and-shutdown)
+  - [7.2 Product catalogue management](#72-product-catalogue-management)
+  - [7.3 Stock and inventory management](#73-stock-and-inventory-management)
+  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization-issue-68-verification)
+  - [7.5 Customer payments, receipts, and sales](#75-customer-payments-receipts-and-sales)
+  - [7.6 Operating expenses and financial report](#76-operating-expenses-and-financial-report)
+  - [7.7 Help documentation](#77-help-documentation)
 
 ## 1. Acknowledgements
 
-{list here sources of all reused/adapted ideas, code, documentation, and third-party libraries -- include links to the original source as well}
-
+* **Stock and inventory management:** Mermaid diagrams and AI assistance were
+  used in structuring the stock management design, UML diagrams, and documentation for Section 2.4.
 * **AI assistance (Brian Yang, @zechby):** Claude (Anthropic) was used to add the assertions and logging in
   `Product`, `ProductList` and `AddProductCommand`, the related `ProductTest` cases, and the first draft of the
   product catalogue sections of the User Guide.
-
 * **Developer Guide structure:** The organisation of this Developer Guide, including its contents section and
   section hierarchy, was adapted from the [AddressBook-Level3 Developer Guide](https://se-education.org/addressbook-level3/DeveloperGuide.html)
   from SE-EDUCATION.
 
 ## 2. Design and implementation
-
-{Describe the design and implementation of the product. Use UML diagrams and short code snippets where applicable.}
 
 ### 2.1 Orders
 
@@ -165,7 +176,6 @@ still adds up. Orders without a discount print exactly as before.
 * *`BigDecimal` everywhere vs. only for discounts.* Converting every price in the system to `BigDecimal` would be
   cleaner but would touch every feature. Prices are limited to two decimal places, so converting at the point of
   calculation gives exact results with a much smaller change.
-
 
 ### 2.2 Sales and customer commands
 
@@ -427,42 +437,448 @@ expense data independent from products and orders, while returning a copy protec
 The tests cover valid expenses, name trimming, invalid amounts, insertion order, expense display,
 profit, loss, equal totals, and partial payments.
 
+### 2.4 Stock and inventory management
+
+The stock management subsystem tracks the available physical quantities of catalogued products, handles restocking and stock deductions, and alerts store managers when quantities dip below critical thresholds.
+
+The subsystem supports four primary commands:
+
+* `stock add p/PRODUCT q/QUANTITY`: Adds physical inventory to an existing catalogue item.
+* `stock remove p/PRODUCT [q/QUANTITY]`: Deducts physical inventory, defaulting to 1 unit if omitted.
+* `stock list`: Displays a tabular overview of all recorded stock levels.
+* `stock low [q/THRESHOLD]`: Filters and alerts on items whose available quantity is at or below a threshold (defaulting to 5).
+
+#### Design and class structure
+
+The following class diagram illustrates the architecture of the stock subsystem and its relationships with the catalogue and command layers:
+
+[stock-class.mmd](diagrams/stock-class.mmd)
+
+```mermaid
+%%{init: {"theme": "default", "class": {"curve": "linear"}}}%%
+classDiagram
+    direction TB
+
+    class Command {
+        <<abstract>>
+        +execute(products, orders, expenses, stocks, ui)* void
+    }
+
+    class AddStockCommand {
+        -String productName
+        -int quantity
+        +execute(...) void
+    }
+
+    class RemoveStockCommand {
+        -String productName
+        -int quantity
+        -boolean isDefault
+        +execute(...) void
+    }
+
+    class ListStockCommand {
+        +execute(...) void
+    }
+
+    class LowStockCommand {
+        +int DEFAULT_THRESHOLD$
+        -int threshold
+        +execute(...) void
+    }
+
+    class StockList {
+        -ArrayList~Stock~ stocks
+        +add(Stock) void
+        +findByProduct(String) Stock
+        +getStocks() List~Stock~
+        +size() int
+    }
+
+    class Stock {
+        -Product productRef
+        +String product
+        +BigDecimal price
+        +int quantity
+        +Stock(Product, int)
+        +Stock(String, BigDecimal, int)
+        +Stock(String, double, int)
+        +getProduct() String
+        +getPrice() BigDecimal
+        +getQuantity() int
+        +setQuantity(int) void
+        +setPrice(BigDecimal) void
+    }
+
+    class ProductList {
+        +findByName(String) Product
+        +add(Product) void
+        +getAll() List~Product~
+    }
+
+    class Product {
+        -String name
+        -BigDecimal price
+        -int stock
+        +getName() String
+        +getStock() int
+        +setStock(int) void
+        +getPrice() BigDecimal
+    }
+
+    Command <|-- AddStockCommand
+    Command <|-- RemoveStockCommand
+    Command <|-- ListStockCommand
+    Command <|-- LowStockCommand
+
+    Command ..> StockList : uses
+    Command ..> ProductList : uses
+
+    StockList "1" *-- "*" Stock
+    ProductList "1" *-- "*" Product
+    Stock "1" --> "0..1" Product : productRef
+```
+
+Key design aspects:
+
+* `Command` defines the execution interface that operates on `StockList` and `ProductList`. Each concrete stock command (`AddStockCommand`, `RemoveStockCommand`, `ListStockCommand`, `LowStockCommand`) extends `Command` and manipulates `StockList` and `ProductList` during execution.
+* `Stock` encapsulates an inventory record, storing the product name (`product`), its unit selling price (`price` as `BigDecimal`), and the available quantity (`quantity`). It optionally binds directly to the catalogue `Product` via `productRef`.
+* `StockList` maintains the collection of `Stock` entries. In accordance with defensive programming and encapsulation principles, `StockList#getStocks()` returns an unmodifiable list (`Collections.unmodifiableList`), preventing callers from modifying internal list state directly.
+
+#### Stock representation and tracking
+
+`Stock` encapsulates product identification, unit price, and quantity. It provides three constructors:
+
+1. `Stock(Product product, int quantity)`: Binds directly to a catalogue `Product` reference (`productRef`), synchronizing initial quantity and unit price with the product catalogue.
+2. `Stock(String product, BigDecimal price, int quantity)`: The primary standalone constructor ensuring exact decimal accuracy.
+3. `Stock(String product, double price, int quantity)`: A convenience constructor for backward-compatibility with callers providing a floating-point literal.
+
+When a `Stock` instance holds a `Product` reference (`productRef != null`), its `getQuantity()` and `setQuantity(int)` methods automatically synchronize with `Product#getStock()` and `Product#setStock(int)`.
+
+`StockList` wraps an `ArrayList<Stock>` and provides case-insensitive product lookups via `findByProduct(String)`.
+
+#### Stock synchronization with Orders
+
+Previously, stock quantities were tracked independently in `Product.stock` and `Stock.quantity`. Order management commands (`AddOrderCommand`, `CancelOrderCommand`, `EditOrderCommand`) modified `Product.setStock(...)` directly, which caused `StockList` to fall out of synchronization.
+
+The system addresses this through a three-layer synchronization strategy:
+
+1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
+2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
+3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`) or inspecting low inventory (`LowStockCommand`), the commands reconcile each `Stock` entry against `ProductList#findByName` before formatting the display table. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
+
+#### Adding and removing stock
+
+Stock adjustments follow a validation-then-apply pattern:
+
+* **Restocking (`stock add`)**: `AddStockCommand` verifies whether the target product exists in `ProductList`. If the product is not found in the catalogue, execution terminates with a `SystemException`. If found, `StockList#findByProduct` checks if a stock record already exists. If it exists, the new quantity is added to the current balance; otherwise, a new `Stock` entry bound to the `Product` is constructed and added to `StockList`. The product catalogue stock is also updated via `Product#setStock`.
+* **Depleting Stock (`stock remove`)**: `RemoveStockCommand` verifies that the target product exists in the catalogue or stock list. If neither contains the product, an informational message is displayed via `Ui#showStockNotFound()`. When the product is found, the command deducts the requested quantity, clamping the remaining balance at 0 via `Math.max(0, currentStock - quantityToRemove)` so inventory levels can never drop below zero. When `q/` is omitted, the command defaults to deducting 1 unit.
+
+#### Low stock monitoring
+
+Store managers need rapid insight into items nearing depletion. The `stock low [q/THRESHOLD]` command (implemented in `LowStockCommand`) filters products whose remaining quantity satisfies `quantity <= threshold`.
+
+**Parsing.** `Parser#parseLowStock` checks for an optional threshold parameter, which may be supplied with the `q/` prefix (e.g. `stock low q/10`) or as a standalone integer (e.g. `stock low 10`):
+
+* If omitted, it sets the threshold to `LowStockCommand.DEFAULT_THRESHOLD` (5).
+* If present, the threshold is parsed and validated as a non-negative integer using `Parser#parseThreshold`.
+* Negative values, non-integer input, or blank threshold text throw a descriptive `SystemException` explaining the expected format.
+
+**Execution.** When executed, `LowStockCommand`:
+
+1. Retrieves all items via `StockList#getStocks()`.
+2. Reconciles each item against `ProductList#findByName(stock.product)` to verify latest quantities.
+3. Identifies items where `stock.quantity <= threshold` and collects them into a list.
+4. Calls `Ui#showLowStock(lowStocks, threshold, isStockListEmpty)`. The UI displays an aligned table of low stock items, or an informational message if all products have sufficient stock or the stock list is empty.
+
+The following sequence diagram outlines this execution process:
+
+[stock-low-sequence.mmd](diagrams/stock-low-sequence.mmd)
+
+```mermaid
+sequenceDiagram
+    participant D as Duke
+    participant P as Parser
+    participant C as LowStockCommand
+    participant SL as StockList
+    participant PL as ProductList
+    participant U as Ui
+
+    D->>P: parse("stock low q/3")
+    activate P
+    P->>C: new LowStockCommand(3)
+    activate C
+    C-->>P: command
+    deactivate C
+    P-->>D: command
+    deactivate P
+
+    D->>C: execute(...)
+    activate C
+
+    C->>SL: getStocks()
+    activate SL
+    SL-->>C: allStocks
+    deactivate SL
+
+    loop For each stock in allStocks
+        C->>PL: findByName(product)
+        activate PL
+        PL-->>C: product
+        deactivate PL
+    end
+
+    C->>U: showLowStock(lowStocks, 3)
+    activate U
+    U-->>C: return
+    deactivate U
+
+    C-->>D: return
+    deactivate C
+```
+
+#### Design considerations and alternatives
+
+##### Aspect: Threshold specification in `stock low`
+
+* **Alternative 1 (Current Choice)**: Optional parameter with sensible default (`q/5`).
+  * *Pros*: Streamlines routine managerial checks (`stock low`), while permitting granular inspections (`stock low q/20`).
+  * *Cons*: Requires branch handling in the parser to detect whether the parameter was supplied.
+* **Alternative 2**: Mandatory threshold (`stock low q/THRESHOLD`).
+  * *Pros*: Simpler parser implementation.
+  * *Cons*: Forces users to repeatedly type the threshold even when inspecting standard inventory levels.
+
+##### Aspect: Stock tracking separated from Product catalogue
+
+* **Alternative 1 (Current Choice)**: Dedicated `Stock` and `StockList` classes.
+  * *Pros*: Separates product catalogue definitions (name, price) from physical inventory levels, allowing independent extensions such as supplier tracking or storage locations.
+  * *Cons*: Requires coordination between `ProductList` and `StockList` during stock commands.
+* **Alternative 2**: Tracking stock solely as an integer field within `Product`.
+  * *Pros*: Fewer classes to maintain.
+  * *Cons*: Limits inventory management capabilities and mixes catalogue information with operational inventory tracking.
+
+##### Aspect: Error handling during stock operations
+
+* **Alternative 1 (Current Choice)**: Validation before mutation.
+  * *Pros*: Checks product existence and stock sufficiency before modifying any data. If a check fails, a `SystemException` is thrown and state remains unchanged without needing rollback logic.
+  * *Cons*: Requires lookups prior to applying updates.
+* **Alternative 2**: Apply changes and attempt rollback on failure.
+  * *Pros*: Avoids initial lookup pass.
+  * *Cons*: Highly error-prone; failures during rollback leave inventory counts inconsistent.
+
 ## 3. Product scope
+
 ### Target user profile
 
-{Describe the target user profile}
-
-This product is for growing business owners who currently lack a central enterprise software to maintain the overhead of logistics and sales for their business.
+Retail store managers, logistics personnel, sales staff, and small business owners who prefer a fast, keyboard-driven Command-Line Interface (CLI) over graphical applications to administer catalogue products, track warehouse inventory, process customer orders, and oversee branch financial health.
 
 ### Value proposition
 
-{Describe the value proposition: what problem does it solve?}
-
-It provides an easy to use platform to maintain and oversee the status of a business. It allows control over the system by recording the status of supply chain operations like procurement, as well as sales and inventory of the branch. Users include managers, logisticians and sales employees.
+BMS provides a unified, lightweight, and offline-capable platform to maintain and oversee supply chain operations, retail sales, physical inventory, and financial balances from a single terminal interface. It eliminates discrepancies between inventory records and customer order fulfillments while ensuring accurate decimal calculations across all monetary figures.
 
 ## 4. User stories
 
-|Version| As a ... | I want to ... | So that I can ...|
-|--------|----------|---------------|------------------|
-|v1.0|manager|add an expense|record all expenses into the system|
-|v1.0|manager|view recorded expenses|oversee the business with better clarity|
-|v2.0|manager|view net profits/losses|manage the finances with a clearer overview|
+Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-Sample:
-
-|Version| As a ... | I want to ... | So that I can ...|
-|--------|----------|---------------|------------------|
-|v1.0|new user|see usage instructions|refer to them when I forget how to use the application|
-|v2.0|user|find a to-do item by name|locate a to-do without having to go through the entire list|
+| Priority  | As a ...             | I want to ...                                          | So that I can ...                                          |
+| --------- | -------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| `* * *` | user                 | add products to the catalogue                          | maintain a list of items available for sale                |
+| `* * *` | user                 | remove products from the catalogue                     | remove items that are no longer offered                    |
+| `* * *` | manager              | view earnings and expenses                             | oversee financial health with better clarity               |
+| `* * *` | sales employee       | view all customer orders                               | have an overview of all recorded orders                    |
+| `* * *` | sales employee       | select products from the catalogue                     | record customer orders quickly                             |
+| `* * *` | logistics personnel  | view supplies in the storage system                    | check the quantity of inventory remaining                  |
+| `* * *` | logistics personnel  | update stock quantities                                | ensure the system reflects actual physical inventory       |
+| `* * *` | logistics personnel  | restock supplies                                       | ensure essential products remain available for sale        |
+| `* *`   | manager              | view logistics and inventory records                   | monitor the status of supply operations                    |
+| `* *`   | manager              | view customer sales records                            | monitor the status of sales operations                     |
+| `* *`   | manager              | view financial summaries                               | assess the overall financial status of the business        |
+| `* *`   | manager              | view net profits and losses                            | manage company finances with a clearer overview            |
+| `* *`   | sales employee       | edit a customer's order                                | update order details when a customer changes their mind    |
+| `* *`   | sales employee       | get a receipt of orders for a customer                 | provide customers with a receipt of their purchases        |
+| `* *`   | sales employee       | calculate the change needed for customer payments      | provide customers with accurate change quickly             |
+| `* *`   | sales employee       | generate a receipt                                     | provide customers with proof of their purchase             |
+| `* *`   | sales employee       | view past orders for a customer                        | inspect past transaction history when assisting customers  |
+| `* *`   | logistics personnel  | identify low-stock supplies                            | prioritize items that need replenishment                   |
+| `* *`   | logistics personnel  | view supply costs                                      | keep track of procurement expenses                         |
+| `* *`   | logistics personnel  | record damaged or unusable supplies by deducting stock | ensure the system reflects actual usable inventory         |
+| `*`     | user                 | calculate local taxes and multiple currencies          | facilitate international sales and cross-border operations |
+| `*`     | manager              | view employee details such as name, age, and salary    | use the information for human resource tasks               |
+| `*`     | logistics personnel  | monitor inventory movement trends                      | understand how supplies are consumed over time             |
+| `*`     | logistics personnel  | set estimated arrival dates for incoming stock         | plan replenishment schedules effectively                   |
+| `*`     | manager              | assign tasks to team members with deadlines            | keep operational project work on track                     |
+| `*`     | HR manager           | view daily employee attendance                         | monitor staff punctuality and working hours                |
+| `*`     | employee             | submit leave requests through the system               | have time off reviewed and approved by my manager          |
+| `*`     | manager              | approve or reject pending leave requests               | ensure adequate branch staffing and team coverage          |
+| `*`     | HR manager           | add new employee profiles with contract details        | maintain a centralized personnel database                  |
+| `*`     | system administrator | create user accounts with role-based permissions       | ensure employees only access data relevant to their duties |
 
 ## 5. Non-functional requirements
 
-{Give non-functional requirements}
+1. **Platform Compatibility**: The system must run on any mainstream operating system (Windows 10/11, macOS, and Linux distributions) that has Java 25 installed.
+2. **Performance**: The system should execute and display the output of any command within 1 second under normal workloads of up to 1,000 products, orders, and stock records.
+3. **User Profile & Usability**: The application is designed for users who have moderate-to-fast typing speed and prefer a command-line interface (CLI) over graphical user interfaces (GUI) for swift, keyboard-driven operational workflows.
+4. **Standalone Packaging**: The software must be packaged as a single self-contained executable JAR file without requiring external database management systems (DBMS) or remote network services.
+5. **Data Integrity & Consistency**: Commands follow a validation-then-apply pattern. If an error occurs (such as insufficient stock, an uncatalogued product, or an invalid parameter), the application state must remain completely unchanged without leaving partial or corrupted records.
+6. **Monetary Precision**: All financial calculations (unit prices, subtotals, percentage discounts, payments, change, expenses, and net profit/loss) must preserve exact two-decimal-place accuracy using `BigDecimal` with half-up rounding to prevent floating-point rounding errors.
+7. **Fault Tolerance**: Syntactical errors, missing parameters, or business-rule violations in user input must be handled gracefully with clear error messages, ensuring a single bad command never crashes or terminates the application session.
 
 ## 6. Glossary
 
-* *glossary item* - Definition
+* **BMS (Business Management System)**: The command-line application used by retail store managers, sales staff, and logistics personnel to administer products, inventory, orders, sales, and finances.
+* **Catalogue Product**: A master product entry defined by a unique product name and base unit price. It acts as the reference for physical stock and customer orders.
+* **Command-Line Interface (CLI)**: A text-based user interface where the user types commands line-by-line via the terminal.
+* **Discount**: A percentage deduction applied to an order's subtotal, calculated using exact decimal arithmetic rounded half-up to two decimal places.
+* **Expense**: A recorded business cash outflow specifying the product or expense item and the monetary amount incurred.
+* **Low Stock Threshold**: The cutoff quantity (default: 5 units) at or below which an inventory item is flagged by `stock low` as requiring replenishment.
+* **Order**: A recorded customer purchase transaction containing a unique sequential order ID, customer name, one or more order items, discount percentage, and payment status.
+* **Order Item**: A single line in an order capturing the product, ordered quantity, and the unit price locked at the time of purchase.
+* **Profit / Loss**: The net financial performance of the business, calculated as total sales revenue received minus total recorded operating expenses.
+* **Stock**: The physical quantity of a catalogued product currently available on hand in the storage or warehouse system.
+* **Subtotal**: The monetary sum of all items in an order before discounts are applied.
 
 ## 7. Instructions for manual testing
 
-{Give instructions on how to do a manual product testing e.g., how to load sample data to be used for testing}
+Given below are instructions to test the application manually. These instructions can be used by testers and evaluators to verify the functionality, data integrity, and error-handling behavior of BMS.
+
+### 7.1 Initial launch and shutdown
+
+1. **Prerequisites**: Ensure that Java 25 is installed on your computer. Verify by opening a terminal and running `java -version`.
+2. **Download / Build**:
+   * Build the executable shadow JAR using `./gradlew shadowJar --no-daemon`. The compiled JAR will be located at `build/libs/duke.jar`.
+3. **Starting the application**:
+   * Open a terminal, navigate to the folder containing `duke.jar`, and run:
+     ```bash
+     java -jar build/libs/duke.jar
+     ```
+   * *Expected*: The welcome banner is displayed along with a prompt waiting for user input.
+4. **Exiting the application**:
+   * Test case: `exit`
+   * *Expected*: The application prints a goodbye message and exits cleanly.
+
+---
+
+### 7.2 Product catalogue management
+
+1. **Adding products**:
+   * Test case: `product add p/Apple a/1.50`
+     * *Expected*: Product "Apple" is added to the catalogue with unit price $1.50 and initial stock 0.
+   * Test case: `product add p/Banana a/2.00`
+     * *Expected*: Product "Banana" is added with price $2.00 and initial stock 0.
+   * Test case (duplicate product): `product add p/Apple a/1.80`
+     * *Expected*: Error message indicating that "Apple" already exists in the catalogue. Catalogue remains unchanged.
+   * Test case (invalid price): `product add p/Orange a/-2.50`
+     * *Expected*: Command is rejected with an error stating amount must be positive.
+2. **Listing products**:
+   * Test case: `product list`
+     * *Expected*: Displays an aligned tabular view showing all added products, unit prices ($1.50, $2.00), and available quantities.
+
+---
+
+### 7.3 Stock and inventory management
+
+1. **Adding physical stock**:
+   * Test case: `stock add p/Apple q/10`
+     * *Expected*: Creates a stock record for Apple with quantity 10 at $1.50 each.
+   * Test case: `stock add p/Banana q/4`
+     * *Expected*: Creates a stock record for Banana with quantity 4 at $2.00 each.
+   * Test case (uncatalogued product): `stock add p/Watermelon q/5`
+     * *Expected*: Command rejected with an error indicating product does not exist in the catalogue.
+2. **Listing inventory**:
+   * Test case: `stock list`
+     * *Expected*: An aligned table displaying Apple (Qty: 10) and Banana (Qty: 4).
+3. **Low stock monitoring**:
+   * Test case (default threshold 5): `stock low`
+     * *Expected*: Table showing items with quantity <= 5. Banana (Qty: 4) is listed; Apple (Qty: 10) is omitted.
+   * Test case (custom threshold): `stock low q/10` or `stock low 10`
+     * *Expected*: Both Apple (Qty: 10) and Banana (Qty: 4) are displayed.
+   * Test case (no low stock items): `stock low q/2`
+     * *Expected*: An informational message confirming that all products have sufficient stock (more than 2).
+4. **Removing stock**:
+   * Test case (custom quantity): `stock remove p/Apple q/2`
+     * *Expected*: Deducts 2 units; remaining stock for Apple becomes 8.
+   * Test case (default 1 unit): `stock remove p/Apple`
+     * *Expected*: Deducts 1 unit; remaining stock for Apple becomes 7.
+   * Test case (exceeding stock): `stock remove p/Banana q/20`
+     * *Expected*: Deducts up to available count, clamping Banana stock safely at 0 without dropping negative.
+
+---
+
+### 7.4 Order operations and stock synchronization (Issue #68 verification)
+
+These tests verify that `Product.stock` and `Stock.quantity` remain strictly synchronized across all order operations.
+
+1. **Setup**:
+   * Restock Apple to 10 units: `stock add p/Apple q/3` (total: 10 units).
+   * Verify: Run both `product list` and `stock list` — both must report Apple with quantity 10.
+2. **Order creation and stock deduction**:
+   * Test case: `order add c/Alice p/Apple q/4`
+     * *Expected*: Order 1 is created for Alice (4 x Apple @ $1.50 = $6.00, Unpaid).
+     * *Verification*:
+       * Run `product list` -> Apple shows stock: 6.
+       * Run `stock list` -> Apple shows Qty: 6.
+       * Both lists match exactly (verifying fix for Issue #68).
+3. **Order editing**:
+   * Test case: `order edit 1 q/2`
+     * *Expected*: Order 1 quantity is reduced from 4 to 2.
+     * *Verification*: Run `stock list` and `product list` -> both show Apple stock restored from 6 to 8.
+4. **Order cancellation and stock restoration**:
+   * Test case: `order cancel 1`
+     * *Expected*: Order 1 is marked as Cancelled.
+     * *Verification*: Run `stock list` and `product list` -> both show Apple stock restored from 8 back to 10.
+   * Test case (cancelling already cancelled order): `order cancel 1`
+     * *Expected*: Error reported that order is already cancelled; stock is not restored a second time.
+5. **Stock exhaustion guard**:
+   * Test case: `order add c/Bob p/Apple q/50`
+     * *Expected*: Rejected due to insufficient stock (only 10 available). Neither stock nor orders are changed.
+
+---
+
+### 7.5 Customer payments, receipts, and sales
+
+1. **Placing a discounted order**:
+   * Test case: `order add c/Charlie p/Apple q/2`
+     * *Expected*: Order 2 created (Subtotal: $3.00, Unpaid).
+   * Test case: `order discount 2 d/10`
+     * *Expected*: Applies 10% discount ($0.30 off), new Total: $2.70.
+2. **Checking confirmed sales**:
+   * Test case: `sales list`
+     * *Expected*: Total sales show $0.00 because Order 2 is unpaid.
+3. **Recording payment**:
+   * Test case: `order add pay c/Charlie a/5.00`
+     * *Expected*: Marks Order 2 paid ($2.70), displays change due ($2.30).
+   * Test case: `sales list`
+     * *Expected*: Total sales now reflect $2.70.
+4. **Generating receipts**:
+   * Test case: `generate receipts c/Charlie`
+     * *Expected*: Prints a formatted receipt for Charlie listing Order 2, items, discount, subtotal, and total paid.
+5. **Viewing customer order details**:
+   * Test case: `order details c/Charlie`
+     * *Expected*: Displays detailed breakdown of Charlie's purchases.
+
+---
+
+### 7.6 Operating expenses and financial report
+
+1. **Recording expenses**:
+   * Test case: `expense add p/Packaging a/5.00`
+     * *Expected*: Records operating expense for Packaging with amount $5.00.
+   * Test case: `expense list`
+     * *Expected*: Tabular view showing recorded expenses.
+2. **Viewing net financial standing**:
+   * Test case: `finances`
+     * *Expected*: Displays financial report:
+       * Total Sales: $2.70
+       * Total Expenses: $5.00
+       * Net Standing: Net Loss (-$2.30) calculated to 2 decimal places.
+
+---
+
+### 7.7 Help documentation
+
+1. **Overview help**:
+   * Test case: `help`
+     * *Expected*: Displays available command areas (`product`, `stock`, `order`, `sales`, `expense`, `generate`, `finances`, `general`).
+2. **Context-specific help**:
+   * Test case: `help stock`
+     * *Expected*: Displays detailed syntax, options, and examples for `stock add`, `stock remove`, `stock list`, and `stock low`.
