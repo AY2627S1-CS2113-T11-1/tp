@@ -5,9 +5,21 @@ sequenceDiagram
     participant P2 as ReceiptGenerator
     participant P3 as OrderList
     participant P4 as Ui
+    activate P0
     P0->>P1: execute(...)
+    activate P1
     P1->>P2: generate(orders, customer)
+    activate P2
     P2->>P3: getAll()
+    activate P3
     P3-->>P2: Order history
+    deactivate P3
     P2-->>P1: Matching active orders
+    deactivate P2
     P1->>P4: showReceipts(...)
+    activate P4
+    P4-->>P1: return
+    deactivate P4
+    P1-->>P0: return
+    deactivate P1
+    deactivate P0

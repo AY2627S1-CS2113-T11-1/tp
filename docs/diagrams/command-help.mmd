@@ -3,5 +3,13 @@ sequenceDiagram
     participant P0 as Duke
     participant P1 as HelpCommand
     participant P2 as Ui
+    activate P0
     P0->>P1: execute(...)
+    activate P1
     P1->>P2: showHelp(title, commands)
+    activate P2
+    P2-->>P1: return
+    deactivate P2
+    P1-->>P0: return
+    deactivate P1
+    deactivate P0
