@@ -1,0 +1,7 @@
+sequenceDiagram
+    %% Main successful flow; validation and alternatives are described in the guide.
+    participant P0 as Duke
+    participant P1 as HelpCommand
+    participant P2 as Ui
+    P0->>P1: execute(...)
+    P1->>P2: showHelp(title, commands)
