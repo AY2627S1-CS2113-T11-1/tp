@@ -10,6 +10,7 @@ import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.Stock;
 import seedu.duke.StockList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
@@ -113,6 +114,12 @@ public class AddOrderCommand extends Command {
             int quantity = requestedItems.get(i).quantity();
 
             product.setStock(product.getStock() - quantity);
+            if (stocks != null) {
+                Stock stock = stocks.findByProduct(product.getName());
+                if (stock != null) {
+                    stock.setQuantity(product.getStock());
+                }
+            }
 
             assert product.getStock() >= 0
                     : "Validated order must not produce negative stock";
