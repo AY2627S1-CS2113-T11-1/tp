@@ -13,6 +13,7 @@ import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.DeleteProductCommand;
 import seedu.duke.command.ExitCommand;
 import seedu.duke.command.HelpCommand;
 import seedu.duke.command.ListOrderCommand;
@@ -43,6 +44,8 @@ public class Parser {
     private static final String PRICE_PREFIX = "a/";
     private static final String ADD_FORMAT =
             "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String DELETE_FORMAT =
+            "Format: product delete p/PRODUCT";
     private static final String EXPENSE_ADD_FORMAT =
             "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
@@ -150,7 +153,8 @@ public class Parser {
      */
     private Command parseProductCommand(String[] words) throws SystemException {
         if (words.length < 2) {
-            throw new SystemException("What should I do with products? Try: product add, or product list");
+            throw new SystemException("What should I do with products? "
+                    + "Try: product add, product delete, or product list");
         }
 
         String verb = words[1].toLowerCase();
@@ -159,13 +163,16 @@ public class Parser {
         if (verb.equals("add")) {
             return parseAddProduct(arguments);
         }
+        if (verb.equals("delete")) {
+            return parseDeleteProduct(arguments);
+        }
         if (verb.equals("list")) {
             if (!arguments.isEmpty()) {
                 throw new SystemException("\"product list\" takes no extra input, but I found: " + arguments);
             }
             return new ListProductCommand();
         }
-        throw new SystemException("I don't know how to \"product " + words[1] + "\". Try: add, or list");
+        throw new SystemException("I don't know how to \"product " + words[1] + "\". Try: add, delete, or list");
     }
 
     /**
@@ -568,6 +575,26 @@ public class Parser {
             throw new SystemException("The product name cannot be empty. " + ADD_FORMAT);
         }
         return new AddProductCommand(name, parsePrice(priceText));
+    }
+
+    /**
+     * Returns a delete command built from the arguments of {@code product delete}.
+     *
+     * Only p/ is accepted. An a/ is rejected rather than ignored, so a user who types the add format
+     * by mistake is told so, instead of deleting a product without noticing.
+     *
+     * @param arguments the text after "product delete", e.g. "p/Oat Milk"
+     * @throws SystemException if p/ is missing, the name is empty, or an a/ is given
+     */
+    private Command parseDeleteProduct(String arguments) throws SystemException {
+        if (arguments.contains(PRICE_PREFIX)) {
+            throw new SystemException("product delete only takes p/PRODUCT. " + DELETE_FORMAT);
+        }
+        String name = extractValue(arguments, NAME_PREFIX, PRODUCT_PREFIXES, DELETE_FORMAT);
+        if (name.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. " + DELETE_FORMAT);
+        }
+        return new DeleteProductCommand(name);
     }
 
     /**

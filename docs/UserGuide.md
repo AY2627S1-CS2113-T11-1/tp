@@ -78,6 +78,35 @@ Products (2):
    Oat Milk 1L       $3.50   stock 0
 ```
 
+### 1.3 Deleting a product: `product delete`
+
+Deletes a product from the catalogue, along with its stock record.
+
+Format: `product delete p/PRODUCT`
+
+* `PRODUCT` is the product name. Names are compared ignoring upper and lower case.
+* Only `p/` is accepted. A command that also has `a/` is rejected, so a mistyped `product add` never deletes a product.
+* A product that is still in an active order cannot be deleted. Cancel the order first with `order cancel`.
+* Cancelled orders still show the deleted product's name in their history.
+
+Examples of usage:
+
+`product delete p/Oat Milk 1L`
+
+Deletes Oat Milk 1L and its stock record.
+
+Example output:
+
+```text
+Deleted product Oat Milk 1L
+```
+
+Example output (Oat Milk 1L is in active order 2):
+
+```text
+Sorry! Can't delete Oat Milk 1L, it's still in active order 2. Cancel the order first.
+```
+
 ### 2. Stock inventory
 
 Stock records track the quantity of each product physically on hand. When you add or remove stock,
@@ -618,6 +647,7 @@ Format: `exit`
 | --- | --- |
 | **<ins>Product</ins>** | |
 | Add product | `product add p/PRODUCT a/AMOUNT` |
+| Delete product | `product delete p/PRODUCT` |
 | List products | `product list` |
 | | |
 | **<ins>Stock</ins>** | |

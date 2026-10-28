@@ -34,6 +34,19 @@ class ProductListTest {
     }
 
     @Test
+    public void remove_existingProduct_productNoLongerFound() throws SystemException {
+        ProductList products = new ProductList();
+        Product oatMilk = new Product("Oat Milk", 3.50);
+        products.add(oatMilk);
+        products.add(new Product("Coffee Beans", 12.00));
+
+        products.remove(oatMilk);
+
+        assertNull(products.findByName("Oat Milk"));
+        assertEquals(1, products.size());
+    }
+
+    @Test
     public void findByName_absentProduct_returnsNull() {
         assertNull(new ProductList().findByName("Oat Milk"));
     }

@@ -51,6 +51,21 @@ public class ProductList {
         return null;
     }
 
+    /**
+     * Removes the given product from the catalogue.
+     *
+     * The caller finds the product with {@link #findByName(String)} first, so it is expected to be
+     * in the catalogue.
+     *
+     * @param product the product to remove
+     */
+    public void remove(Product product) {
+        assert product != null : "Cannot remove a null product from the catalogue";
+
+        boolean isRemoved = products.remove(product);
+        assert isRemoved : "Product to remove should be in the catalogue";
+    }
+
     public int size() {
         return products.size();
     }

@@ -16,6 +16,7 @@ import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.DeleteProductCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
@@ -107,6 +108,33 @@ class ParserTest {
 
         assertEquals("Bread", command.getProductName());
         assertEquals(BigDecimal.valueOf(100.50).setScale(2), command.getAmount());
+    }
+
+    @Test
+    public void parse_productDelete_returnsDeleteProductCommand() throws SystemException {
+        DeleteProductCommand command = assertInstanceOf(DeleteProductCommand.class,
+                parser.parse("product delete p/Oat Milk 1L"));
+
+        assertEquals("Oat Milk 1L", command.getName());
+    }
+
+    @Test
+    public void parse_productDeleteMissingPrefix_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product delete Oat Milk"));
+    }
+
+    @Test
+    public void parse_productDeleteEmptyName_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product delete p/"));
+    }
+
+    @Test
+    public void parse_productDeleteWithAmount_throwsSystemException() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("product delete p/Oat Milk a/3.50"));
+
+        assertEquals("product delete only takes p/PRODUCT. Format: product delete p/PRODUCT",
+                exception.getMessage());
     }
 
     @Test

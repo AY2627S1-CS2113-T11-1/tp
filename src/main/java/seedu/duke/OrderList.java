@@ -83,6 +83,28 @@ public class OrderList {
         return Collections.unmodifiableList(paidSales);
     }
 
+    /**
+     * Returns the oldest active order that contains the given product, or null if there is none.
+     *
+     * Used by {@code product delete}: cancelling or editing an active order later returns stock to
+     * its products, so a product an active order still contains must not be deleted.
+     *
+     * @param productName the product name to look for, ignoring case
+     */
+    public Order findActiveOrderWithProduct(String productName) {
+        for (Order order : orders) {
+            if (order.isCancelled()) {
+                continue;
+            }
+            for (OrderItem item : order.getItems()) {
+                if (item.getProduct().getName().equalsIgnoreCase(productName)) {
+                    return order;
+                }
+            }
+        }
+        return null;
+    }
+
     public int size() {
         return orders.size();
     }

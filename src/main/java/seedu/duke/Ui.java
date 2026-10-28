@@ -181,6 +181,15 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for a product removed from the catalogue.
+     *
+     * @param product the product that was just deleted
+     */
+    public void showProductDeleted(Product product) {
+        printIndent("Deleted product " + product.getName());
+    }
+
+    /**
      * Shows the confirmation for a newly recorded expense.
      *
      * @param expense the expense that was just recorded

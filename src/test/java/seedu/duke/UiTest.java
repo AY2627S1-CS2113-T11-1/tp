@@ -34,6 +34,13 @@ class UiTest {
     }
 
     @Test
+    public void showProductDeleted_product_printsName() {
+        ui.showProductDeleted(new Product("Oat Milk", 3.50));
+
+        assertEquals(indentedLines("Deleted product Oat Milk"), outputLines());
+    }
+
+    @Test
     public void showProducts_threeProducts_printsAlignedColumns() {
         Product oatMilk = new Product("Oat Milk", 3.50);
         oatMilk.setStock(24);

@@ -44,6 +44,23 @@ public class StockList {
     }
 
     /**
+     * Removes the stock entry for the given product name (case-insensitive), if there is one.
+     *
+     * A product only gets a stock entry once stock is first added, so a product that never had
+     * stock has nothing to remove.
+     *
+     * @param productName the product whose stock entry should be removed
+     * @return true if an entry was removed, false if the product had no stock entry
+     */
+    public boolean removeByProduct(String productName) {
+        Stock stock = findByProduct(productName);
+        if (stock == null) {
+            return false;
+        }
+        return stocks.remove(stock);
+    }
+
+    /**
      * Returns an unmodifiable view of the stock list to protect internal state.
      *
      * @return unmodifiable list of stocks
