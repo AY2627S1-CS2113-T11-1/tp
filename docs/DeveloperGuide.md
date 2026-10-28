@@ -180,8 +180,10 @@ orders and look up command usage. They use the existing `Command` structure and 
   using the full name, ignoring case, rather than by partial matches.
 * `Ui` handles messages and tables. Commands select or update data without constructing table borders.
 
-The sequence diagrams below focus on execution after parsing. `Duke` represents the application's command
-loop; unrelated command arguments and formatting calls are omitted.
+The sequence diagrams below show the main successful execution path after parsing. `Duke` represents
+the application's command loop. Validation, error paths and repeated calls are omitted for readability;
+the surrounding text describes alternatives. The payment diagram shows the current `recordPayment`
+call, while the original full-payment design is described below.
 
 #### Listing sales
 
@@ -194,21 +196,7 @@ silently ignored, so a mistyped filter cannot appear to have been applied.
 then passes the result to `Ui`. This is a newly collected, unmodifiable list, but its elements still refer
 to the existing `Order` objects. It is not a deep copy of the order history.
 
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant C as ListSalesCommand
-    participant L as OrderList
-    participant U as Ui
-    D->>C: execute(...)
-    C->>L: getConfirmedSales()
-    Note over L: Select non-cancelled orders in creation order
-    L-->>C: sales
-    C->>U: showSales(sales)
-    Note over U: Build rows and sum order totals
-    U-->>C: return
-    C-->>D: return
-```
+![Sales listing sequence diagram](images/sales-list.svg)
 
 **Display.** `Ui` sums the quantities in each order and reads its amount through `Order#getTotal()`, which
 includes any order discount. The column labelled `Subtotal` represents that row's contribution to the
@@ -248,31 +236,9 @@ orders that are not cancelled. Tracking customer existence separately distinguis
 2. *Known customer with no eligible orders.* Matching orders exist but all are cancelled, so the generator
    returns an empty list and the UI explains that there are no eligible receipts.
 
-The following sequence shows receipt selection and the two display paths.
+The following sequence shows receipt selection and display for a known customer.
 
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant C as GenerateReceiptsCommand
-    participant G as ReceiptGenerator
-    participant L as OrderList
-    participant U as Ui
-    D->>C: execute(...)
-    C->>G: generate(orders, customer)
-    G->>L: getAll()
-    L-->>G: order history
-    Note over G: Match full name and exclude cancelled orders
-    alt Customer exists
-        G-->>C: receipt orders (possibly empty)
-        C->>U: showReceipts(customer, receipts)
-        Note over U: Show separate receipts or the empty-result message
-        U-->>C: return
-        C-->>D: return
-    else Customer has no order history
-        Note over G,D: SystemException propagates to Duke
-        D->>U: showError(message)
-    end
-```
+![Receipt generation sequence diagram](images/generate-receipts.svg)
 
 **Display.** Each receipt includes its original order number and customer name. `Ui#showReceipts` reuses
 `printOrderTable`, the same helper used for order creation, so quantities, stored unit prices and totals
@@ -311,30 +277,7 @@ stages:
 2. *Apply.* Call `Order#markPaid()` on each eligible order, then pass the payment and calculated change to
    `Ui#showPayment`. Cancelled and already-paid orders are excluded from later payment attempts.
 
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant C as AddPaymentCommand
-    participant L as OrderList
-    participant O as Order
-    participant U as Ui
-    D->>C: execute(...)
-    C->>L: getAll()
-    L-->>C: order history
-    Note over C: Find customer, collect unpaid active orders and calculate amount due
-    alt Customer exists, eligible orders exist and payment is sufficient
-        loop Each eligible order
-            C->>O: markPaid()
-            O-->>C: return
-        end
-        C->>U: showPayment(customer, amount, change)
-        U-->>C: return
-        C-->>D: return
-    else Payment rejected
-        Note over C,D: SystemException propagates to Duke<br/>Payment status is unchanged
-        D->>U: showError(message)
-    end
-```
+![Customer payment sequence diagram](images/customer-payment.svg)
 
 **Money and state.** `getAmountDue` multiplies each saved unit price by its quantity using `BigDecimal`,
 then rounds to cents with `RoundingMode.HALF_UP`. Invalid saved prices are rejected before payment is
@@ -372,25 +315,7 @@ them in creation order. Unlike receipt selection, it retains cancelled orders be
 the customer's order history. It passes the requested customer and matching orders to the UI without
 changing any order, stock quantity or payment status.
 
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant C as OrderDetailsCommand
-    participant L as OrderList
-    participant U as Ui
-    D->>C: execute(...)
-    C->>L: getAll()
-    L-->>C: order history
-    Note over C: Collect full-name matches, including cancelled orders
-    C->>U: showOrderDetails(customer, matches)
-    alt Matches exist
-        Note over U: Show each order ID, status, item rows and total
-    else No matches
-        Note over U: Show customer-specific no-orders message
-    end
-    U-->>C: return
-    C-->>D: return
-```
+![Customer order details sequence diagram](images/order-details.svg)
 
 **Display.** Each order has its own heading with the original ID and `Active` or `Cancelled` status.
 Its table shows product names, quantities and line costs. The footer gives the item count and
@@ -421,22 +346,7 @@ and an example. Otherwise, a switch selects description-and-syntax pairs for `pr
 `sales`, `expense`, `generate` or `general`. An unknown area produces an error containing the supported
 areas. Help reads no order data and does not change application state.
 
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant C as HelpCommand
-    participant U as Ui
-    D->>C: execute(...)
-    alt No area supplied
-        C->>U: showHelpOverview(usage)
-    else Supported area
-        Note over C: Select description and syntax pairs
-        C->>U: showHelp(title, commands)
-    else Unknown area
-        Note over C,D: SystemException propagates to Duke
-        D->>U: showError(message)
-    end
-```
+![Command help sequence diagram](images/command-help.svg)
 
 **Display.** `Ui` prints the area heading followed by numbered descriptions and command syntax. Optional
 parameters are shown in square brackets. `generate` covers receipts, while `general` covers help and exit.
