@@ -567,7 +567,7 @@ public class Parser {
         if (name.isEmpty()) {
             throw new SystemException("The product name cannot be empty. " + ADD_FORMAT);
         }
-        return new AddProductCommand(name, parsePrice(priceText));
+        return new AddProductCommand(name, parsePrice(priceText, ADD_FORMAT));
     }
 
     /**
@@ -583,7 +583,7 @@ public class Parser {
         if (productName.isEmpty()) {
             throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
         }
-        return new AddExpenseCommand(productName, parsePrice(amountText));
+        return new AddExpenseCommand(productName, parsePrice(amountText, EXPENSE_ADD_FORMAT));
     }
 
     /**
@@ -634,12 +634,16 @@ public class Parser {
     /**
      * Returns the price described by the text after a/, in dollars.
      *
-     * @param priceText the text after the a/ prefix, e.g. "3.50"
-     * @throws SystemException if the text is not a number, is negative, or has too many decimals
+     * Both {@code product add} and {@code expense add} use a/ for an amount, so the caller passes
+     * its own format hint to show when the amount is missing.
+     *
+     * @param priceText  the text after the a/ prefix, e.g. "3.50"
+     * @param formatHint the command format shown when the amount is empty, e.g. {@code ADD_FORMAT}
+     * @throws SystemException if the text is empty, not a number, negative, or has too many decimals
      */
-    private BigDecimal parsePrice(String priceText) throws SystemException {
+    private BigDecimal parsePrice(String priceText, String formatHint) throws SystemException {
         if (priceText.isEmpty()) {
-            throw new SystemException("The price cannot be empty. " + ADD_FORMAT);
+            throw new SystemException("The price cannot be empty. " + formatHint);
         }
 
         int pointIndex = priceText.indexOf('.');
