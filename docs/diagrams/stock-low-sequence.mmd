@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant D as Duke
+    participant P as Parser
+    participant C as LowStockCommand
+    participant SL as StockList
+    participant PL as ProductList
+    participant U as Ui
+
+    D->>P: parse("stock low q/3")
+    activate P
+    P->>C: new LowStockCommand(3)
+    activate C
+    C-->>P: command
+    deactivate C
+    P-->>D: command
+    deactivate P
+
+    D->>C: execute(...)
+    activate C
+
+    C->>SL: getStocks()
+    activate SL
+    SL-->>C: allStocks
+    deactivate SL
+
+    loop For each stock in allStocks
+        C->>PL: findByName(product)
+        activate PL
+        PL-->>C: product
+        deactivate PL
+    end
+
+    C->>U: showLowStock(lowStocks, 3)
+    activate U
+    U-->>C: return
+    deactivate U
+
+    C-->>D: return
+    deactivate C

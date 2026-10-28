@@ -1,0 +1,71 @@
+%%{init: {"theme": "default", "class": {"curve": "linear"}}}%%
+classDiagram
+    direction TB
+
+    class Command {
+        <<abstract>>
+        +execute(products, orders, expenses, stocks, ui)* void
+    }
+
+    class AddStockCommand {
+        -String productName
+        -int quantity
+        +execute(...) void
+    }
+
+    class RemoveStockCommand {
+        -String productName
+        -int quantity
+        -boolean isDefault
+        +execute(...) void
+    }
+
+    class ListStockCommand {
+        +execute(...) void
+    }
+
+    class LowStockCommand {
+        +int DEFAULT_THRESHOLD$
+        -int threshold
+        +execute(...) void
+    }
+
+    class StockList {
+        -ArrayList~Stock~ stocks
+        +add(Stock) void
+        +findByProduct(String) Stock
+        +getStocks() ArrayList~Stock~
+    }
+
+    class Stock {
+        +String product
+        +BigDecimal price
+        +int quantity
+        +Stock(product, price, quantity)
+    }
+
+    class ProductList {
+        +findByName(String) Product
+        +add(Product) void
+        +getAll() List~Product~
+    }
+
+    class Product {
+        -String name
+        -BigDecimal price
+        -int stock
+        +getName() String
+        +getStock() int
+    }
+
+    Command <|-- AddStockCommand
+    Command <|-- RemoveStockCommand
+    Command <|-- ListStockCommand
+    Command <|-- LowStockCommand
+
+    Command ..> StockList : uses
+    Command ..> ProductList : uses
+
+    StockList "1" *-- "*" Stock
+    ProductList "1" *-- "*" Product
+
