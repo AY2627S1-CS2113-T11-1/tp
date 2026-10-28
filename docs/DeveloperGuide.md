@@ -762,16 +762,21 @@ Given below are instructions to test the application manually. These instruction
 
 1. **Adding products**:
    * Test case: `product add p/Apple a/1.50`
-     * *Expected*: Product "Apple" is added to the catalogue with unit price $1.50 and initial stock 0.
+     * *Expected*: Shows `Added product Apple`, `Price: $1.50` and `Stock: 0`.
    * Test case: `product add p/Banana a/2.00`
-     * *Expected*: Product "Banana" is added with price $2.00 and initial stock 0.
-   * Test case (duplicate product): `product add p/Apple a/1.80`
-     * *Expected*: Error message indicating that "Apple" already exists in the catalogue. Catalogue remains unchanged.
-   * Test case (invalid price): `product add p/Orange a/-2.50`
-     * *Expected*: Command is rejected with an error stating amount must be positive.
+     * *Expected*: Product "Banana" is added with price $2.00 and stock 0.
+   * Test case (free item): `product add p/Paper Bag a/0`
+     * *Expected*: Product "Paper Bag" is added with price $0.00. A price of 0 is allowed.
+   * Test case (duplicate product, different case): `product add p/apple a/1.80`
+     * *Expected*: Error `Sorry! A product named "apple" is already in the catalogue.` Catalogue remains unchanged.
+   * Test case (negative price): `product add p/Orange a/-2.50`
+     * *Expected*: Error `Sorry! The price cannot be negative, but I got: -2.50`. Catalogue remains unchanged.
+   * Test case (too many decimal places): `product add p/Orange a/2.505`
+     * *Expected*: Error `Sorry! A price can have at most 2 decimal places, but I got: 2.505`. Catalogue remains unchanged.
 2. **Listing products**:
    * Test case: `product list`
-     * *Expected*: Displays an aligned tabular view showing all added products, unit prices ($1.50, $2.00), and available quantities.
+     * *Expected*: Shows `Products (3):` followed by one line per product in alphabetical order (Apple, Banana,
+       Paper Bag), each with its price and stock.
 
 ---
 
