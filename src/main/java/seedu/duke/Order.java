@@ -15,7 +15,8 @@ public class Order {
     private String customer;
     private List<OrderItem> items;
     private boolean isCancelled;
-    private boolean isPaid;
+    private boolean paymentRecorded;
+    private BigDecimal paidAmount = BigDecimal.ZERO.setScale(2);
     private BigDecimal discountPercent = BigDecimal.ZERO;
 
     /**
@@ -54,7 +55,12 @@ public class Order {
      * @return true when the order has been paid
      */
     public boolean isPaid() {
-        return isPaid;
+        return paymentRecorded && paidAmount.compareTo(getTotal()) >= 0;
+    }
+
+    /** Returns the amount actually paid towards this order, rounded to cents. */
+    public BigDecimal getPaidAmount() {
+        return paidAmount;
     }
 
     /**
@@ -66,10 +72,33 @@ public class Order {
         if (isCancelled) {
             throw new SystemException("Cannot pay for cancelled order " + id + ".");
         }
-        if (isPaid) {
+        if (isPaid()) {
             throw new SystemException("Order " + id + " has already been paid.");
         }
-        isPaid = true;
+        paidAmount = getTotal();
+        paymentRecorded = true;
+    }
+
+    /**
+     * Records a partial or complete payment for this order.
+     *
+     * @param amount amount to apply, no greater than the outstanding balance
+     * @throws SystemException if the order cannot accept the payment
+     */
+    public void recordPayment(BigDecimal amount) throws SystemException {
+        assert amount != null && amount.signum() >= 0 : "Payment amount must be non-negative";
+        if (isCancelled) {
+            throw new SystemException("Cannot pay for cancelled order " + id + ".");
+        }
+        if (isPaid()) {
+            throw new SystemException("Order " + id + " has already been paid.");
+        }
+        BigDecimal outstanding = getTotal().subtract(paidAmount);
+        if (amount.compareTo(outstanding) > 0) {
+            throw new SystemException("Payment exceeds the outstanding balance for order " + id + ".");
+        }
+        paidAmount = paidAmount.add(amount).setScale(2);
+        paymentRecorded = true;
     }
 
     /**
@@ -143,25 +172,25 @@ public class Order {
     /**
      * Returns the undiscounted subtotal: each line's stored unit price times its quantity, summed.
      */
-    public double getSubtotal() {
-        return subtotalAmount().doubleValue();
+    public BigDecimal getSubtotal() {
+        return subtotalAmount();
     }
 
     /**
      * Returns the discount in dollars: subtotal times percentage, rounded to the nearest cent, with half a
      * cent rounded up.
      */
-    public double getDiscountAmount() {
-        return discountAmount().doubleValue();
+    public BigDecimal getDiscountAmount() {
+        return discountAmount();
     }
 
     /**
      * Returns the amount the customer pays: the subtotal minus the discount amount.
      */
-    public double getTotal() {
+    public BigDecimal getTotal() {
         BigDecimal total = subtotalAmount().subtract(discountAmount());
         assert total.signum() >= 0 : "A discount of at most 100% can never make the total negative";
-        return total.doubleValue();
+        return total;
     }
 
     /**
@@ -173,8 +202,7 @@ public class Order {
     private BigDecimal subtotalAmount() {
         BigDecimal subtotal = BigDecimal.ZERO;
         for (OrderItem item : items) {
-            subtotal = subtotal.add(BigDecimal.valueOf(item.getUnitPrice())
-                    .multiply(BigDecimal.valueOf(item.getQuantity())));
+            subtotal = subtotal.add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         return subtotal.setScale(2, RoundingMode.HALF_UP);
     }

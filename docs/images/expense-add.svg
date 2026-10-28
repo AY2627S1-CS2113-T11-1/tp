@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="330" viewBox="0 0 920 330" role="img" aria-labelledby="title desc">
+  <title id="title">Adding an expense sequence</title>
+  <desc id="desc">The user submits an expense command, which Duke parses and executes through AddExpenseCommand, ExpenseList, and Ui.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,3 L0,6 Z" fill="#40566f"/></marker>
+    <style>
+      .head { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; rx:5; }
+      .name { fill:#1f2933; font:14px Arial, sans-serif; text-anchor:middle; dominant-baseline:middle; }
+      .life { stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 5; }
+      .msg { stroke:#40566f; stroke-width:1.3; marker-end:url(#arrow); }
+      .text { fill:#1f2933; font:13px Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect width="920" height="330" fill="white"/>
+  <rect class="head" x="20" y="20" width="90" height="38"/><text class="name" x="65" y="39">User</text>
+  <rect class="head" x="175" y="20" width="90" height="38"/><text class="name" x="220" y="39">Duke</text>
+  <rect class="head" x="330" y="20" width="90" height="38"/><text class="name" x="375" y="39">Parser</text>
+  <rect class="head" x="485" y="20" width="145" height="38"/><text class="name" x="557" y="39">AddExpenseCommand</text>
+  <rect class="head" x="695" y="20" width="105" height="38"/><text class="name" x="747" y="39">ExpenseList</text>
+  <rect class="head" x="840" y="20" width="60" height="38"/><text class="name" x="870" y="39">Ui</text>
+  <line class="life" x1="65" y1="58" x2="65" y2="305"/><line class="life" x1="220" y1="58" x2="220" y2="305"/><line class="life" x1="375" y1="58" x2="375" y2="305"/><line class="life" x1="557" y1="58" x2="557" y2="305"/><line class="life" x1="747" y1="58" x2="747" y2="305"/><line class="life" x1="870" y1="58" x2="870" y2="305"/>
+  <line class="msg" x1="65" y1="90" x2="220" y2="90"/><text class="text" x="72" y="82">expense add p/Bread a/100.50</text>
+  <line class="msg" x1="220" y1="135" x2="375" y2="135"/><text class="text" x="227" y="127">parse(...)</text>
+  <line class="msg" x1="375" y1="180" x2="220" y2="180"/><text class="text" x="245" y="172">AddExpenseCommand</text>
+  <line class="msg" x1="220" y1="225" x2="557" y2="225"/><text class="text" x="300" y="217">execute(...)</text>
+  <line class="msg" x1="557" y1="260" x2="747" y2="260"/><text class="text" x="580" y="252">add Expense</text>
+  <line class="msg" x1="557" y1="285" x2="870" y2="285"/><text class="text" x="625" y="277">show confirmation</text>
+  <line class="msg" x1="870" y1="305" x2="65" y2="305"/><text class="text" x="400" y="298">Expense added</text>
+</svg>

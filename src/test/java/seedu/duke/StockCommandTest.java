@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,7 +31,7 @@ class StockCommandTest {
         assertEquals(1, stocks.getStocks().size());
         assertEquals("Apple", stocks.getStocks().get(0).product);
         assertEquals(10, stocks.getStocks().get(0).quantity);
-        assertEquals(2.00, stocks.getStocks().get(0).price);
+        assertEquals(BigDecimal.valueOf(2.00).setScale(2), stocks.getStocks().get(0).price);
         assertEquals(10, products.findByName("Apple").getStock());
     }
 
@@ -48,7 +50,7 @@ class StockCommandTest {
         assertEquals(1, stocks.getStocks().size());
         assertEquals("Banana", stocks.getStocks().get(0).product);
         assertEquals(15, stocks.getStocks().get(0).quantity); // 5 + 10
-        assertEquals(3.00, stocks.getStocks().get(0).price);
+        assertEquals(BigDecimal.valueOf(3.00).setScale(2), stocks.getStocks().get(0).price);
         assertEquals(15, products.findByName("Banana").getStock());
     }
 

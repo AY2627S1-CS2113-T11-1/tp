@@ -54,11 +54,11 @@ class DiscountOrderCommandTest {
         discount(1, "10");
 
         Order order = orders.findById(1);
-        assertEquals(9.40, order.getSubtotal(), DELTA);
-        assertEquals(0.94, order.getDiscountAmount(), DELTA);
-        assertEquals(8.46, order.getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(9.40).setScale(2), order.getSubtotal());
+        assertEquals(BigDecimal.valueOf(0.94).setScale(2), order.getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(8.46).setScale(2), order.getTotal());
         assertEquals(15, carrot.getStock());
-        assertEquals(1.88, order.getItems().get(0).getUnitPrice(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.88).setScale(2), order.getItems().get(0).getUnitPrice());
     }
 
     @Test
@@ -68,8 +68,8 @@ class DiscountOrderCommandTest {
 
         Order order = orders.findById(1);
         assertFalse(order.hasDiscount());
-        assertEquals(0.00, order.getDiscountAmount(), DELTA);
-        assertEquals(9.40, order.getTotal(), DELTA);
+        assertEquals(BigDecimal.ZERO.setScale(2), order.getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(9.40).setScale(2), order.getTotal());
     }
 
     @Test
@@ -77,8 +77,8 @@ class DiscountOrderCommandTest {
         discount(1, "10");
         discount(1, "5");
 
-        assertEquals(0.47, orders.findById(1).getDiscountAmount(), DELTA);
-        assertEquals(8.93, orders.findById(1).getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(0.47).setScale(2), orders.findById(1).getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(8.93).setScale(2), orders.findById(1).getTotal());
     }
 
     @Test
@@ -86,8 +86,8 @@ class DiscountOrderCommandTest {
         // 12.5% of $9.40 is exactly $1.175, which must round up to $1.18. With doubles it would round down.
         discount(1, "12.5");
 
-        assertEquals(1.18, orders.findById(1).getDiscountAmount(), DELTA);
-        assertEquals(8.22, orders.findById(1).getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(1.18).setScale(2), orders.findById(1).getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(8.22).setScale(2), orders.findById(1).getTotal());
     }
 
     @Test
@@ -95,14 +95,14 @@ class DiscountOrderCommandTest {
         // 0.01% of $9.40 is $0.00094, which rounds down to $0.00.
         discount(1, "0.01");
 
-        assertEquals(0.00, orders.findById(1).getDiscountAmount(), DELTA);
-        assertEquals(9.40, orders.findById(1).getTotal(), DELTA);
+        assertEquals(BigDecimal.ZERO.setScale(2), orders.findById(1).getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(9.40).setScale(2), orders.findById(1).getTotal());
     }
 
     @Test
     public void execute_hundredPercent_makesTotalZero() throws SystemException {
         discount(1, "100");
-        assertEquals(0.00, orders.findById(1).getTotal(), DELTA);
+        assertEquals(BigDecimal.ZERO.setScale(2), orders.findById(1).getTotal());
     }
 
     @Test
@@ -114,9 +114,9 @@ class DiscountOrderCommandTest {
 
         Order order = orders.findById(1);
         assertEquals(new BigDecimal("10"), order.getDiscountPercent());
-        assertEquals(18.80, order.getSubtotal(), DELTA);
-        assertEquals(1.88, order.getDiscountAmount(), DELTA);
-        assertEquals(16.92, order.getTotal(), DELTA);
+        assertEquals(BigDecimal.valueOf(18.80).setScale(2), order.getSubtotal());
+        assertEquals(BigDecimal.valueOf(1.88).setScale(2), order.getDiscountAmount());
+        assertEquals(BigDecimal.valueOf(16.92).setScale(2), order.getTotal());
     }
 
     @Test

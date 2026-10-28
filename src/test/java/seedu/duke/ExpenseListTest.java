@@ -2,6 +2,8 @@ package seedu.duke;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 class ExpenseListTest {
@@ -17,7 +19,7 @@ class ExpenseListTest {
     public void add_expense_increasesSize() {
         ExpenseList expenses = new ExpenseList();
 
-        expenses.add(new Expense("Bread", 100.50));
+        expenses.add(new Expense("Bread", new BigDecimal("100.50")));
 
         assertEquals(1, expenses.size());
     }
@@ -25,8 +27,8 @@ class ExpenseListTest {
     @Test
     public void getExpenses_returnsExpensesInInsertionOrder() {
         ExpenseList expenses = new ExpenseList();
-        Expense bread = new Expense("Bread", 100.50);
-        Expense lettuce = new Expense("Lettuce", 42.30);
+        Expense bread = new Expense("Bread", new BigDecimal("100.50"));
+        Expense lettuce = new Expense("Lettuce", new BigDecimal("42.30"));
 
         expenses.add(bread);
         expenses.add(lettuce);

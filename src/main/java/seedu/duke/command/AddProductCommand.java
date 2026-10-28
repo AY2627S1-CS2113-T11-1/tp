@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import java.util.logging.Logger;
 
 import seedu.duke.StockList;
@@ -25,7 +27,7 @@ public class AddProductCommand extends Command {
     private static final Logger logger = Logger.getLogger(AddProductCommand.class.getName());
 
     private final String name;
-    private final double price;
+    private final BigDecimal price;
 
     /**
      * Constructs a command that adds a product with the given name and unit price.
@@ -33,16 +35,21 @@ public class AddProductCommand extends Command {
      * @param name  the product name, already validated as non-empty by the parser
      * @param price the unit price in dollars, already validated as non-negative by the parser
      */
-    public AddProductCommand(String name, double price) {
+    public AddProductCommand(String name, BigDecimal price) {
         this.name = name;
         this.price = price;
+    }
+
+    /** Convenience boundary overload for callers that still provide a decimal literal. */
+    public AddProductCommand(String name, double price) {
+        this(name, BigDecimal.valueOf(price));
     }
 
     public String getName() {
         return name;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 

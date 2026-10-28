@@ -463,7 +463,8 @@ Shows one receipt for each confirmed, non-cancelled order placed by Jonas Low, i
 
 ### 4.3 Recording a customer's payment: `order add pay`
 
-Records payment for **all unpaid, non-cancelled orders** belonging to a customer.
+Records a payment for the customer's unpaid, non-cancelled orders. Payments are applied in
+order-history order and may be partial; a later payment can settle the remaining balance.
 Orders start unpaid. The customer must already appear in the order history; there is no
 separate customer registration command. Full names are matched without case sensitivity.
 
@@ -486,9 +487,9 @@ If the customer has no order history:
     Sorry! Customer BigChungus is not a registered customer.
 ```
 
-Insufficient payment is rejected with the remaining amount required; no orders are marked paid.
-Successful payment marks every eligible order paid. Already-paid and cancelled orders are
-excluded from subsequent payments. If no eligible orders remain, no payment is accepted.
+If the payment is smaller than the outstanding balance, it is applied across eligible orders
+until it is exhausted. Already-paid and cancelled orders are excluded from subsequent payments.
+Any excess is returned as change. If no eligible orders remain, no payment is accepted.
 Payment does not change stock, record an expense, or implement refunds. Payment status is held
 in memory for the current session, like the existing order history.
 
@@ -515,11 +516,22 @@ Records an operating expense.
 
 Format: `expense add p/PRODUCT a/AMOUNT`
 
-The amount must be an integer or floating-point number in dollars.
+The amount must be a non-negative amount in dollars with at most two decimal places.
+Amounts are stored using decimal arithmetic so that currency calculations do not depend on
+floating-point approximations.
 
 Example of usage:
 
 `expense add p/Bread a/100.50`
+
+After the expense is recorded, the app confirms it:
+
+```text
+    ____________________________________________________________
+    Expense added:
+    Bread: $100.50
+    ____________________________________________________________
+```
 
 ### 5.2 Listing expenses: `expense list`
 
@@ -530,9 +542,44 @@ Format: `expense list`
 Example output:
 
 ```text
-1. Bread: $100.50
-2. Lettuce: $42.30
+    ____________________________________________________________
+    Expenses:
+    1. Bread: $100.50
+    2. Lettuce: $42.30
+    ____________________________________________________________
 ```
+
+If no expenses have been recorded, the app displays:
+
+```text
+    ____________________________________________________________
+    Expenses:
+    No expenses have been added
+    ____________________________________________________________
+```
+
+### 5.3 View financial report: `finances`
+
+Calculates and displays the total value of all recorded orders, total payments received, total
+recorded expenses and the overall profit or loss. Total Orders includes unpaid orders. Cancelled
+orders remain in order history and are included in Total Orders, but are excluded from Total Sales.
+Partial payments are included in Total Sales, so an order's full value can be larger than its
+reported sales amount until the remaining balance is paid.
+
+Format: `finances`
+
+Example output:
+
+```text
+Total Orders (including unpaid): $500.00
+Total Sales: $500.00
+Total Expenses: $1000.00
+______________________________
+Overall Loss: $500.00
+```
+
+The report uses the same two-decimal currency format as the rest of the application. A zero
+difference is displayed as `Profit`.
 
 
 ### 6.1 Getting command help: `help`
@@ -544,7 +591,7 @@ Example: `help stock`
 Shows all commands for the selected area, with a numbered description and command format.
 Optional parameters are shown in square brackets. Area names are case-insensitive.
 
-Available areas: `product`, `stock`, `order`, `sales`, `expense`, `generate`, `general`.
+Available areas: `product`, `stock`, `order`, `sales`, `generate`, `expense`, `finances`, `general`.
 Use `help generate` for receipt commands and `help general` for help and exit commands.
 Enter `help` without an area to see the available areas and usage. Unknown areas and multiple
 areas produce a helpful error with the usage format.
@@ -553,11 +600,11 @@ Stock help uses `stock add p/PRODUCT q/QUANTITY`: the product must already exist
 catalogue, and its selling price is used. No separate price parameter is required.
 
 
-### 6.2 Exiting the program: `bye`
+### 6.2 Exiting the program: `exit`
 
 Exits the BMS program.
 
-Format: `bye`
+Format: `exit`
 
 
 ## FAQ
@@ -570,16 +617,16 @@ Format: `bye`
 
 | Description | Command |
 | --- | --- |
-| **<ins>Product<ins>** | |
+| **<ins>Product</ins>** | |
 | Add product | `product add p/PRODUCT a/AMOUNT` |
 | List products | `product list` |
 | | |
-| **<ins>Stock<ins>** | |
+| **<ins>Stock</ins>** | |
 | Add stock | `stock add p/PRODUCT q/QUANTITY` |
 | Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
 | List stock | `stock list` |
 | | |
-| **<ins>Order<ins>** | |
+| **<ins>Order</ins>** | |
 | Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |
 | Cancel order | `order cancel ORDER_NUMBER` |
 | List orders | `order list` |
@@ -588,16 +635,19 @@ Format: `bye`
 | Pay outstanding orders | `order add pay c/CUSTOMER a/AMOUNT` |
 | View customer order details | `order details c/CUSTOMER` |
 | | |
-| **<ins>Sales<ins>** | |
+| **<ins>Sales</ins>** | |
 | View sales | `sales list` |
 | | |
-| **<ins>Generate<ins>** | |
+| **<ins>Generate</ins>** | |
 | Generate receipts | `generate receipts c/CUSTOMER` |
 | | |
-| **<ins>Expense<ins>** | |
+| **<ins>Expense</ins>** | |
 | Add expense | `expense add p/PRODUCT a/AMOUNT` |
 | List expenses | `expense list` |
 | | |
-| **<ins>General<ins>** | |
+| **<ins>Finances</ins>** | |
+| View financial report | `finances` |
+| | |
+| **<ins>General</ins>** | |
 | View help | `help [AREA]` |
-| Exit the program | `bye` |
+| Exit the program | `exit` |

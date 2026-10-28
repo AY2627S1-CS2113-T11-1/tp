@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -129,7 +131,7 @@ class OrderDetailsTest {
         assertEquals(firstOutput, output.toString(StandardCharsets.UTF_8));
         assertEquals(10, product.getStock());
         assertEquals(2, order.getItems().get(0).getQuantity());
-        assertEquals(2.50, order.getTotal());
+        assertEquals(BigDecimal.valueOf(2.50).setScale(2), order.getTotal());
     }
 
     /**

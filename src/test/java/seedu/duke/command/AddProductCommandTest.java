@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,7 +39,7 @@ class AddProductCommandTest {
 
         Product added = products.findByName("Oat Milk");
         assertNotNull(added);
-        assertEquals(3.50, added.getPrice(), 1e-9);
+        assertEquals(BigDecimal.valueOf(3.50).setScale(2), added.getPrice());
         assertEquals(0, added.getStock());
     }
 

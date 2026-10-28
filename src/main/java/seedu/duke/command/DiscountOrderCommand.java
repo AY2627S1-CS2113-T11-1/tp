@@ -69,12 +69,14 @@ public class DiscountOrderCommand extends Command {
                     + NO_CHANGES_MESSAGE);
         }
 
-        double subtotalBefore = order.getSubtotal();
+        BigDecimal subtotalBefore = order.getSubtotal();
         order.setDiscountPercent(percent);
 
         // A discount only ever changes the amount paid, never what was bought or at what unit price.
-        assert order.getSubtotal() == subtotalBefore : "Setting a discount must not change the subtotal";
-        assert order.getTotal() <= order.getSubtotal() : "A discount can never raise the total";
+        assert order.getSubtotal().compareTo(subtotalBefore) == 0
+                : "Setting a discount must not change the subtotal";
+        assert order.getTotal().compareTo(order.getSubtotal()) <= 0
+                : "A discount can never raise the total";
         logger.fine(() -> "Set discount on order " + orderId + " to " + percent.toPlainString() + "%");
 
         ui.showDiscountUpdated(order);

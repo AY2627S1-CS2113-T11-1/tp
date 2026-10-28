@@ -1,5 +1,7 @@
 package seedu.duke;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -9,15 +11,15 @@ class ExpenseTest {
 
     @Test
     public void constructor_validValues_storesValues() {
-        Expense expense = new Expense("Bread", 100.50);
+        Expense expense = new Expense("Bread", new BigDecimal("100.50"));
 
         assertEquals("Bread", expense.getProductName());
-        assertEquals(100.50, expense.getAmount());
+        assertEquals(new BigDecimal("100.50"), expense.getAmount());
     }
 
     @Test
     public void constructor_productNameWithWhitespace_trimsName() {
-        Expense expense = new Expense("  Bread  ", 100.50);
+        Expense expense = new Expense("  Bread  ", new BigDecimal("100.50"));
 
         assertEquals("Bread", expense.getProductName());
     }
@@ -26,20 +28,20 @@ class ExpenseTest {
     public void constructor_emptyProductName_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Expense("", 100.50));
+                () -> new Expense("", new BigDecimal("100.50")));
     }
 
     @Test
     public void constructor_negativeAmount_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Expense("Bread", -1.00));
+                () -> new Expense("Bread", new BigDecimal("-1.00")));
     }
 
     @Test
-    public void constructor_invalidAmount_throwsException() {
+    public void constructor_amountWithMoreThanTwoDecimalPlaces_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Expense("Bread", Double.NaN));
+                () -> new Expense("Bread", new BigDecimal("1.001")));
     }
 }

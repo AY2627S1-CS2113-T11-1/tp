@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-labelledby="title desc">
+  <title id="title">Listing expenses sequence</title>
+  <desc id="desc">The list command retrieves a copy of the expenses and sends it to the UI for display.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,3 L0,6 Z" fill="#40566f"/></marker>
+    <style>
+      .head { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; rx:5; }
+      .name { fill:#1f2933; font:14px Arial, sans-serif; text-anchor:middle; dominant-baseline:middle; }
+      .life { stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 5; }
+      .msg { stroke:#40566f; stroke-width:1.3; marker-end:url(#arrow); }
+      .text { fill:#1f2933; font:13px Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect width="900" height="300" fill="white"/>
+  <rect class="head" x="20" y="20" width="80" height="38"/><text class="name" x="60" y="39">User</text>
+  <rect class="head" x="145" y="20" width="80" height="38"/><text class="name" x="185" y="39">Duke</text>
+  <rect class="head" x="270" y="20" width="150" height="38"/><text class="name" x="345" y="39">ListExpenseCommand</text>
+  <rect class="head" x="500" y="20" width="105" height="38"/><text class="name" x="552" y="39">ExpenseList</text>
+  <rect class="head" x="700" y="20" width="80" height="38"/><text class="name" x="740" y="39">Ui</text>
+  <line class="life" x1="60" y1="58" x2="60" y2="275"/><line class="life" x1="185" y1="58" x2="185" y2="275"/><line class="life" x1="345" y1="58" x2="345" y2="275"/><line class="life" x1="552" y1="58" x2="552" y2="275"/><line class="life" x1="740" y1="58" x2="740" y2="275"/>
+  <line class="msg" x1="60" y1="90" x2="185" y2="90"/><text class="text" x="68" y="82">expense list</text>
+  <line class="msg" x1="185" y1="135" x2="345" y2="135"/><text class="text" x="200" y="127">execute(...)</text>
+  <line class="msg" x1="345" y1="180" x2="552" y2="180"/><text class="text" x="365" y="172">getExpenses()</text>
+  <line class="msg" x1="552" y1="205" x2="345" y2="205"/><text class="text" x="380" y="197">copy of expense records</text>
+  <line class="msg" x1="345" y1="240" x2="740" y2="240"/><text class="text" x="460" y="232">show expenses</text>
+  <line class="msg" x1="740" y1="275" x2="60" y2="275"/><text class="text" x="355" y="268">numbered list</text>
+</svg>

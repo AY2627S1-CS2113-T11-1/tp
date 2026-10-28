@@ -16,7 +16,7 @@ import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
 /**
- * Records payment for all unpaid, non-cancelled orders belonging to one customer.
+ * Records a payment against the customer's unpaid, non-cancelled orders.
  */
 public class AddPaymentCommand extends Command {
     private static final Logger logger = Logger.getLogger(AddPaymentCommand.class.getName());
@@ -38,7 +38,8 @@ public class AddPaymentCommand extends Command {
     }
 
     /**
-     * Checks the full outstanding amount before marking any order as paid.
+     * Applies the payment to matching orders in creation order. A payment may be partial;
+     * any amount above the outstanding balance is returned as change.
      *
      * @throws SystemException if the customer is unknown or the payment cannot be accepted
      */
@@ -63,20 +64,29 @@ public class AddPaymentCommand extends Command {
         if (unpaidOrders.isEmpty()) {
             throw new SystemException("Customer " + customer + " has no unpaid, non-cancelled orders.");
         }
-        if (amount.compareTo(outstanding) < 0) {
+        if (amount.signum() == 0 && outstanding.signum() > 0) {
             logger.fine("Payment rejected: insufficient amount");
             throw new SystemException("Insufficient payment. Customer " + customer + " still needs to pay $"
                     + outstanding.subtract(amount).toPlainString() + ".");
         }
+        BigDecimal remaining = amount;
         for (Order order : unpaidOrders) {
-            order.markPaid();
+            BigDecimal due = getAmountDue(order);
+            BigDecimal applied = remaining.min(due);
+            if (applied.signum() > 0 || due.signum() == 0) {
+                order.recordPayment(applied);
+            }
+            remaining = remaining.subtract(applied);
+            if (remaining.signum() == 0) {
+                break;
+            }
         }
-        logger.fine(() -> "Recorded payment for " + unpaidOrders.size() + " order(s)");
-        ui.showPayment(customer, amount, amount.subtract(outstanding));
+        logger.fine(() -> "Recorded payment for " + amount + " for " + unpaidOrders.size() + " order(s)");
+        ui.showPayment(customer, amount, amount.subtract(outstanding).max(BigDecimal.ZERO));
     }
 
     /**
-     * Calculates the amount using saved unit prices without floating-point subtraction.
+     * Calculates the amount using the saved exact decimal unit prices.
      *
      * @param order order to calculate
      * @return total amount rounded to cents
@@ -85,13 +95,13 @@ public class AddPaymentCommand extends Command {
     private BigDecimal getAmountDue(Order order) throws SystemException {
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItem item : order.getItems()) {
-            double price = item.getUnitPrice();
-            if (!Double.isFinite(price) || price < 0) {
+            BigDecimal price = item.getUnitPrice();
+            if (price == null || price.signum() < 0) {
                 throw new SystemException("Order " + order.getId()
                         + " has an invalid price. Payment was not recorded.");
             }
-            total = total.add(BigDecimal.valueOf(price).multiply(BigDecimal.valueOf(item.getQuantity())));
+            total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
-        return total.setScale(2, RoundingMode.HALF_UP);
+        return total.setScale(2, RoundingMode.HALF_UP).subtract(order.getPaidAmount());
     }
 }

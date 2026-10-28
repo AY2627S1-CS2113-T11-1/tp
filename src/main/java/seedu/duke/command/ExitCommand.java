@@ -9,7 +9,7 @@ import seedu.duke.Ui;
 /**
  * Ends the session.
  *
- * Corresponds to {@code bye}.
+ * Corresponds to {@code exit}.
  */
 public class ExitCommand extends Command {
     @Override

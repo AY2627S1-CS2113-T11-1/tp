@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.math.BigDecimal;
+
 /**
  * Stores every order in memory and hands out order numbers.
  *
@@ -64,6 +66,21 @@ public class OrderList {
             }
         }
         return Collections.unmodifiableList(confirmedSales);
+    }
+
+    /**
+     * Returns active orders that have received at least one payment.
+     *
+     * @return orders contributing to cash-received sales
+     */
+    public List<Order> getPaidSales() {
+        List<Order> paidSales = new ArrayList<>();
+        for (Order order : orders) {
+            if (!order.isCancelled() && order.getPaidAmount().compareTo(BigDecimal.ZERO) > 0) {
+                paidSales.add(order);
+            }
+        }
+        return Collections.unmodifiableList(paidSales);
     }
 
     public int size() {

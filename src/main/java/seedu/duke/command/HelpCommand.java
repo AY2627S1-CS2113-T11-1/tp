@@ -15,7 +15,7 @@ import seedu.duke.Ui;
  */
 public class HelpCommand extends Command {
     public static final String USAGE = "Format: help {AREA}. Available areas: "
-            + "product, stock, order, sales, expense, generate, general.";
+            + "product, stock, order, sales, generate, expense, finances, general.";
     private final String area;
 
     /**
@@ -78,6 +78,10 @@ public class HelpCommand extends Command {
             commands = List.<String[]>of(new String[] {
                 "Lists confirmed sales and their total, excluding cancelled orders.", "sales list"});
             break;
+        case "finances":
+            commands = List.<String[]>of(new String[] {
+                "Shows total orders, payments received, expenses and the overall profit or loss.", "finances"});
+            break;
         case "expense":
             commands = List.of(
                     new String[] {"Records an operating expense with its description and amount.",
@@ -91,7 +95,7 @@ public class HelpCommand extends Command {
         case "general":
             commands = List.of(
                     new String[] {"Lists help areas, or shows commands for the requested area.", "help [AREA]"},
-                    new String[] {"Exits the application.", "bye"});
+                    new String[] {"Exits the application.", "exit"});
             break;
         default:
             throw new SystemException("Unknown help area \"" + area + "\". " + USAGE);

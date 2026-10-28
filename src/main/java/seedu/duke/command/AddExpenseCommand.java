@@ -1,5 +1,7 @@
 package seedu.duke.command;
 
+import java.math.BigDecimal;
+
 import seedu.duke.StockList;
 import seedu.duke.Expense;
 import seedu.duke.ExpenseList;
@@ -14,7 +16,7 @@ import seedu.duke.Ui;
  */
 public class AddExpenseCommand extends Command {
     private final String productName;
-    private final double amount;
+    private final BigDecimal amount;
 
     /**
      * Creates an add-expense command.
@@ -22,7 +24,7 @@ public class AddExpenseCommand extends Command {
      * @param productName the product associated with the expense
      * @param amount the expense amount in dollars
      */
-    public AddExpenseCommand(String productName, double amount) {
+    public AddExpenseCommand(String productName, BigDecimal amount) {
         this.productName = productName;
         this.amount = amount;
     }
@@ -31,13 +33,17 @@ public class AddExpenseCommand extends Command {
         return productName;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui) {
         assert expenses != null : "Expense list must be available when adding an expense";
-        expenses.add(new Expense(productName, amount));
+        assert ui != null : "UI must be available when adding an expense";
+
+        Expense expense = new Expense(productName, amount);
+        expenses.add(expense);
+        ui.showExpenseAdded(expense);
     }
 }
