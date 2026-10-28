@@ -4,7 +4,9 @@ import java.util.logging.Logger;
 
 import seedu.duke.ExpenseList;
 import seedu.duke.OrderList;
+import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.Stock;
 import seedu.duke.StockList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
@@ -31,9 +33,18 @@ public class ListStockCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
+        assert products != null : "Product catalogue must not be null";
         assert stocks != null : "Stock list must not be null";
         assert ui != null : "Ui must not be null";
         assert stocks.getStocks() != null : "Stock entries collection must not be null";
+
+        for (Stock stock : stocks.getStocks()) {
+            Product product = products.findByName(stock.getProduct());
+            if (product != null) {
+                stock.setQuantity(product.getStock());
+                stock.quantity = product.getStock();
+            }
+        }
 
         ui.showStocks(stocks.getStocks());
         logger.info("Displayed stock list containing " + stocks.getStocks().size() + " entry/entries");
