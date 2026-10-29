@@ -181,6 +181,15 @@ public class Ui {
     }
 
     /**
+     * Shows the confirmation for a product removed from the catalogue.
+     *
+     * @param product the product that was just deleted
+     */
+    public void showProductDeleted(Product product) {
+        printIndent("Deleted product " + product.getName());
+    }
+
+    /**
      * Shows the confirmation for a newly recorded expense.
      *
      * @param expense the expense that was just recorded
@@ -200,10 +209,32 @@ public class Ui {
         if (products.isEmpty()) {
             printIndent("Nothing here yet. Add one with: product add p/PRODUCT a/AMOUNT");
         } else {
-            for (Product product : products) {
-                printIndent(String.format(PRODUCT_LINE_FORMAT,
-                        product.getName(), product.getPriceString(), product.getStock()));
-            }
+            printProductLines(products);
+        }
+    }
+
+    /**
+     * Shows the products found by {@code product find}, or says that nothing matched.
+     *
+     * @param keyword  the keyword the user searched for
+     * @param products the matching products, already in alphabetical order
+     */
+    public void showMatchingProducts(String keyword, List<Product> products) {
+        if (products.isEmpty()) {
+            printIndent("No products match \"" + keyword + "\".");
+            return;
+        }
+        printIndent("Matching products (" + products.size() + "):");
+        printProductLines(products);
+    }
+
+    /**
+     * Prints one aligned line per product, shared by {@code product list} and {@code product find}.
+     */
+    private void printProductLines(List<Product> products) {
+        for (Product product : products) {
+            printIndent(String.format(PRODUCT_LINE_FORMAT,
+                    product.getName(), product.getPriceString(), product.getStock()));
         }
     }
 
