@@ -1,18 +1,18 @@
 sequenceDiagram
-    participant D as Duke
-    participant P as Parser
-    participant C as LowStockCommand
-    participant SL as StockList
-    participant PL as ProductList
-    participant U as Ui
+    participant D as :Duke
+    participant P as :Parser
+    participant C as :LowStockCommand
+    participant SL as :StockList
+    participant PL as :ProductList
+    participant U as :Ui
 
-    D->>P: parse("stock low q/3")
+    D->>P: parse(command)
     activate P
-    P->>C: new LowStockCommand(3)
+    P->>C: LowStockCommand(threshold)
     activate C
-    C-->>P: command
+    C-->>P: parsedCommand
     deactivate C
-    P-->>D: command
+    P-->>D: parsedCommand
     deactivate P
 
     D->>C: execute(...)
@@ -23,17 +23,17 @@ sequenceDiagram
     SL-->>C: allStocks
     deactivate SL
 
-    loop For each stock in allStocks
-        C->>PL: findByName(product)
+    loop for each stock in allStocks
+        C->>PL: findByName(stock.product)
         activate PL
         PL-->>C: product
         deactivate PL
     end
 
-    C->>U: showLowStock(lowStocks, 3)
+    C->>U: showLowStock(lowStocks, threshold, isStockListEmpty)
     activate U
-    U-->>C: return
+    U-->>C: 
     deactivate U
 
-    C-->>D: return
+    C-->>D: 
     deactivate C

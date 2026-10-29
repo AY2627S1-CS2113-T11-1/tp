@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="680" viewBox="0 0 1240 680" role="img" aria-labelledby="title desc">
+  <title id="title">Stock Subsystem Class Diagram</title>
+  <desc id="desc">UML class diagram illustrating the architecture of the stock subsystem and its relationships with the catalogue and command layers, without redundant association attributes.</desc>
+  <defs>
+    <!-- Extension (Inheritance) Marker: Hollow triangle -->
+    <marker id="extension" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto">
+      <polygon points="1,1 13,7 1,13" fill="#ffffff" stroke="#40566f" stroke-width="1.3"/>
+    </marker>
+    <!-- Composition Marker: Filled Diamond -->
+    <marker id="composition" markerWidth="16" markerHeight="14" refX="1" refY="7" orient="auto">
+      <polygon points="1,7 8,2 15,7 8,12" fill="#40566f" stroke="#40566f" stroke-width="1"/>
+    </marker>
+    <!-- Open Arrow Marker: for dependency and association -->
+    <marker id="openArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <polyline points="1,1 9,5 1,9" fill="none" stroke="#40566f" stroke-width="1.3"/>
+    </marker>
+    <style>
+      .cls-box { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; rx:4; }
+      .cls-title { fill:#1f2933; font:bold 14px Arial,sans-serif; text-anchor:middle; }
+      .cls-annot { fill:#52606d; font:italic 11px Arial,sans-serif; text-anchor:middle; }
+      .cls-divider { stroke:#8a98a8; stroke-width:1; }
+      .cls-member { fill:#1f2933; font:12px Arial,sans-serif; }
+      .cls-abstract { fill:#1f2933; font:italic 12px Arial,sans-serif; }
+      .cls-static { text-decoration: underline; }
+      .rel-line { stroke:#40566f; stroke-width:1.3; fill:none; }
+      .rel-dash { stroke:#40566f; stroke-width:1.3; stroke-dasharray:5 4; fill:none; }
+      .rel-text { fill:#52606d; font:12px Arial,sans-serif; text-anchor:middle; }
+      .mult-text { fill:#40566f; font:12px Arial,sans-serif; }
+    </style>
+  </defs>
+  <rect width="1240" height="680" fill="white"/>
+
+  <!-- Command Class (Abstract) -->
+  <g id="class-Command">
+    <rect class="cls-box" x="410" y="30" width="420" height="75"/>
+    <text class="cls-annot" x="620" y="48">«abstract»</text>
+    <text class="cls-title" x="620" y="65">Command</text>
+    <line class="cls-divider" x1="410" y1="73" x2="830" y2="73"/>
+    <line class="cls-divider" x1="410" y1="77" x2="830" y2="77"/>
+    <text class="cls-abstract" x="422" y="94">+execute(products, orders, expenses, stocks, ui)* : void</text>
+  </g>
+
+  <!-- AddStockCommand -->
+  <g id="class-AddStockCommand">
+    <rect class="cls-box" x="70" y="175" width="250" height="105"/>
+    <text class="cls-title" x="195" y="199">AddStockCommand</text>
+    <line class="cls-divider" x1="70" y1="209" x2="320" y2="209"/>
+    <text class="cls-member" x="82" y="227">-String productName</text>
+    <text class="cls-member" x="82" y="245">-int quantity</text>
+    <line class="cls-divider" x1="70" y1="254" x2="320" y2="254"/>
+    <text class="cls-member" x="82" y="271">+execute(...) : void</text>
+  </g>
+
+  <!-- RemoveStockCommand -->
+  <g id="class-RemoveStockCommand">
+    <rect class="cls-box" x="350" y="175" width="260" height="125"/>
+    <text class="cls-title" x="480" y="199">RemoveStockCommand</text>
+    <line class="cls-divider" x1="350" y1="209" x2="610" y2="209"/>
+    <text class="cls-member" x="362" y="227">-String productName</text>
+    <text class="cls-member" x="362" y="245">-int quantity</text>
+    <text class="cls-member" x="362" y="263">-boolean isDefault</text>
+    <line class="cls-divider" x1="350" y1="273" x2="610" y2="273"/>
+    <text class="cls-member" x="362" y="290">+execute(...) : void</text>
+  </g>
+
+  <!-- ListStockCommand -->
+  <g id="class-ListStockCommand">
+    <rect class="cls-box" x="640" y="175" width="210" height="85"/>
+    <text class="cls-title" x="745" y="199">ListStockCommand</text>
+    <line class="cls-divider" x1="640" y1="209" x2="850" y2="209"/>
+    <line class="cls-divider" x1="640" y1="215" x2="850" y2="215"/>
+    <text class="cls-member" x="652" y="237">+execute(...) : void</text>
+  </g>
+
+  <!-- LowStockCommand -->
+  <g id="class-LowStockCommand">
+    <rect class="cls-box" x="880" y="175" width="280" height="105"/>
+    <text class="cls-title" x="1020" y="199">LowStockCommand</text>
+    <line class="cls-divider" x1="880" y1="209" x2="1160" y2="209"/>
+    <text class="cls-member" x="892" y="227"><tspan class="cls-static">+int DEFAULT_THRESHOLD</tspan></text>
+    <text class="cls-member" x="892" y="245">-int threshold</text>
+    <line class="cls-divider" x1="880" y1="254" x2="1160" y2="254"/>
+    <text class="cls-member" x="892" y="271">+execute(...) : void</text>
+  </g>
+
+  <!-- Inheritance Tree to Command -->
+  <path class="rel-line" d="M 620 140 L 620 105" marker-end="url(#extension)"/>
+  <line class="rel-line" x1="195" y1="140" x2="1020" y2="140"/>
+  <line class="rel-line" x1="195" y1="175" x2="195" y2="140"/>
+  <line class="rel-line" x1="480" y1="175" x2="480" y2="140"/>
+  <line class="rel-line" x1="745" y1="175" x2="745" y2="140"/>
+  <line class="rel-line" x1="1020" y1="175" x2="1020" y2="140"/>
+
+  <!-- StockList (stocks attribute omitted; represented by composition to Stock) -->
+  <g id="class-StockList">
+    <rect class="cls-box" x="40" y="370" width="250" height="135"/>
+    <text class="cls-title" x="165" y="394">StockList</text>
+    <line class="cls-divider" x1="40" y1="404" x2="290" y2="404"/>
+    <line class="cls-divider" x1="40" y1="410" x2="290" y2="410"/>
+    <text class="cls-member" x="52" y="430">+add(Stock) : void</text>
+    <text class="cls-member" x="52" y="450">+findByProduct(String) : Stock</text>
+    <text class="cls-member" x="52" y="470">+getStocks() : List&lt;Stock&gt;</text>
+    <text class="cls-member" x="52" y="490">+size() : int</text>
+  </g>
+
+  <!-- Stock (productRef attribute omitted; represented by association to Product) -->
+  <g id="class-Stock">
+    <rect class="cls-box" x="350" y="370" width="275" height="265"/>
+    <text class="cls-title" x="487" y="394">Stock</text>
+    <line class="cls-divider" x1="350" y1="404" x2="625" y2="404"/>
+    <text class="cls-member" x="362" y="422">+String product</text>
+    <text class="cls-member" x="362" y="440">+BigDecimal price</text>
+    <text class="cls-member" x="362" y="458">+int quantity</text>
+    <line class="cls-divider" x1="350" y1="468" x2="625" y2="468"/>
+    <text class="cls-member" x="362" y="486">+Stock(Product, int)</text>
+    <text class="cls-member" x="362" y="504">+Stock(String, BigDecimal, int)</text>
+    <text class="cls-member" x="362" y="522">+Stock(String, double, int)</text>
+    <text class="cls-member" x="362" y="540">+getProduct() : String</text>
+    <text class="cls-member" x="362" y="558">+getPrice() : BigDecimal</text>
+    <text class="cls-member" x="362" y="576">+getQuantity() : int</text>
+    <text class="cls-member" x="362" y="594">+setQuantity(int) : void</text>
+    <text class="cls-member" x="362" y="612">+setPrice(BigDecimal) : void</text>
+  </g>
+
+  <!-- Product -->
+  <g id="class-Product">
+    <rect class="cls-box" x="690" y="370" width="220" height="175"/>
+    <text class="cls-title" x="800" y="394">Product</text>
+    <line class="cls-divider" x1="690" y1="404" x2="910" y2="404"/>
+    <text class="cls-member" x="702" y="424">-String name</text>
+    <text class="cls-member" x="702" y="444">-BigDecimal price</text>
+    <text class="cls-member" x="702" y="464">-int stock</text>
+    <line class="cls-divider" x1="690" y1="474" x2="910" y2="474"/>
+    <text class="cls-member" x="702" y="494">+getName() : String</text>
+    <text class="cls-member" x="702" y="514">+getStock() : int</text>
+    <text class="cls-member" x="702" y="534">+getPrice() : BigDecimal</text>
+  </g>
+
+  <!-- ProductList -->
+  <g id="class-ProductList">
+    <rect class="cls-box" x="970" y="370" width="230" height="135"/>
+    <text class="cls-title" x="1085" y="394">ProductList</text>
+    <line class="cls-divider" x1="970" y1="404" x2="1200" y2="404"/>
+    <line class="cls-divider" x1="970" y1="410" x2="1200" y2="410"/>
+    <text class="cls-member" x="982" y="434">+findByName(String) : Product</text>
+    <text class="cls-member" x="982" y="458">+add(Product) : void</text>
+    <text class="cls-member" x="982" y="482">+getAll() : List&lt;Product&gt;</text>
+  </g>
+
+  <!-- StockList Composition Stock -->
+  <line class="rel-line" x1="290" y1="435" x2="350" y2="435" marker-start="url(#composition)"/>
+  <text class="mult-text" x="308" y="427">1</text>
+  <text class="mult-text" x="332" y="427">*</text>
+
+  <!-- Stock Association Product : productRef -->
+  <line class="rel-line" x1="625" y1="435" x2="690" y2="435" marker-end="url(#openArrow)"/>
+  <text class="mult-text" x="633" y="427">1</text>
+  <text class="mult-text" x="660" y="427">0..1</text>
+  <text class="rel-text" x="657" y="453">productRef</text>
+
+  <!-- ProductList Composition Product -->
+  <line class="rel-line" x1="970" y1="435" x2="910" y2="435" marker-start="url(#composition)"/>
+  <text class="mult-text" x="942" y="427">1</text>
+  <text class="mult-text" x="920" y="427">*</text>
+
+  <!-- Command Dependency StockList : uses -->
+  <path class="rel-dash" d="M 410 68 L 25 68 L 25 330 L 165 330 L 165 370" marker-end="url(#openArrow)"/>
+  <rect x="18" y="220" width="34" height="18" fill="white"/>
+  <text class="rel-text" x="35" y="233">uses</text>
+
+  <!-- Command Dependency ProductList : uses -->
+  <path class="rel-dash" d="M 830 68 L 1215 68 L 1215 330 L 1085 330 L 1085 370" marker-end="url(#openArrow)"/>
+  <rect x="1198" y="220" width="34" height="18" fill="white"/>
+  <text class="rel-text" x="1215" y="233">uses</text>
+</svg>
