@@ -45,7 +45,8 @@ class HelpCommandTest {
     @Test
     public void execute_supportedAreas_listsEveryCurrentCommand() throws SystemException {
         String[][] topics = {
-            {"product", "product add p/PRODUCT a/AMOUNT", "product delete p/PRODUCT", "product list"},
+            {"product", "product add p/PRODUCT a/AMOUNT", "product delete p/PRODUCT", "product find KEYWORD",
+                "product list"},
             {"stock", "stock add p/PRODUCT q/QUANTITY", "stock remove p/PRODUCT [q/QUANTITY]", "stock list",
                 "stock low [q/THRESHOLD]"},
             {"order", "order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]...",

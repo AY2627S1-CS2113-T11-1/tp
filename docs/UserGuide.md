@@ -107,6 +107,36 @@ Example output (Oat Milk 1L is in active order 2):
 Sorry! Can't delete Oat Milk 1L, it's still in active order 2. Cancel the order first.
 ```
 
+### 1.4 Finding products: `product find`
+
+Finds products whose name contains a keyword.
+
+Format: `product find KEYWORD`
+
+* The keyword can be any part of the name, and upper and lower case are ignored, so `milk` finds both
+  `Oat Milk 1L` and `Almond Milk`.
+* The keyword can contain spaces, e.g. `product find oat milk`.
+* Do not use `p/` or `a/` here. Type the keyword on its own.
+* Matching products are listed in alphabetical order, in the same format as `product list`.
+
+Examples of usage:
+
+`product find milk`
+
+Example output:
+
+```text
+Matching products (2):
+   Almond Milk       $4.20   stock 10
+   Oat Milk 1L       $3.50   stock 20
+```
+
+If nothing matches:
+
+```text
+No products match "bread".
+```
+
 ### 2. Stock inventory
 
 Stock records track the quantity of each product physically on hand. When you add or remove stock,
@@ -648,6 +678,7 @@ Format: `exit`
 | **<ins>Product</ins>** | |
 | Add product | `product add p/PRODUCT a/AMOUNT` |
 | Delete product | `product delete p/PRODUCT` |
+| Find products | `product find KEYWORD` |
 | List products | `product list` |
 | | |
 | **<ins>Stock</ins>** | |

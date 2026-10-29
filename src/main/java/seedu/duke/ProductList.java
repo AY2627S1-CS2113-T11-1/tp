@@ -71,6 +71,23 @@ public class ProductList {
     }
 
     /**
+     * Returns the products whose name contains the keyword, ignoring case, in alphabetical order.
+     *
+     * Matching on any part of the name means "milk" finds both "Oat Milk" and "Milk Powder", so
+     * the user does not need to remember a product's exact name.
+     *
+     * @param keyword the text to look for, already validated as non-empty by the parser
+     */
+    public List<Product> findByKeyword(String keyword) {
+        assert keyword != null && !keyword.isBlank() : "Keyword must be validated as non-empty before searching";
+
+        String lowerKeyword = keyword.toLowerCase();
+        return getSortedByName().stream()
+                .filter(product -> product.getName().toLowerCase().contains(lowerKeyword))
+                .toList();
+    }
+
+    /**
      * Returns the products sorted alphabetically by name, ignoring case.
      *
      * The returned list is a copy, so sorting it does not disturb the stored order.

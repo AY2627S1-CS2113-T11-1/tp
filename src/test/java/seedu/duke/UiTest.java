@@ -41,6 +41,25 @@ class UiTest {
     }
 
     @Test
+    public void showMatchingProducts_twoMatches_printsCountAndAlignedLines() {
+        Product almondMilk = new Product("Almond Milk", 4.20);
+        Product oatMilk = new Product("Oat Milk 1L", 3.50);
+
+        ui.showMatchingProducts("milk", List.of(almondMilk, oatMilk));
+
+        assertEquals(indentedLines("Matching products (2):",
+                "   Almond Milk       $4.20   stock 0",
+                "   Oat Milk 1L       $3.50   stock 0"), outputLines());
+    }
+
+    @Test
+    public void showMatchingProducts_noMatches_printsNoMatchMessage() {
+        ui.showMatchingProducts("bread", List.of());
+
+        assertEquals(indentedLines("No products match \"bread\"."), outputLines());
+    }
+
+    @Test
     public void showProducts_threeProducts_printsAlignedColumns() {
         Product oatMilk = new Product("Oat Milk", 3.50);
         oatMilk.setStock(24);

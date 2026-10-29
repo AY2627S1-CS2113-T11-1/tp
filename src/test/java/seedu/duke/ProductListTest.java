@@ -47,6 +47,28 @@ class ProductListTest {
     }
 
     @Test
+    public void findByKeyword_partialDifferentCase_returnsMatchesAlphabetically() throws SystemException {
+        ProductList products = new ProductList();
+        products.add(new Product("Oat Milk", 3.50));
+        products.add(new Product("Coffee Beans", 12.00));
+        products.add(new Product("almond milk", 4.20));
+
+        List<Product> matches = products.findByKeyword("MILK");
+
+        assertEquals(2, matches.size());
+        assertEquals("almond milk", matches.get(0).getName());
+        assertEquals("Oat Milk", matches.get(1).getName());
+    }
+
+    @Test
+    public void findByKeyword_noMatch_returnsEmptyList() throws SystemException {
+        ProductList products = new ProductList();
+        products.add(new Product("Oat Milk", 3.50));
+
+        assertEquals(0, products.findByKeyword("bread").size());
+    }
+
+    @Test
     public void findByName_absentProduct_returnsNull() {
         assertNull(new ProductList().findByName("Oat Milk"));
     }

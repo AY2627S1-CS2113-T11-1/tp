@@ -47,6 +47,8 @@ public class HelpCommand extends Command {
                         "product add p/PRODUCT a/AMOUNT"},
                     new String[] {"Deletes a product and its stock record. Not allowed while an active order has it.",
                         "product delete p/PRODUCT"},
+                    new String[] {"Finds products whose name contains the keyword, ignoring case.",
+                        "product find KEYWORD"},
                     new String[] {"Lists products alphabetically with their prices and stock quantities.",
                         "product list"});
             break;

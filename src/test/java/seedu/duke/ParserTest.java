@@ -17,6 +17,7 @@ import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
 import seedu.duke.command.DeleteProductCommand;
+import seedu.duke.command.FindProductCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
@@ -135,6 +136,26 @@ class ParserTest {
 
         assertEquals("product delete only takes p/PRODUCT. Format: product delete p/PRODUCT",
                 exception.getMessage());
+    }
+
+    @Test
+    public void parse_productFind_returnsFindProductCommandWithWholeKeyword() throws SystemException {
+        FindProductCommand command = assertInstanceOf(FindProductCommand.class,
+                parser.parse("product find oat milk"));
+
+        assertEquals("oat milk", command.getKeyword());
+    }
+
+    @Test
+    public void parse_productFindEmptyKeyword_throwsSystemException() {
+        SystemException exception = assertThrows(SystemException.class, () -> parser.parse("product find"));
+
+        assertEquals("What should I look for? Format: product find KEYWORD", exception.getMessage());
+    }
+
+    @Test
+    public void parse_productFindWithPrefix_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product find p/milk"));
     }
 
     @Test
