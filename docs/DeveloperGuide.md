@@ -18,6 +18,11 @@
     - [Adding and removing stock](#adding-and-removing-stock)
     - [Low stock monitoring](#low-stock-monitoring)
     - [Design considerations and alternatives](#design-considerations-and-alternatives)
+  - [2.5 Product catalogue](#25-product-catalogue)
+    - [Adding and listing products](#adding-and-listing-products)
+    - [Deleting a product](#deleting-a-product)
+    - [Finding products](#finding-products)
+    - [Product catalogue design considerations](#product-catalogue-design-considerations)
 - [3. Product scope](#3-product-scope)
   - [Target user profile](#target-user-profile)
   - [Value proposition](#value-proposition)
@@ -666,6 +671,96 @@ sequenceDiagram
   * *Pros*: Avoids initial lookup pass.
   * *Cons*: Highly error-prone; failures during rollback leave inventory counts inconsistent.
 
+### 2.5 Product catalogue
+
+The product catalogue holds every item the business sells. Orders and stock records refer to products by
+name, so the catalogue is the first thing a user sets up. It supports four commands: `product add`,
+`product list`, `product delete` and `product find`.
+
+* `Product` holds a name, a unit price and a stock level. The price is a two-decimal `BigDecimal`, and the
+  stock level starts at 0.
+* `ProductList` stores the products in the order they were added. Names identify products and are compared
+  ignoring case, so `ProductList#add` rejects a duplicate name in one place, whichever command adds it.
+* Each command is its own `Command` subclass. `Parser` checks the input format, and each command checks the
+  rules that depend on stored data, such as whether a product exists.
+
+![Product catalogue class diagram](images/product-class.svg)
+
+#### Adding and listing products
+
+`product add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddProduct` and `AddProductCommand`. The parser
+looks for each prefix instead of splitting on spaces, so a name such as `Oat Milk 1L` stays in one piece and
+`p/` and `a/` can be given in either order. `Parser#parsePrice` rejects an empty, negative or non-numeric
+amount and more than two decimal places. It takes the caller's format hint as a parameter, because
+`expense add` uses the same `a/` amount and should show its own format when the amount is missing.
+
+`product list` is handled by `ListProductCommand`, which passes `ProductList#getSortedByName()` to
+`Ui#showProducts`. `getSortedByName()` sorts a copy, so the stored list keeps its insertion order.
+
+#### Deleting a product
+
+`product delete p/PRODUCT` is handled by `Parser#parseDeleteProduct` and `DeleteProductCommand`. The parser
+rejects `a/`, so a mistyped `product add` is reported instead of deleting a product. The command then:
+
+1. Looks the product up with `ProductList#findByName`. If there is none, it throws a `SystemException`.
+2. Asks `OrderList#findActiveOrderWithProduct` for an active order that contains the product. If there is
+   one, it throws a `SystemException` that names the order.
+3. Removes the product with `ProductList#remove`, removes its stock record with `StockList#removeByProduct`,
+   and shows the confirmation with `Ui#showProductDeleted`.
+
+Every check happens before anything is removed, so a failed delete leaves the catalogue and the stock list
+unchanged.
+
+![Product delete sequence diagram](images/product-delete.svg)
+
+An active order can still be cancelled or edited, and both return stock to its products through each
+`OrderItem`'s `Product` reference. If that product had been deleted, the stock would go to an object that is
+no longer in the catalogue or the stock list. A cancelled order cannot change any more, so it keeps its
+reference to the deleted product and still shows the product's name in its history.
+
+#### Finding products
+
+`product find KEYWORD` is handled by `Parser#parseFindProduct` and `FindProductCommand`. The keyword is all
+the text after `find`, so it can contain spaces. Product names cannot contain `p/` or `a/`, so the parser
+rejects a keyword with either prefix instead of searching for something that can never match.
+
+`ProductList#findByKeyword` filters `getSortedByName()` with a stream, keeping the products whose name
+contains the keyword ignoring case. `Ui#showMatchingProducts` prints the matches, or a message when nothing
+matches. It shares `Ui#printProductLines` with `product list`, so both commands print products in the same
+format.
+
+#### Product catalogue design considerations
+
+##### Aspect: Deleting a product that orders refer to
+
+* **Alternative 1 (current choice)**: Refuse to delete a product while an active order contains it.
+  * *Pros*: Stock can never be returned to a deleted product, and the rule is one check before anything is
+    removed.
+  * *Cons*: A product whose sale is still active, even a fully paid one, can only be deleted after that
+    order is cancelled.
+* **Alternative 2**: Archive the product instead of deleting it, hiding it from `product list` and rejecting
+  it in new orders.
+  * *Pros*: Products that have been sold can be retired at any time, and order history stays complete.
+  * *Cons*: Every command that looks up products has to handle the archived state, which adds code and tests
+    across the order and stock features.
+* **Alternative 3**: Delete the product and remove it from every order that contains it.
+  * *Pros*: Simple for the user.
+  * *Cons*: Changes past order totals and receipts, which a business cannot accept.
+
+##### Aspect: How the catalogue is stored
+
+* **Alternative 1 (current choice)**: An `ArrayList` in insertion order, sorted only when listed or searched.
+  * *Pros*: Simple to read and test, and sorting is cheap at the size of a small business's catalogue.
+  * *Cons*: Each lookup scans the list, and each listing sorts a copy.
+* **Alternative 2**: A `TreeMap` keyed by the lower-case name.
+  * *Pros*: Faster lookups, and the products are always in order.
+  * *Cons*: The key and the displayed name have to be kept in step, which is more complex than this
+    catalogue size needs.
+
+The tests cover adding duplicate names in different cases, sorting without changing the stored order,
+deleting with and without stock, deleting a product in an active or a cancelled order, and finding by part
+of a name in a different case.
+
 ## 3. Product scope
 
 ### Target user profile
@@ -684,6 +779,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | --------- | -------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
 | `* * *` | user                 | add products to the catalogue                          | maintain a list of items available for sale                |
 | `* * *` | user                 | remove products from the catalogue                     | remove items that are no longer offered                    |
+| `* *`   | user                 | find products by part of their name                    | locate a product without reading the whole catalogue       |
 | `* * *` | manager              | view earnings and expenses                             | oversee financial health with better clarity               |
 | `* * *` | sales employee       | view all customer orders                               | have an overview of all recorded orders                    |
 | `* * *` | sales employee       | select products from the catalogue                     | record customer orders quickly                             |
@@ -777,6 +873,26 @@ Given below are instructions to test the application manually. These instruction
    * Test case: `product list`
      * *Expected*: Shows `Products (3):` followed by one line per product in alphabetical order (Apple, Banana,
        Paper Bag), each with its price and stock.
+3. **Finding products** (with the three products above):
+   * Test case: `product find AN`
+     * *Expected*: Shows `Matching products (1):` followed by Banana.
+   * Test case: `product find p`
+     * *Expected*: Shows `Matching products (2):` followed by Apple and Paper Bag.
+   * Test case: `product find bread`
+     * *Expected*: `No products match "bread".`
+   * Test case: `product find`
+     * *Expected*: Error `Sorry! What should I look for? Format: product find KEYWORD`.
+4. **Deleting products** (with the three products above):
+   * Prerequisite: `stock add p/Banana q/10`, then `order add c/Mei Tan p/Banana q/2`. Note the order number shown.
+   * Test case: `product delete p/Banana`
+     * *Expected*: Error `Sorry! Can't delete Banana, it's still in active order N. Cancel the order first.`,
+       where N is the order number. Banana stays in `product list`.
+   * Test case: `product delete p/paper bag`
+     * *Expected*: `Deleted product Paper Bag`. Names are matched ignoring case.
+   * Test case: `product delete p/Coffee`
+     * *Expected*: Error `Sorry! There is no product named "Coffee" in the catalogue.`
+   * Test case: `order cancel N`, then `product delete p/Banana`
+     * *Expected*: `Deleted product Banana`. Banana no longer appears in `product list` or `stock list`.
 
 ---
 
