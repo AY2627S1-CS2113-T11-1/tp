@@ -31,7 +31,6 @@ classDiagram
     }
 
     class StockList {
-        -ArrayList~Stock~ stocks
         +add(Stock) void
         +findByProduct(String) Stock
         +getStocks() List~Stock~
@@ -39,7 +38,6 @@ classDiagram
     }
 
     class Stock {
-        -Product productRef
         +String product
         +BigDecimal price
         +int quantity

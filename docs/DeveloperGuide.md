@@ -457,92 +457,7 @@ The subsystem supports four primary commands:
 
 The following class diagram illustrates the architecture of the stock subsystem and its relationships with the catalogue and command layers:
 
-[stock-class.mmd](diagrams/stock-class.mmd)
-
-```mermaid
-%%{init: {"theme": "default", "class": {"curve": "linear"}}}%%
-classDiagram
-    direction TB
-
-    class Command {
-        <<abstract>>
-        +execute(products, orders, expenses, stocks, ui)* void
-    }
-
-    class AddStockCommand {
-        -String productName
-        -int quantity
-        +execute(...) void
-    }
-
-    class RemoveStockCommand {
-        -String productName
-        -int quantity
-        -boolean isDefault
-        +execute(...) void
-    }
-
-    class ListStockCommand {
-        +execute(...) void
-    }
-
-    class LowStockCommand {
-        +int DEFAULT_THRESHOLD$
-        -int threshold
-        +execute(...) void
-    }
-
-    class StockList {
-        -ArrayList~Stock~ stocks
-        +add(Stock) void
-        +findByProduct(String) Stock
-        +getStocks() List~Stock~
-        +size() int
-    }
-
-    class Stock {
-        -Product productRef
-        +String product
-        +BigDecimal price
-        +int quantity
-        +Stock(Product, int)
-        +Stock(String, BigDecimal, int)
-        +Stock(String, double, int)
-        +getProduct() String
-        +getPrice() BigDecimal
-        +getQuantity() int
-        +setQuantity(int) void
-        +setPrice(BigDecimal) void
-    }
-
-    class ProductList {
-        +findByName(String) Product
-        +add(Product) void
-        +getAll() List~Product~
-    }
-
-    class Product {
-        -String name
-        -BigDecimal price
-        -int stock
-        +getName() String
-        +getStock() int
-        +setStock(int) void
-        +getPrice() BigDecimal
-    }
-
-    Command <|-- AddStockCommand
-    Command <|-- RemoveStockCommand
-    Command <|-- ListStockCommand
-    Command <|-- LowStockCommand
-
-    Command ..> StockList : uses
-    Command ..> ProductList : uses
-
-    StockList "1" *-- "*" Stock
-    ProductList "1" *-- "*" Product
-    Stock "1" --> "0..1" Product : productRef
-```
+![Stock management class diagram](images/stock-class.svg)
 
 Key design aspects:
 
@@ -554,19 +469,19 @@ Key design aspects:
 
 `Stock` encapsulates product identification, unit price, and quantity. It provides three constructors:
 
-1. `Stock(Product product, int quantity)`: Binds directly to a catalogue `Product` reference (`productRef`), synchronizing initial quantity and unit price with the product catalogue.
+1. `Stock(Product product, int quantity)`: Binds directly to a catalogue `Product` reference (`productRef`), synchronising initial quantity and unit price with the product catalogue.
 2. `Stock(String product, BigDecimal price, int quantity)`: The primary standalone constructor ensuring exact decimal accuracy.
 3. `Stock(String product, double price, int quantity)`: A convenience constructor for backward-compatibility with callers providing a floating-point literal.
 
-When a `Stock` instance holds a `Product` reference (`productRef != null`), its `getQuantity()` and `setQuantity(int)` methods automatically synchronize with `Product#getStock()` and `Product#setStock(int)`.
+When a `Stock` instance holds a `Product` reference (`productRef != null`), its `getQuantity()` and `setQuantity(int)` methods automatically synchronise with `Product#getStock()` and `Product#setStock(int)`.
 
 `StockList` wraps an `ArrayList<Stock>` and provides case-insensitive product lookups via `findByProduct(String)`.
 
-#### Stock synchronization with Orders
+#### Stock synchronisation with Orders
 
-Previously, stock quantities were tracked independently in `Product.stock` and `Stock.quantity`. Order management commands (`AddOrderCommand`, `CancelOrderCommand`, `EditOrderCommand`) modified `Product.setStock(...)` directly, which caused `StockList` to fall out of synchronization.
+Previously, stock quantities were tracked independently in `Product.stock` and `Stock.quantity`. Order management commands (`AddOrderCommand`, `CancelOrderCommand`, `EditOrderCommand`) modified `Product.setStock(...)` directly, which caused `StockList` to fall out of synchronisation.
 
-The system addresses this through a three-layer synchronization strategy:
+The system addresses this through a three-layer synchronisation strategy:
 
 1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
 2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
@@ -598,49 +513,7 @@ Store managers need rapid insight into items nearing depletion. The `stock low [
 
 The following sequence diagram outlines this execution process:
 
-[stock-low-sequence.mmd](diagrams/stock-low-sequence.mmd)
-
-```mermaid
-sequenceDiagram
-    participant D as Duke
-    participant P as Parser
-    participant C as LowStockCommand
-    participant SL as StockList
-    participant PL as ProductList
-    participant U as Ui
-
-    D->>P: parse("stock low q/3")
-    activate P
-    P->>C: new LowStockCommand(3)
-    activate C
-    C-->>P: command
-    deactivate C
-    P-->>D: command
-    deactivate P
-
-    D->>C: execute(...)
-    activate C
-
-    C->>SL: getStocks()
-    activate SL
-    SL-->>C: allStocks
-    deactivate SL
-
-    loop For each stock in allStocks
-        C->>PL: findByName(product)
-        activate PL
-        PL-->>C: product
-        deactivate PL
-    end
-
-    C->>U: showLowStock(lowStocks, 3)
-    activate U
-    U-->>C: return
-    deactivate U
-
-    C-->>D: return
-    deactivate C
-```
+![Stock low sequence diagram](images/stock-low-sequence.svg)
 
 #### Design considerations and alternatives
 
