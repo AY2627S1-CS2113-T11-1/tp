@@ -1,5 +1,41 @@
 # User Guide
 
+## Contents
+
+* [Introduction](#introduction)
+* [Quick Start](#quick-start)
+* [Features](#features)
+  * [Product catalogue](#1-product-catalogue)
+    * [Adding a product](#11-adding-a-product-product-add)
+    * [Listing products](#12-listing-products-product-list)
+    * [Deleting a product](#13-deleting-a-product-product-delete)
+    * [Finding products](#14-finding-products-product-find)
+  * [Stock inventory](#2-stock-inventory)
+    * [Adding stock](#21-adding-stock-stock-add)
+    * [Removing stock](#22-removing-stock-stock-remove)
+    * [Listing stock](#23-listing-stock-stock-list)
+    * [Viewing low stock](#24-viewing-low-stock-stock-low)
+  * [Orders](#3-orders)
+    * [Adding an order](#31-adding-an-order-order-add)
+    * [Cancelling an order](#32-cancelling-an-order-order-cancel)
+    * [Listing orders](#33-listing-orders-order-list)
+    * [Editing an order](#34-editing-an-order-order-edit)
+    * [Discounting an order](#35-discounting-an-order-order-discount)
+  * [Sales and customer records](#4-sales-and-customer-records)
+    * [Viewing confirmed sales](#41-view-confirmed-sales-sales-list)
+    * [Generating receipts](#42-generating-receipts-generate-receipts)
+    * [Recording a customer's payment](#43-recording-a-customers-payment-order-add-pay)
+    * [Viewing a customer's order details](#44-viewing-a-customers-order-details-order-details)
+  * [Expenses and financial reports](#5-expenses-and-financial-reports)
+    * [Adding an expense](#51-adding-an-expense-expense-add)
+    * [Listing expenses](#52-listing-expenses-expense-list)
+    * [Viewing the financial report](#53-view-financial-report-finances)
+  * [General commands](#6-general-commands)
+    * [Getting command help](#61-getting-command-help-help)
+    * [Exiting the program](#62-exiting-the-program-exit)
+* [FAQ](#faq)
+* [Command Summary](#command-summary)
+
 ## Introduction
 
 BMS (Business Management System) is a desktop CLI (Command Line Interface) application used by store managers, sales staff, and logistics personnel to administer products, inventory stocks, customer orders, sales revenues, and operating expenses.
@@ -491,6 +527,8 @@ Sorry! Discount must be between 0 and 100.
 No changes were made to the order.
 ```
 
+### 4. Sales and customer records
+
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
@@ -568,6 +606,8 @@ If no orders match, the app displays `No orders found for You Jie.`
 Viewing details does not change orders, stock or sales. Missing customer names and extra fields
 are rejected with the command format.
 
+### 5. Expenses and financial reports
+
 ### 5.1 Adding an expense: `expense add`
 
 Records an operating expense.
@@ -640,6 +680,8 @@ The report uses the same two-decimal currency format as the rest of the applicat
 difference is displayed as `Profit`.
 
 
+### 6. General commands
+
 ### 6.1 Getting command help: `help`
 
 Format: `help {AREA}`
@@ -667,9 +709,11 @@ Format: `exit`
 
 ## FAQ
 
-**Q**: How do I transfer my data to another computer?
+**Q**: Is my data saved when I exit the application?
 
-**A**: Currently, data is held in memory during the active application session. Persistent data storage is planned for an upcoming release. To transfer data across sessions or machines currently, save your series of commands into a text file and re-run them sequentially.
+**A**: No. The current version stores products, stock, orders, payments and expenses only in memory.
+All data is lost when the application exits, and there is currently no built-in save, load or export command.
+To recreate data in a new session, save the commands you used in a text file and enter them again manually.
 
 ## Command Summary
 
