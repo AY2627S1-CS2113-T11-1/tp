@@ -775,39 +775,39 @@ BMS provides a unified, lightweight, and offline-capable platform to maintain an
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority  | As a ...             | I want to ...                                          | So that I can ...                                          |
-| --------- | -------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
-| `* * *` | user                 | add products to the catalogue                          | maintain a list of items available for sale                |
-| `* * *` | user                 | remove products from the catalogue                     | remove items that are no longer offered                    |
-| `* *`   | user                 | find products by part of their name                    | locate a product without reading the whole catalogue       |
-| `* * *` | manager              | view earnings and expenses                             | oversee financial health with better clarity               |
-| `* * *` | sales employee       | view all customer orders                               | have an overview of all recorded orders                    |
-| `* * *` | sales employee       | select products from the catalogue                     | record customer orders quickly                             |
-| `* * *` | logistics personnel  | view supplies in the storage system                    | check the quantity of inventory remaining                  |
-| `* * *` | logistics personnel  | update stock quantities                                | ensure the system reflects actual physical inventory       |
-| `* * *` | logistics personnel  | restock supplies                                       | ensure essential products remain available for sale        |
-| `* *`   | manager              | view logistics and inventory records                   | monitor the status of supply operations                    |
-| `* *`   | manager              | view customer sales records                            | monitor the status of sales operations                     |
-| `* *`   | manager              | view financial summaries                               | assess the overall financial status of the business        |
-| `* *`   | manager              | view net profits and losses                            | manage company finances with a clearer overview            |
-| `* *`   | sales employee       | edit a customer's order                                | update order details when a customer changes their mind    |
-| `* *`   | sales employee       | get a receipt of orders for a customer                 | provide customers with a receipt of their purchases        |
-| `* *`   | sales employee       | calculate the change needed for customer payments      | provide customers with accurate change quickly             |
-| `* *`   | sales employee       | generate a receipt                                     | provide customers with proof of their purchase             |
-| `* *`   | sales employee       | view past orders for a customer                        | inspect past transaction history when assisting customers  |
-| `* *`   | logistics personnel  | identify low-stock supplies                            | prioritize items that need replenishment                   |
-| `* *`   | logistics personnel  | view supply costs                                      | keep track of procurement expenses                         |
-| `* *`   | logistics personnel  | record damaged or unusable supplies by deducting stock | ensure the system reflects actual usable inventory         |
-| `*`     | user                 | calculate local taxes and multiple currencies          | facilitate international sales and cross-border operations |
-| `*`     | manager              | view employee details such as name, age, and salary    | use the information for human resource tasks               |
-| `*`     | logistics personnel  | monitor inventory movement trends                      | understand how supplies are consumed over time             |
-| `*`     | logistics personnel  | set estimated arrival dates for incoming stock         | plan replenishment schedules effectively                   |
-| `*`     | manager              | assign tasks to team members with deadlines            | keep operational project work on track                     |
-| `*`     | HR manager           | view daily employee attendance                         | monitor staff punctuality and working hours                |
-| `*`     | employee             | submit leave requests through the system               | have time off reviewed and approved by my manager          |
-| `*`     | manager              | approve or reject pending leave requests               | ensure adequate branch staffing and team coverage          |
-| `*`     | HR manager           | add new employee profiles with contract details        | maintain a centralized personnel database                  |
-| `*`     | system administrator | create user accounts with role-based permissions       | ensure employees only access data relevant to their duties |
+| Priority  | As a ...             | I want to ...                                          | So that I can ...                                          | Status |
+| --------- | -------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------ |
+| `* * *` | user                 | add products to the catalogue                          | maintain a list of items available for sale                | Implemented |
+| `* * *` | user                 | remove products from the catalogue                     | remove items that are no longer offered                    | Implemented |
+| `* *`   | user                 | find products by part of their name                    | locate a product without reading the whole catalogue       | Implemented |
+| `* * *` | manager              | view earnings and expenses                             | oversee financial health with better clarity               | Implemented |
+| `* * *` | sales employee       | view all customer orders                               | have an overview of all recorded orders                    | Implemented |
+| `* * *` | sales employee       | select products from the catalogue                     | record customer orders quickly                             | Implemented |
+| `* * *` | logistics personnel  | view supplies in the storage system                    | check the quantity of inventory remaining                  | Implemented |
+| `* * *` | logistics personnel  | update stock quantities                                | ensure the system reflects actual physical inventory       | Implemented |
+| `* * *` | logistics personnel  | restock supplies                                       | ensure essential products remain available for sale        | Implemented |
+| `* *`   | manager              | view logistics and inventory records                   | monitor the status of supply operations                    | Implemented |
+| `* *`   | manager              | view customer sales records                            | monitor the status of sales operations                     | Implemented |
+| `* *`   | manager              | view financial summaries                               | assess the overall financial status of the business        | Implemented |
+| `* *`   | manager              | view net profits and losses                            | manage company finances with a clearer overview            | Implemented |
+| `* *`   | sales employee       | edit a customer's order                                | update order details when a customer changes their mind    | Implemented |
+| `* *`   | sales employee       | get a receipt of orders for a customer                 | provide customers with a receipt of their purchases        | Implemented |
+| `* *`   | sales employee       | calculate the change needed for customer payments      | provide customers with accurate change quickly             | Implemented |
+| `* *`   | sales employee       | generate a receipt                                     | provide customers with proof of their purchase             | Implemented |
+| `* *`   | sales employee       | view past orders for a customer                        | inspect past transaction history when assisting customers  | Implemented |
+| `* *`   | logistics personnel  | identify low-stock supplies                            | prioritize items that need replenishment                   | Implemented |
+| `* *`   | logistics personnel  | view supply costs                                      | keep track of procurement expenses                         | Partially implemented |
+| `* *`   | logistics personnel  | record damaged or unusable supplies by deducting stock | ensure the system reflects actual usable inventory         | Implemented |
+| `*`     | user                 | calculate local taxes and multiple currencies          | facilitate international sales and cross-border operations | Not implemented |
+| `*`     | manager              | view employee details such as name, age, and salary    | use the information for human resource tasks               | Not implemented |
+| `*`     | logistics personnel  | monitor inventory movement trends                      | understand how supplies are consumed over time             | Not implemented |
+| `*`     | logistics personnel  | set estimated arrival dates for incoming stock         | plan replenishment schedules effectively                   | Not implemented |
+| `*`     | manager              | assign tasks to team members with deadlines            | keep operational project work on track                     | Not implemented |
+| `*`     | HR manager           | view daily employee attendance                         | monitor staff punctuality and working hours                | Not implemented |
+| `*`     | employee             | submit leave requests through the system               | have time off reviewed and approved by my manager          | Not implemented |
+| `*`     | manager              | approve or reject pending leave requests               | ensure adequate branch staffing and team coverage          | Not implemented |
+| `*`     | HR manager           | add new employee profiles with contract details        | maintain a centralized personnel database                  | Not implemented |
+| `*`     | system administrator | create user accounts with role-based permissions       | ensure employees only access data relevant to their duties | Not implemented |
 
 ## 5. Non-functional requirements
 
