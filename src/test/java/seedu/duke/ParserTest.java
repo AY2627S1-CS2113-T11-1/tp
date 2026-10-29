@@ -174,6 +174,24 @@ class ParserTest {
     }
 
     @Test
+    public void parse_expenseEmptyAmount_showsExpenseFormat() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("expense add p/Rent a/"));
+
+        assertEquals("The price cannot be empty. Format: expense add p/PRODUCT a/AMOUNT",
+                exception.getMessage());
+    }
+
+    @Test
+    public void parse_productEmptyAmount_showsProductFormat() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("product add p/Oat Milk a/"));
+
+        assertEquals("The price cannot be empty. Format: product add p/PRODUCT a/AMOUNT",
+                exception.getMessage());
+    }
+
+    @Test
     public void parse_expenseListWithExtraInput_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("expense list extra"));
     }
