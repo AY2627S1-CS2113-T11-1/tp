@@ -115,6 +115,50 @@ class PaymentTest {
     }
 
     @Test
+    public void execute_discountedOrder_returnsChangeFromDiscountedTotal() throws SystemException {
+        Order order = addOrder("Charlie", 1.50, 2);
+        order.setDiscountPercent(new BigDecimal("10"));
+
+        pay("Charlie", "5.00");
+
+        assertTrue(order.isPaid());
+        assertEquals(new BigDecimal("2.70"), order.getPaidAmount());
+        assertEquals("    Charlie has paid $5.00! The change to return is: $2.30."
+                + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void execute_discountedPartialPayment_subtractsPreviousPayment() throws SystemException {
+        Order order = addOrder("You Jie", 3, 1);
+        order.setDiscountPercent(new BigDecimal("10"));
+        pay("You Jie", "1.00");
+        assertFalse(order.isPaid());
+        assertEquals(new BigDecimal("1.00"), order.getPaidAmount());
+        output.reset();
+
+        pay("You Jie", "1.70");
+
+        assertTrue(order.isPaid());
+        assertEquals(new BigDecimal("2.70"), order.getPaidAmount());
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("change to return is: $0.00"));
+    }
+
+    @Test
+    public void execute_multipleDiscountedOrders_allocatesDiscountedBalances() throws SystemException {
+        Order first = addOrder("You Jie", 3, 1);
+        first.setDiscountPercent(new BigDecimal("10"));
+        Order second = addOrder("You Jie", 4, 1);
+        second.setDiscountPercent(new BigDecimal("25"));
+
+        pay("You Jie", "4.00");
+
+        assertTrue(first.isPaid());
+        assertEquals(new BigDecimal("2.70"), first.getPaidAmount());
+        assertFalse(second.isPaid());
+        assertEquals(new BigDecimal("1.30"), second.getPaidAmount());
+    }
+
+    @Test
     public void execute_unknownCustomer_reportsUnregisteredCustomer() throws SystemException {
         addOrder("You Jie", 1, 1);
         SystemException error = assertThrows(SystemException.class, () -> pay("You", "20"));
@@ -172,6 +216,35 @@ class PaymentTest {
         assertEquals(2, order.getItems().get(0).getQuantity());
         assertEquals(BigDecimal.valueOf(2.50).setScale(2), order.getTotal());
         assertFalse(order.isCancelled());
+    }
+
+    @Test
+    public void execute_zeroPayment_marksAllFreeOrdersPaid() throws SystemException {
+        Order first = addOrder("You Jie", 0, 1);
+        Order discounted = addOrder("You Jie", 3, 1);
+        discounted.setDiscountPercent(new BigDecimal("100"));
+        Order last = addOrder("You Jie", 0, 2);
+
+        pay("You Jie", "0");
+
+        assertTrue(first.isPaid());
+        assertTrue(discounted.isPaid());
+        assertTrue(last.isPaid());
+        assertEquals(new BigDecimal("0.00"), discounted.getPaidAmount());
+    }
+
+    @Test
+    public void execute_exhaustedPayment_marksLaterFreeOrderWithoutPayingChargedOrder() throws SystemException {
+        Order first = addOrder("You Jie", 2, 1);
+        Order charged = addOrder("You Jie", 3, 1);
+        Order free = addOrder("You Jie", 0, 1);
+
+        pay("You Jie", "2");
+
+        assertTrue(first.isPaid());
+        assertFalse(charged.isPaid());
+        assertEquals(new BigDecimal("0.00"), charged.getPaidAmount());
+        assertTrue(free.isPaid());
     }
 
     @Test
