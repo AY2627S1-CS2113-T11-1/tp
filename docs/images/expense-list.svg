@@ -6,8 +6,8 @@
   <rect class="actor" x="330" y="10" width="180" height="58" rx="6"/><text class="label" x="420" y="39">expenses : ExpenseList</text><line class="life" x1="420" y1="68" x2="420" y2="454"/>
   <rect class="actor" x="575" y="10" width="150" height="58" rx="6"/><text class="label" x="650" y="39">ui : Ui</text><line class="life" x1="650" y1="68" x2="650" y2="454"/>
   <rect class="activation" x="145" y="112" width="10" height="300"/>
-  <text class="label small" x="285" y="122">getExpenses()</text><line class="call" x1="155" y1="134" x2="415" y2="134"/><rect class="activation" x="415" y="122" width="10" height="58"/>
+  <text class="label small" x="285" y="122">getExpenses()</text><line class="call" x1="155" y1="134" x2="415" y2="134"/><rect class="activation" x="415" y="134" width="10" height="60"/>
   <text class="label small" x="285" y="182">copy of expense records</text><line class="return" x1="425" y1="194" x2="155" y2="194"/>
-  <text class="label small" x="400" y="272">showExpenses(expenses)</text><line class="call" x1="155" y1="284" x2="645" y2="284"/><rect class="activation" x="645" y="272" width="10" height="58"/>
+  <text class="label small" x="400" y="272">showExpenses(expenses)</text><line class="call" x1="155" y1="284" x2="645" y2="284"/><rect class="activation" x="645" y="284" width="10" height="60"/>
   <text class="label small" x="400" y="332">list displayed</text><line class="return" x1="655" y1="344" x2="155" y2="344"/>
 </svg>
