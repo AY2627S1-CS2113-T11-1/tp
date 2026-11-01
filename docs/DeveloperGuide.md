@@ -45,7 +45,7 @@
   - [7.1 Initial launch and shutdown](#71-initial-launch-and-shutdown)
   - [7.2 Product catalogue management](#72-product-catalogue-management)
   - [7.3 Stock and inventory management](#73-stock-and-inventory-management)
-  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization-issue-68-verification)
+  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization)
   - [7.5 Customer payments, receipts, and sales](#75-customer-payments-receipts-and-sales)
   - [7.6 Operating expenses and financial report](#76-operating-expenses-and-financial-report)
   - [7.7 Help documentation](#77-help-documentation)
@@ -359,8 +359,9 @@ Because nothing changes until every check has passed, a failed edit needs no rol
 stock movement checks that units were only moved, never created or lost.
 
 The unit price follows the product. An unchanged product keeps the price stored on the order line (through the
-`OrderItem(Product, int, double)` constructor), so a customer is not re-priced by an edit. A replacement product
-uses its current catalogue price.
+`OrderItem(Product, int, BigDecimal)` constructor), so a customer is not re-priced by an edit. A replacement product
+uses its current catalogue price. The `double` overload is retained only as a compatibility convenience and converts
+immediately to `BigDecimal`.
 
 **Design considerations.**
 
@@ -383,10 +384,10 @@ replaces the old one, and `0` removes it.
 
 **Money uses `BigDecimal`.** The discount amount must be rounded to the cent with half a cent rounded up.
 A `double` cannot hold values such as $1.175 (12.5% of $9.40) exactly: it stores 1.17499..., which would round
-down to $1.17. `Order` therefore converts each stored unit price with `BigDecimal.valueOf`, calculates
-`subtotal × percent ÷ 100`, and rounds with `RoundingMode.HALF_UP`. The public getters still return `double`,
-so existing callers (order list, sales, receipts) did not need to change. The parser also keeps the percentage
-as a `BigDecimal`, so 12.5 is never approximated.
+down to $1.17. `Order` therefore keeps monetary values as `BigDecimal`, calculates `subtotal × percent ÷ 100`,
+and rounds with `RoundingMode.HALF_UP`. The parser also keeps the percentage as a `BigDecimal`, so 12.5 is never
+approximated. The remaining `double` overloads are compatibility boundaries only; they convert immediately to
+`BigDecimal`.
 
 **Display.** Order tables (receipts, cancellations) sum the line subtotals in their last row. When a discount
 applies, that row is labelled `Subtotal`, followed by a `Discount:` line and a `Total:` line, so the column
@@ -396,9 +397,9 @@ still adds up. Orders without a discount print exactly as before.
 
 * *Storing the percentage vs. the amount.* Storing a fixed dollar amount would need recalculating after every
   edit and could exceed a reduced subtotal. Storing the percentage avoids both problems.
-* *`BigDecimal` everywhere vs. only for discounts.* Converting every price in the system to `BigDecimal` would be
-  cleaner but would touch every feature. Prices are limited to two decimal places, so converting at the point of
-  calculation gives exact results with a much smaller change.
+* *Strict `BigDecimal` APIs vs. compatibility overloads.* Keeping a few `double` constructor overloads supports
+  existing callers, while each overload immediately converts through `BigDecimal.valueOf`; all stored and calculated
+  monetary values remain `BigDecimal`.
 
 ### 2.4 Sales and customer commands
 
@@ -845,7 +846,7 @@ Given below are instructions to test the application manually. These instruction
 
 ---
 
-### 7.4 Order operations and stock synchronization (Issue #68 verification)
+### 7.4 Order operations and stock synchronization
 
 These tests verify that `Product.stock` and `Stock.quantity` remain strictly synchronized across all order operations.
 
