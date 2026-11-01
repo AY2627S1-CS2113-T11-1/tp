@@ -6,7 +6,7 @@ sequenceDiagram
 
     activate C
     create participant E as expense : Expense
-    C->>E: new Expense(productName, amount)
+    C->>E: «create» Expense(productName, amount)
     activate E
     E-->>C: created expense
     deactivate E
