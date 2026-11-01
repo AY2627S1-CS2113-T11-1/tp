@@ -1,17 +1,18 @@
+%%{init: {"themeVariables": {"fontSize": "20px"}}}%%
 sequenceDiagram
-    actor User as user : User
-    participant D as duke : Duke
-    participant P as parser : Parser
-    participant C as listCommand : ListExpenseCommand
-    participant L as expenseList : ExpenseList
-    participant U as ui : Ui
+    actor User as : User
+    participant D as : Duke
+    participant P as : Parser
+    participant C as : ListExpenseCommand
+    participant L as : ExpenseList
+    participant U as : Ui
 
     activate User
     User->>D: expense list
     activate D
     D->>P: parse(...)
     activate P
-    P->>C: <<create>> ListExpenseCommand()
+    P->>C: create
     activate C
     P-->>D: ListExpenseCommand
     deactivate P
