@@ -1,7 +1,6 @@
 package seedu.duke.command;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,19 +45,19 @@ public class AddPaymentCommand extends Command {
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
             throws SystemException {
-        boolean customerFound = false;
+        boolean isCustomerFound = false;
         List<Order> unpaidOrders = new ArrayList<>();
         BigDecimal outstanding = BigDecimal.ZERO.setScale(2);
         for (Order order : orders.getAll()) {
             if (order.getCustomer().equalsIgnoreCase(customer)) {
-                customerFound = true;
+                isCustomerFound = true;
                 if (!order.isCancelled() && !order.isPaid()) {
                     unpaidOrders.add(order);
                     outstanding = outstanding.add(getAmountDue(order));
                 }
             }
         }
-        if (!customerFound) {
+        if (!isCustomerFound) {
             throw new SystemException("Customer " + customer + " is not a registered customer.");
         }
         if (unpaidOrders.isEmpty()) {
@@ -70,38 +69,36 @@ public class AddPaymentCommand extends Command {
                     + outstanding.subtract(amount).toPlainString() + ".");
         }
         BigDecimal remaining = amount;
+        int updatedOrders = 0;
         for (Order order : unpaidOrders) {
             BigDecimal due = getAmountDue(order);
             BigDecimal applied = remaining.min(due);
             if (applied.signum() > 0 || due.signum() == 0) {
                 order.recordPayment(applied);
+                updatedOrders++;
             }
             remaining = remaining.subtract(applied);
-            if (remaining.signum() == 0) {
-                break;
-            }
         }
-        logger.fine(() -> "Recorded payment for " + amount + " for " + unpaidOrders.size() + " order(s)");
+        logger.fine("Recorded payment of $" + amount.subtract(remaining).toPlainString()
+                + " across " + updatedOrders + " order(s)");
         ui.showPayment(customer, amount, amount.subtract(outstanding).max(BigDecimal.ZERO));
     }
 
     /**
-     * Calculates the amount using the saved exact decimal unit prices.
+     * Calculates the discounted order total less payments already recorded.
      *
      * @param order order to calculate
-     * @return total amount rounded to cents
+     * @return remaining amount due after discounts and previous payments
      * @throws SystemException if a saved price cannot be used for payment
      */
     private BigDecimal getAmountDue(Order order) throws SystemException {
-        BigDecimal total = BigDecimal.ZERO;
         for (OrderItem item : order.getItems()) {
             BigDecimal price = item.getUnitPrice();
             if (price == null || price.signum() < 0) {
                 throw new SystemException("Order " + order.getId()
                         + " has an invalid price. Payment was not recorded.");
             }
-            total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
-        return total.setScale(2, RoundingMode.HALF_UP).subtract(order.getPaidAmount());
+        return order.getTotal().subtract(order.getPaidAmount());
     }
 }

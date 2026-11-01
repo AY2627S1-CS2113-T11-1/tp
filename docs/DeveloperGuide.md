@@ -197,8 +197,8 @@ orders and look up command usage. They use the existing `Command` structure and 
 
 The sequence diagrams below show the main successful execution path after parsing. `Duke` represents
 the application's command loop. Validation, error paths and repeated calls are omitted for readability;
-the surrounding text describes alternatives. The payment diagram shows the current `recordPayment`
-call, while the original full-payment design is described below.
+the surrounding text describes alternatives. The payment diagram shows one `recordPayment` call;
+the command repeats this step for eligible orders while payment remains.
 
 #### Listing sales
 
@@ -283,38 +283,47 @@ prefix-shaped fields are rejected. Amounts must contain digits with an optional 
 two digits. Negative values, currency symbols and scientific notation are rejected. A valid amount is
 converted directly from its text to `BigDecimal` and normalised to two decimal places.
 
-**Execution.** Payment covers all of the customer's unpaid, non-cancelled orders. The command works in two
-stages:
+**Execution.** Payment is applied to the customer's unpaid, non-cancelled orders in creation order.
+A positive payment may cover only part of the outstanding balance. The command works in two stages:
 
 1. *Check.* Scan the history, identify the customer and collect eligible orders. Calculate the complete
-   amount due, then reject an unknown customer, an empty eligible list or insufficient payment. No order
-   is marked paid during these checks.
-2. *Apply.* Call `Order#markPaid()` on each eligible order, then pass the payment and calculated change to
-   `Ui#showPayment`. Cancelled and already-paid orders are excluded from later payment attempts.
+   amount due, then reject an unknown customer, an empty eligible list or a zero payment when money is
+   still owed. These checks do not change any orders.
+2. *Apply.* For each eligible order, calculate `applied = min(remaining payment, amount due)` and call
+   `Order#recordPayment(applied)` when the applied amount is positive or the amount due is zero.
+   Subtract the applied amount from the remaining payment. Once no payment remains, skip orders with
+   a positive balance but continue marking zero-balance orders paid.
+   Finally, pass the amount received and calculated change to `Ui#showPayment`.
 
 ![Customer payment sequence diagram](images/customer-payment.svg)
 
-**Money and state.** `getAmountDue` multiplies each saved unit price by its quantity using `BigDecimal`,
-then rounds to cents with `RoundingMode.HALF_UP`. Invalid saved prices are rejected before payment is
-applied. Change is the amount received minus the outstanding amount; an insufficient payment reports
-the shortfall without recording a partial payment. `Ui` displays both payment and change to two decimals.
+**Money and state.** `getAmountDue` uses `Order#getTotal()` and subtracts `Order#getPaidAmount()`,
+so the remaining balance includes the order's discount and previous payments. Invalid saved prices
+are rejected before payment is applied. Change is `max(amount received - outstanding amount, 0)`, so a
+partial payment returns no change. `Ui` displays both payment and change to two decimals.
 
-Payment updates the in-memory paid flag. It does not change stock, create an expense, store a payment
+`Order#recordPayment` adds to the order's accumulated paid amount. `Order#isPaid()` becomes true only
+when a payment has been recorded and that amount reaches the order total. Partially paid orders remain
+eligible for later payments; cancelled and fully paid orders are excluded. Financial reporting counts
+the amount actually recorded on non-cancelled orders, including partial payments.
+
+Payment updates in-memory order state. It does not change stock, create an expense, store a payment
 ledger or implement refunds. Restarting the application does not preserve this payment state.
 
 **Design considerations.**
 
-* *All outstanding orders vs. one selected order.* The command identifies a customer rather than an order
-  number, so it pays all eligible orders together. Selecting one order would require an additional identifier.
-* *Validate before updating vs. partial payment.* Checking the full amount first avoids marking some orders
-  paid when the payment cannot cover the rest. Supporting instalments would need a remaining-balance model.
+* *Creation order vs. one selected order.* The command identifies a customer rather than an order number,
+  so it allocates payment to older eligible orders first. Selecting one order would require an additional identifier.
+* *Accumulated amount vs. a paid flag alone.* Recording the amount paid supports instalments and lets
+  financial reporting count money received before an order is fully paid.
 * *Decimal arithmetic vs. floating-point subtraction.* Parsing money directly as `BigDecimal` avoids
   binary rounding errors when checking payment sufficiency and calculating change.
 
-**Current limitation.** `getAmountDue` sums stored item prices and quantities without applying the order's
-discount. Payment can therefore request more than the discounted total shown elsewhere. Integration with
-discounts should use a shared monetary calculation rather than maintaining two different definitions of
-the amount due. This section describes the existing behaviour, not a completed discount integration.
+**Discount integration.** Payment allocation and `Order#recordPayment` use the same discounted order
+total, avoiding separate definitions of the amount due. For a $3.00 order with a 10% discount, the total
+is $2.70. A $5.00 payment records $2.70 and returns $2.30 change. If $1.00 was already recorded, only
+$1.70 remains payable. Regression tests cover discounted change, subsequent payments and allocation
+across multiple discounted orders.
 
 #### Viewing a customer's order details
 
@@ -837,12 +846,13 @@ These tests verify that `Product.stock` and `Stock.quantity` remain strictly syn
      * *Expected*: Applies 10% discount ($0.30 off), new Total: $2.70.
 2. **Checking confirmed sales**:
    * Test case: `sales list`
-     * *Expected*: Total sales show $0.00 because Order 2 is unpaid.
+     * *Expected*: Order 2 appears even though it is unpaid, and total sales show $2.70.
+       Confirmed sales include all non-cancelled orders regardless of payment status; cancelled Order 1 is excluded.
 3. **Recording payment**:
    * Test case: `order add pay c/Charlie a/5.00`
      * *Expected*: Marks Order 2 paid ($2.70), displays change due ($2.30).
    * Test case: `sales list`
-     * *Expected*: Total sales now reflect $2.70.
+     * *Expected*: Total sales remain $2.70 because recording payment does not change which orders appear in sales.
 4. **Generating receipts**:
    * Test case: `generate receipts c/Charlie`
      * *Expected*: Prints a formatted receipt for Charlie listing Order 2, items, discount, subtotal, and total paid.
