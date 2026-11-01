@@ -585,7 +585,7 @@ the sum of the displayed line costs.
 These features let the manager add expenses, view them, and compare expenses with payments received.
 Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
 
-The overall flow is:
+The architecture of the expense and financial management components is shown below:
 
 ![Expense and financial management architecture](images/expense-finance-architecture.svg)
 
@@ -741,13 +741,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Catalogue Product**: A master product entry defined by a unique product name and base unit price. It acts as the reference for physical stock and customer orders.
 * **Command-Line Interface (CLI)**: A text-based user interface where the user types commands line-by-line via the terminal.
 * **Discount**: A percentage deduction applied to an order's subtotal, calculated using exact decimal arithmetic rounded half-up to two decimal places.
-* **Expense**: A recorded business cash outflow specifying the product or expense item and the monetary amount incurred.
+* **Expense / Operating Expense**: A recorded business cash outflow specifying the product or expense item and the monetary amount incurred.
+* **Financial Report**: A summary of active order value, payments received, recorded expenses, and the resulting profit or loss.
 * **Low Stock Threshold**: The cutoff quantity (default: 5 units) at or below which an inventory item is flagged by `stock low` as requiring replenishment.
+* **Net Standing**: The financial result calculated as total payments received minus total recorded operating expenses.
 * **Order**: A recorded customer purchase transaction containing a unique sequential order ID, customer name, one or more order items, discount percentage, and payment status.
 * **Order Item**: A single line in an order capturing the product, ordered quantity, and the unit price locked at the time of purchase.
-* **Profit / Loss**: The net financial performance of the business, calculated as total sales revenue received minus total recorded operating expenses.
+* **Profit / Loss**: The net financial performance of the business, calculated as total payments received minus total recorded operating expenses.
 * **Stock**: The physical quantity of a catalogued product currently available on hand in the storage or warehouse system.
 * **Subtotal**: The monetary sum of all items in an order before discounts are applied.
+* **Total Active Order Value**: The sum of the totals of all non-cancelled orders, including orders that have not been fully paid.
+* **Total Payments Received**: The sum of payments recorded against non-cancelled orders, including partial payments.
 
 ## 7. Instructions for manual testing
 

@@ -1,15 +1,35 @@
 sequenceDiagram
-    actor User
-    participant D as Duke
-    participant P as Parser
-    participant C as AddExpenseCommand
-    participant L as ExpenseList
-    participant U as Ui
+    actor User as user : User
+    participant D as duke : Duke
+    participant P as parser : Parser
+    participant C as addExpenseCommand : AddExpenseCommand
+    participant E as expense : Expense
+    participant L as expenseList : ExpenseList
+    participant U as ui : Ui
 
+    activate User
     User->>D: expense add p/Bread a/100.50
+    activate D
     D->>P: parse(...)
-    P-->>D: AddExpenseCommand
+    activate P
+    P->>C: <<create>> AddExpenseCommand(...)
+    activate C
+    C->>E: <<create>> Expense(...)
+    activate E
+    E-->>C: created expense
+    deactivate E
+    C-->>D: AddExpenseCommand
+    deactivate P
     D->>C: execute(...)
     C->>L: add Expense
+    activate L
+    L-->>C: added
+    deactivate L
     C->>U: show confirmation
+    activate U
     U-->>User: Expense added
+    deactivate U
+    deactivate C
+    destroy C
+    deactivate D
+    deactivate User
