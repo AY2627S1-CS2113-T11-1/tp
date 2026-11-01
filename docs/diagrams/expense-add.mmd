@@ -4,7 +4,6 @@ sequenceDiagram
     participant D as : Duke
     participant P as : Parser
     participant C as : AddExpenseCommand
-    participant E as : Expense
     participant L as : ExpenseList
     participant U as : Ui
 
@@ -15,10 +14,13 @@ sequenceDiagram
     activate P
     P->>C: create
     activate C
+    create participant E as : Expense
     C->>E: create
     activate E
     E-->>C: created expense
     deactivate E
+    destroy E
+    C-xE: destroy
     C-->>D: AddExpenseCommand
     deactivate P
     D->>C: execute(...)
@@ -32,5 +34,6 @@ sequenceDiagram
     deactivate U
     deactivate C
     destroy C
+    D-xC: destroy
     deactivate D
     deactivate User

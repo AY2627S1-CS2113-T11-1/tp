@@ -3,7 +3,6 @@ sequenceDiagram
     actor User as : User
     participant D as : Duke
     participant P as : Parser
-    participant C as : FinancesCommand
     participant O as : OrderList
     participant E as : ExpenseList
     participant U as : Ui
@@ -12,6 +11,7 @@ sequenceDiagram
     activate D
     D->>P: parse(...)
     activate P
+    create participant C as : FinancesCommand
     P->>C: create
     activate C
     P-->>D: FinancesCommand
@@ -35,5 +35,6 @@ sequenceDiagram
     deactivate U
     deactivate C
     destroy C
+    D-xC: destroy
     deactivate D
     deactivate User
