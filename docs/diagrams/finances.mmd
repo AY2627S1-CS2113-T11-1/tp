@@ -1,13 +1,19 @@
-%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 4 4; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#dbeafe", "actorBorder": "#2563eb", "actorTextColor": "#1e3a8a", "actorLineColor": "#60a5fa", "signalColor": "#2563eb", "signalTextColor": "#1e3a8a", "activationBkgColor": "#bfdbfe", "activationBorderColor": "#2563eb"}}}%%
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 5 5; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#eef4fb", "actorBorder": "#40566f", "actorTextColor": "#1f2933", "actorLineColor": "#8a98a8", "signalColor": "#40566f", "signalTextColor": "#1f2933", "activationBkgColor": "#ffffff", "activationBorderColor": "#40566f"}}}%%
 sequenceDiagram
-    participant P as parser : Parser
-    participant C as command : FinancesCommand
-    participant O as orders : OrderList
-    participant E as expenses : ExpenseList
-    participant U as ui : Ui
-
-    P->>C: create()
+    participant D as : Duke
+    participant P as : Parser
+    participant O as : OrderList
+    participant E as : ExpenseList
+    participant U as : Ui
+    activate D
+    D->>P: parse(...)
+    activate P
+    create participant C as : FinancesCommand
+    P->>C: create
     activate C
+    P-->>D: FinancesCommand
+    deactivate P
+    D->>C: execute(...)
     C->>O: getAll()
     activate O
     O-->>C: active orders
@@ -20,8 +26,10 @@ sequenceDiagram
     activate E
     E-->>C: expense records
     deactivate E
-    C->>U: showFinances(orders, payments, expenses)
+    C->>U: show financial report
     activate U
-    U-->>C: return
+    U-->>D: financial report
     deactivate U
     deactivate C
+    destroy C
+    deactivate D
