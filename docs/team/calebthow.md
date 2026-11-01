@@ -25,8 +25,9 @@ and the documentation needed to explain these features to users and future devel
 * **Feature: Financial reporting** (`finances`)
     * What it does: reports total order value, payments received, total expenses and profit or loss.
     * Justification: provides a compact view of the business's financial position without requiring manual calculation.
-    * Highlights: separates total order value from recorded sales, excludes cancelled orders from sales, includes
-      partial payments only to the amount received, and computes profit or loss as sales minus expenses. Refactored
+    * Highlights: separates active order value from payments received, excludes cancelled orders and assumed refunds,
+      includes partial payments only to the amount received, and computes profit or loss as payments received minus
+      expenses. Refactored
       monetary values to use `BigDecimal` throughout the relevant domain and UI paths, avoiding floating-point
       rounding errors in currency calculations. Added focused tests for profit, loss, equal totals and partial
       payments ([#76](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/76)).

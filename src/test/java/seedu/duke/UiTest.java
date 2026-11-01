@@ -130,7 +130,8 @@ class UiTest {
                 "+---------+----------+------------+----------+",
                 "| Total   |        4 |            |    $6.38 |",
                 "+---------+----------+------------+----------+",
-                "Amount excluded from recorded sales: $6.38"), outputLines());
+                "Order value excluded from active totals: $6.38",
+                "Payment refunded: $0.00"), outputLines());
     }
 
     @Test

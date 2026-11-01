@@ -5,14 +5,27 @@ sequenceDiagram
     participant O as OrderList
     participant E as ExpenseList
     participant U as Ui
-
+    activate User
     User->>P: finances
+    activate P
     P-->>C: FinancesCommand
+    deactivate P
+    activate C
     C->>O: getAll()
-    O-->>C: all orders
+    activate O
+    O-->>C: active orders
+    deactivate O
     C->>O: getPaidSales()
-    O-->>C: paid, non-cancelled sales
+    activate O
+    O-->>C: active orders with payments
+    deactivate O
     C->>E: getExpenses()
+    activate E
     E-->>C: expense records
+    deactivate E
     C->>U: show financial report
+    activate U
     U-->>User: financial report
+    deactivate U
+    deactivate C
+    deactivate User

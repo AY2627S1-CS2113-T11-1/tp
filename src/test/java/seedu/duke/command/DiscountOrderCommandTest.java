@@ -131,6 +131,18 @@ class DiscountOrderCommandTest {
     }
 
     @Test
+    public void execute_paidOrder_rejectedAndUnchanged() throws SystemException {
+        Order order = orders.findById(1);
+        order.recordPayment(order.getTotal());
+
+        SystemException e = assertThrows(SystemException.class,
+                () -> new DiscountOrderCommand(1, new BigDecimal("10")).execute(products, orders, ui));
+
+        assertTrue(e.getMessage().contains("has received payment"));
+        assertFalse(order.hasDiscount());
+    }
+
+    @Test
     public void execute_unknownOrder_throwsSystemException() {
         DiscountOrderCommand command = new DiscountOrderCommand(9, new BigDecimal("10"));
         assertThrows(SystemException.class, () -> command.execute(products, orders, ui));

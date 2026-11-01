@@ -70,16 +70,19 @@ class PaymentTest {
         Order order = addOrder("You Jie", 20.40, 1);
         pay("You Jie", "20.40");
         assertTrue(order.isPaid());
-        assertEquals("    You Jie has paid $20.40! The change to return is: $0.00."
-                + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
+        assertEquals("    You Jie has paid $20.40." + System.lineSeparator()
+                + "    Outstanding balance: $0.00." + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     public void execute_excessPayment_printsExactChange() throws SystemException {
         addOrder("BigChungus", 20.40, 1);
         pay("BigChungus", "20.50");
-        assertEquals("    BigChungus has paid $20.50! The change to return is: $0.10."
-                + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
+        assertEquals("    BigChungus has paid $20.50." + System.lineSeparator()
+                + "    Change to return: $0.10." + System.lineSeparator()
+                + "    Outstanding balance: $0.00." + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -111,7 +114,7 @@ class PaymentTest {
         assertTrue(first.isPaid());
         assertFalse(second.isPaid());
         assertEquals(BigDecimal.valueOf(1).setScale(2), second.getPaidAmount());
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("change to return is: $0.00"));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Outstanding balance: $5.00."));
     }
 
     @Test
@@ -123,8 +126,10 @@ class PaymentTest {
 
         assertTrue(order.isPaid());
         assertEquals(new BigDecimal("2.70"), order.getPaidAmount());
-        assertEquals("    Charlie has paid $5.00! The change to return is: $2.30."
-                + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
+        assertEquals("    Charlie has paid $5.00." + System.lineSeparator()
+                + "    Change to return: $2.30." + System.lineSeparator()
+                + "    Outstanding balance: $0.00." + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -140,7 +145,7 @@ class PaymentTest {
 
         assertTrue(order.isPaid());
         assertEquals(new BigDecimal("2.70"), order.getPaidAmount());
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("change to return is: $0.00"));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Outstanding balance: $0.00."));
     }
 
     @Test

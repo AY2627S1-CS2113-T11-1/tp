@@ -81,7 +81,9 @@ public class AddPaymentCommand extends Command {
         }
         logger.fine("Recorded payment of $" + amount.subtract(remaining).toPlainString()
                 + " across " + updatedOrders + " order(s)");
-        ui.showPayment(customer, amount, amount.subtract(outstanding).max(BigDecimal.ZERO));
+        BigDecimal change = amount.subtract(outstanding).max(BigDecimal.ZERO);
+        BigDecimal remainingBalance = outstanding.subtract(amount).max(BigDecimal.ZERO);
+        ui.showPayment(customer, amount, remainingBalance, change);
     }
 
     /**
