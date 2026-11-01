@@ -8,7 +8,7 @@
   <rect class="activation" x="145" y="112" width="10" height="420"/>
   <rect class="actor" x="735" y="170" width="170" height="58" rx="6"/><text class="label" x="820" y="199">expense : Expense</text><line class="life" x1="820" y1="228" x2="820" y2="584"/>
   <rect class="activation" x="815" y="228" width="10" height="28"/>
-  <text class="label small" x="445" y="184">«create» Expense(productName, amount)</text><line class="call" x1="155" y1="190" x2="735" y2="190"/>
+  <text class="label small" x="445" y="184">new Expense(productName, amount)</text><line class="call" x1="155" y1="190" x2="735" y2="190"/>
   <text class="label small" x="445" y="248">created expense</text><line class="return" x1="815" y1="256" x2="155" y2="256"/>
   <text class="label small" x="272" y="334">add(expense)</text><line class="call" x1="155" y1="346" x2="390" y2="346"/><rect class="activation" x="390" y="346" width="10" height="56"/>
   <text class="label small" x="272" y="390">added</text><line class="return" x1="400" y1="402" x2="155" y2="402"/>
