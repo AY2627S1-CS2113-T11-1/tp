@@ -9,6 +9,7 @@ import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.Stock;
 import seedu.duke.StockList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
@@ -94,6 +95,9 @@ public class EditOrderCommand extends Command {
             logger.fine(() -> "Order edit rejected: order " + orderId + " is cancelled");
             throw reject("Order " + orderId + " is cancelled and cannot be edited.");
         }
+        if (order.getPaidAmount().signum() > 0) {
+            throw reject("Order " + orderId + " has received payment and cannot be edited.");
+        }
 
         String customer = newCustomer == null ? order.getCustomer() : newCustomer;
         boolean isChangingLines = newProductName != null || newQuantity != null;
@@ -107,7 +111,7 @@ public class EditOrderCommand extends Command {
         OrderItem oldLine = order.getItems().get(0);
         if (isChangingLines) {
             OrderItem newLine = updatedItems.get(0);
-            moveStock(oldLine, newLine);
+            moveStock(oldLine, newLine, stocks);
         }
         order.update(customer, updatedItems);
 
@@ -167,13 +171,24 @@ public class EditOrderCommand extends Command {
      * For an unchanged product the two steps cancel out except for the difference, which is exactly
      * "increase deducts the extra units, decrease returns the difference".
      */
-    private static void moveStock(OrderItem oldLine, OrderItem newLine) {
+    private static void moveStock(OrderItem oldLine, OrderItem newLine, StockList stocks) {
         Product oldProduct = oldLine.getProduct();
         Product newProduct = newLine.getProduct();
         int combinedStockBefore = oldProduct.getStock() + (oldProduct == newProduct ? 0 : newProduct.getStock());
 
         oldProduct.setStock(oldProduct.getStock() + oldLine.getQuantity());
         newProduct.setStock(newProduct.getStock() - newLine.getQuantity());
+
+        if (stocks != null) {
+            Stock oldStock = stocks.findByProduct(oldProduct.getName());
+            if (oldStock != null) {
+                oldStock.setQuantity(oldProduct.getStock());
+            }
+            Stock newStock = stocks.findByProduct(newProduct.getName());
+            if (newStock != null) {
+                newStock.setQuantity(newProduct.getStock());
+            }
+        }
 
         // Units are only moved between the order and the shelf, never created or lost.
         int combinedStockAfter = oldProduct.getStock() + (oldProduct == newProduct ? 0 : newProduct.getStock());

@@ -13,7 +13,9 @@ import seedu.duke.command.AddExpenseCommand;
 import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.DeleteProductCommand;
 import seedu.duke.command.ExitCommand;
+import seedu.duke.command.FindProductCommand;
 import seedu.duke.command.HelpCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListExpenseCommand;
@@ -43,6 +45,10 @@ public class Parser {
     private static final String PRICE_PREFIX = "a/";
     private static final String ADD_FORMAT =
             "Format: product add p/PRODUCT a/AMOUNT";
+    private static final String DELETE_FORMAT =
+            "Format: product delete p/PRODUCT";
+    private static final String FIND_FORMAT =
+            "Format: product find KEYWORD";
     private static final String EXPENSE_ADD_FORMAT =
             "Format: expense add p/PRODUCT a/AMOUNT";
     private static final int MAX_DECIMAL_PLACES = 2;
@@ -150,7 +156,8 @@ public class Parser {
      */
     private Command parseProductCommand(String[] words) throws SystemException {
         if (words.length < 2) {
-            throw new SystemException("What should I do with products? Try: product add, or product list");
+            throw new SystemException("What should I do with products? "
+                    + "Try: product add, product delete, product find, or product list");
         }
 
         String verb = words[1].toLowerCase();
@@ -159,13 +166,20 @@ public class Parser {
         if (verb.equals("add")) {
             return parseAddProduct(arguments);
         }
+        if (verb.equals("delete")) {
+            return parseDeleteProduct(arguments);
+        }
+        if (verb.equals("find")) {
+            return parseFindProduct(arguments);
+        }
         if (verb.equals("list")) {
             if (!arguments.isEmpty()) {
                 throw new SystemException("\"product list\" takes no extra input, but I found: " + arguments);
             }
             return new ListProductCommand();
         }
-        throw new SystemException("I don't know how to \"product " + words[1] + "\". Try: add, or list");
+        throw new SystemException("I don't know how to \"product " + words[1]
+                + "\". Try: add, delete, find, or list");
     }
 
     /**
@@ -567,7 +581,47 @@ public class Parser {
         if (name.isEmpty()) {
             throw new SystemException("The product name cannot be empty. " + ADD_FORMAT);
         }
-        return new AddProductCommand(name, parsePrice(priceText));
+        return new AddProductCommand(name, parsePrice(priceText, ADD_FORMAT));
+    }
+
+    /**
+     * Returns a delete command built from the arguments of {@code product delete}.
+     *
+     * Only p/ is accepted. An a/ is rejected rather than ignored, so a user who types the add format
+     * by mistake is told so, instead of deleting a product without noticing.
+     *
+     * @param arguments the text after "product delete", e.g. "p/Oat Milk"
+     * @throws SystemException if p/ is missing, the name is empty, or an a/ is given
+     */
+    private Command parseDeleteProduct(String arguments) throws SystemException {
+        if (arguments.contains(PRICE_PREFIX)) {
+            throw new SystemException("product delete only takes p/PRODUCT. " + DELETE_FORMAT);
+        }
+        String name = extractValue(arguments, NAME_PREFIX, PRODUCT_PREFIXES, DELETE_FORMAT);
+        if (name.isEmpty()) {
+            throw new SystemException("The product name cannot be empty. " + DELETE_FORMAT);
+        }
+        return new DeleteProductCommand(name);
+    }
+
+    /**
+     * Returns a find command built from the arguments of {@code product find}.
+     *
+     * The keyword is everything after "find", so it can contain spaces, e.g. "oat milk". Product
+     * names cannot contain p/ or a/, so a keyword with either prefix could never match and is
+     * rejected with the format instead.
+     *
+     * @param arguments the text after "product find", e.g. "milk"
+     * @throws SystemException if the keyword is empty or contains p/ or a/
+     */
+    private Command parseFindProduct(String arguments) throws SystemException {
+        if (arguments.isEmpty()) {
+            throw new SystemException("What should I look for? " + FIND_FORMAT);
+        }
+        if (arguments.contains(NAME_PREFIX) || arguments.contains(PRICE_PREFIX)) {
+            throw new SystemException("product find takes a plain keyword, without p/ or a/. " + FIND_FORMAT);
+        }
+        return new FindProductCommand(arguments);
     }
 
     /**
@@ -583,7 +637,7 @@ public class Parser {
         if (productName.isEmpty()) {
             throw new SystemException("The product name cannot be empty. " + EXPENSE_ADD_FORMAT);
         }
-        return new AddExpenseCommand(productName, parsePrice(amountText));
+        return new AddExpenseCommand(productName, parsePrice(amountText, EXPENSE_ADD_FORMAT));
     }
 
     /**
@@ -634,12 +688,16 @@ public class Parser {
     /**
      * Returns the price described by the text after a/, in dollars.
      *
-     * @param priceText the text after the a/ prefix, e.g. "3.50"
-     * @throws SystemException if the text is not a number, is negative, or has too many decimals
+     * Both {@code product add} and {@code expense add} use a/ for an amount, so the caller passes
+     * its own format hint to show when the amount is missing.
+     *
+     * @param priceText  the text after the a/ prefix, e.g. "3.50"
+     * @param formatHint the command format shown when the amount is empty, e.g. {@code ADD_FORMAT}
+     * @throws SystemException if the text is empty, not a number, negative, or has too many decimals
      */
-    private BigDecimal parsePrice(String priceText) throws SystemException {
+    private BigDecimal parsePrice(String priceText, String formatHint) throws SystemException {
         if (priceText.isEmpty()) {
-            throw new SystemException("The price cannot be empty. " + ADD_FORMAT);
+            throw new SystemException("The price cannot be empty. " + formatHint);
         }
 
         int pointIndex = priceText.indexOf('.');

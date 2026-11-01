@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600" role="img" aria-labelledby="title desc">
+  <title id="title">Stock Low Sequence Diagram</title>
+  <desc id="desc">UML sequence diagram for stock low command execution using code-level variables from Duke.java and LowStockCommand.java.</desc>
+  <defs>
+    <!-- Synchronous Call Arrow: Solid Filled Triangle -->
+    <marker id="syncArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#40566f"/>
+    </marker>
+    <!-- Reply / Return Arrow: Open Stick Arrow -->
+    <marker id="returnArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M1,0 L9,4 L1,8" fill="none" stroke="#40566f" stroke-width="1.3"/>
+    </marker>
+    <style>
+      .head { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; rx:5; }
+      .name { fill:#1f2933; font:bold 14px Arial,sans-serif; text-anchor:middle; }
+      .life { stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 5; }
+      .msg-call { stroke:#40566f; stroke-width:1.3; marker-end:url(#syncArrow); }
+      .msg-reply { stroke:#40566f; stroke-width:1.3; stroke-dasharray:5 4; marker-end:url(#returnArrow); }
+      .text { fill:#1f2933; font:13px Arial,sans-serif; text-anchor:middle; }
+      .text-sm { fill:#1f2933; font:12px Arial,sans-serif; text-anchor:middle; }
+      .activation { fill:#ffffff; stroke:#40566f; stroke-width:1.2; }
+      .loopbox { fill:none; stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 4; }
+      .looptag { fill:#eef4fb; stroke:#8a98a8; stroke-width:1.2; }
+      .loophead { fill:#40566f; font:bold 12px Arial,sans-serif; text-anchor:middle; }
+      .loopcond { fill:#1f2933; font:bold 12px Arial,sans-serif; text-anchor:start; }
+    </style>
+  </defs>
+  <rect width="1100" height="600" fill="white"/>
+
+  <!-- Layer 1: Lifelines -->
+  <line class="life" x1="100" y1="68" x2="100" y2="580"/>
+  <line class="life" x1="280" y1="68" x2="280" y2="580"/>
+  <line class="life" x1="460" y1="68" x2="460" y2="580"/>
+  <line class="life" x1="640" y1="68" x2="640" y2="580"/>
+  <line class="life" x1="820" y1="68" x2="820" y2="580"/>
+  <line class="life" x1="1000" y1="68" x2="1000" y2="580"/>
+
+  <!-- Layer 2: Loop Interaction Frame (x=370 to 870, leaving loop tag clear of activation bars) -->
+  <rect class="loopbox" x="370" y="348" width="500" height="92" rx="4"/>
+  <polygon points="370,348 425,348 425,368 413,374 370,374" class="looptag"/>
+  <text class="loophead" x="397" y="365">loop</text>
+  <text class="loopcond" x="480" y="365">[for each stock in allStocks]</text>
+
+  <!-- Layer 3: Activation Bars -->
+  <!-- :Duke activation -->
+  <rect class="activation" x="95" y="95" width="10" height="465"/>
+  <!-- :Parser activation -->
+  <rect class="activation" x="275" y="105" width="10" height="110"/>
+  <!-- :LowStockCommand constructor activation -->
+  <rect class="activation" x="455" y="140" width="10" height="35"/>
+  <!-- :LowStockCommand execute activation -->
+  <rect class="activation" x="455" y="250" width="10" height="295"/>
+  <!-- :StockList activation -->
+  <rect class="activation" x="635" y="285" width="10" height="40"/>
+  <!-- :ProductList activation -->
+  <rect class="activation" x="815" y="380" width="10" height="40"/>
+  <!-- :Ui activation -->
+  <rect class="activation" x="995" y="470" width="10" height="40"/>
+
+  <!-- Layer 4: Participant Header Boxes (rendered on top of lifelines) -->
+  <!-- Participant 1: :Duke -->
+  <rect class="head" x="22" y="20" width="156" height="48"/>
+  <text class="name" x="100" y="49">:Duke</text>
+
+  <!-- Participant 2: :Parser -->
+  <rect class="head" x="202" y="20" width="156" height="48"/>
+  <text class="name" x="280" y="49">:Parser</text>
+
+  <!-- Participant 3: :LowStockCommand -->
+  <rect class="head" x="382" y="20" width="156" height="48"/>
+  <text class="name">
+    <tspan x="460" y="40">:LowStock</tspan>
+    <tspan x="460" y="57">Command</tspan>
+  </text>
+
+  <!-- Participant 4: :StockList -->
+  <rect class="head" x="562" y="20" width="156" height="48"/>
+  <text class="name" x="640" y="49">:StockList</text>
+
+  <!-- Participant 5: :ProductList -->
+  <rect class="head" x="742" y="20" width="156" height="48"/>
+  <text class="name" x="820" y="49">:ProductList</text>
+
+  <!-- Participant 6: :Ui -->
+  <rect class="head" x="922" y="20" width="156" height="48"/>
+  <text class="name" x="1000" y="49">:Ui</text>
+
+  <!-- Layer 5: Messages & Labels -->
+  <!-- 1. Duke -> Parser : parse(command) from Duke.java:42 -->
+  <line class="msg-call" x1="105" y1="105" x2="275" y2="105"/>
+  <text class="text" x="190" y="96">parse(command)</text>
+
+  <!-- 2. Parser -> LowStockCommand : LowStockCommand(threshold) constructor call -->
+  <line class="msg-call" x1="285" y1="140" x2="455" y2="140"/>
+  <text class="text-sm" x="370" y="131">LowStockCommand(threshold)</text>
+
+  <!-- 3. LowStockCommand -->> Parser : parsedCommand -->
+  <line class="msg-reply" x1="455" y1="175" x2="285" y2="175"/>
+  <text class="text" x="370" y="166">parsedCommand</text>
+
+  <!-- 4. Parser -->> Duke : parsedCommand -->
+  <line class="msg-reply" x1="275" y1="215" x2="105" y2="215"/>
+  <text class="text" x="190" y="206">parsedCommand</text>
+
+  <!-- 5. Duke -> LowStockCommand : execute(...) from Duke.java:43 -->
+  <line class="msg-call" x1="105" y1="250" x2="455" y2="250"/>
+  <text class="text" x="280" y="241">execute(...)</text>
+
+  <!-- 6. LowStockCommand -> StockList : getStocks() from LowStockCommand.java:70 -->
+  <line class="msg-call" x1="465" y1="285" x2="635" y2="285"/>
+  <text class="text" x="550" y="276">getStocks()</text>
+
+  <!-- 7. StockList -->> LowStockCommand : allStocks from LowStockCommand.java:70 -->
+  <line class="msg-reply" x1="635" y1="325" x2="465" y2="325"/>
+  <text class="text" x="550" y="316">allStocks</text>
+
+  <!-- 8. LowStockCommand -> ProductList : findByName(stock.product) from LowStockCommand.java:75 -->
+  <line class="msg-call" x1="465" y1="385" x2="815" y2="385"/>
+  <text class="text" x="640" y="376">findByName(stock.product)</text>
+
+  <!-- 9. ProductList -->> LowStockCommand : product from LowStockCommand.java:75 -->
+  <line class="msg-reply" x1="815" y1="420" x2="465" y2="420"/>
+  <text class="text" x="640" y="411">product</text>
+
+  <!-- 10. LowStockCommand -> Ui : showLowStock(lowStocks, threshold, isStockListEmpty) from LowStockCommand.java:85 -->
+  <line class="msg-call" x1="465" y1="470" x2="995" y2="470"/>
+  <text class="text" x="730" y="461">showLowStock(lowStocks, threshold, isStockListEmpty)</text>
+
+  <!-- 11. Ui -->> LowStockCommand : return -->
+  <line class="msg-reply" x1="995" y1="510" x2="465" y2="510"/>
+
+  <!-- 12. LowStockCommand -->> Duke : return -->
+  <line class="msg-reply" x1="455" y1="545" x2="105" y2="545"/>
+</svg>

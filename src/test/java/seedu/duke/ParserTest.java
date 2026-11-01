@@ -16,6 +16,8 @@ import seedu.duke.command.AddProductCommand;
 import seedu.duke.command.AddStockCommand;
 import seedu.duke.command.CancelOrderCommand;
 import seedu.duke.command.Command;
+import seedu.duke.command.DeleteProductCommand;
+import seedu.duke.command.FindProductCommand;
 import seedu.duke.command.ListExpenseCommand;
 import seedu.duke.command.ListOrderCommand;
 import seedu.duke.command.ListProductCommand;
@@ -110,6 +112,53 @@ class ParserTest {
     }
 
     @Test
+    public void parse_productDelete_returnsDeleteProductCommand() throws SystemException {
+        DeleteProductCommand command = assertInstanceOf(DeleteProductCommand.class,
+                parser.parse("product delete p/Oat Milk 1L"));
+
+        assertEquals("Oat Milk 1L", command.getName());
+    }
+
+    @Test
+    public void parse_productDeleteMissingPrefix_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product delete Oat Milk"));
+    }
+
+    @Test
+    public void parse_productDeleteEmptyName_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product delete p/"));
+    }
+
+    @Test
+    public void parse_productDeleteWithAmount_throwsSystemException() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("product delete p/Oat Milk a/3.50"));
+
+        assertEquals("product delete only takes p/PRODUCT. Format: product delete p/PRODUCT",
+                exception.getMessage());
+    }
+
+    @Test
+    public void parse_productFind_returnsFindProductCommandWithWholeKeyword() throws SystemException {
+        FindProductCommand command = assertInstanceOf(FindProductCommand.class,
+                parser.parse("product find oat milk"));
+
+        assertEquals("oat milk", command.getKeyword());
+    }
+
+    @Test
+    public void parse_productFindEmptyKeyword_throwsSystemException() {
+        SystemException exception = assertThrows(SystemException.class, () -> parser.parse("product find"));
+
+        assertEquals("What should I look for? Format: product find KEYWORD", exception.getMessage());
+    }
+
+    @Test
+    public void parse_productFindWithPrefix_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("product find p/milk"));
+    }
+
+    @Test
     public void parse_expenseList_returnsListExpenseCommand() throws SystemException {
         assertInstanceOf(ListExpenseCommand.class, parser.parse("expense list"));
     }
@@ -122,6 +171,24 @@ class ParserTest {
     @Test
     public void parse_expenseMissingAmount_throwsSystemException() {
         assertThrows(SystemException.class, () -> parser.parse("expense add p/Bread"));
+    }
+
+    @Test
+    public void parse_expenseEmptyAmount_showsExpenseFormat() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("expense add p/Rent a/"));
+
+        assertEquals("The price cannot be empty. Format: expense add p/PRODUCT a/AMOUNT",
+                exception.getMessage());
+    }
+
+    @Test
+    public void parse_productEmptyAmount_showsProductFormat() {
+        SystemException exception = assertThrows(SystemException.class,
+                () -> parser.parse("product add p/Oat Milk a/"));
+
+        assertEquals("The price cannot be empty. Format: product add p/PRODUCT a/AMOUNT",
+                exception.getMessage());
     }
 
     @Test

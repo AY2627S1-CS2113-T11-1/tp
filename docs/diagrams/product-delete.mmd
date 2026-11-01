@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant C as DeleteProductCommand
+    participant PL as ProductList
+    participant OL as OrderList
+    participant SL as StockList
+    participant U as Ui
+
+    activate C
+    C->>PL: findByName("Bread")
+    activate PL
+    PL-->>C: product
+    deactivate PL
+
+    C->>OL: findActiveOrderWithProduct("Bread")
+    activate OL
+    OL-->>C: activeOrder
+    deactivate OL
+
+    alt activeOrder != null
+        C-->>C: throw SystemException
+    else no active order has the product
+        C->>PL: remove(product)
+        activate PL
+        PL-->>C: 
+        deactivate PL
+
+        C->>SL: removeByProduct("Bread")
+        activate SL
+        SL-->>C: hadStockEntry
+        deactivate SL
+
+        C->>U: showProductDeleted(product)
+        activate U
+        U-->>C: 
+        deactivate U
+    end
+    deactivate C

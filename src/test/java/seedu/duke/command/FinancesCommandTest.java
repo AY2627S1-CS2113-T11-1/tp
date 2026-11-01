@@ -22,7 +22,7 @@ import seedu.duke.Ui;
 /** Checks the financial report's totals and profit/loss label. */
 class FinancesCommandTest {
     @Test
-    public void execute_expensesExceedSales_displaysLoss() throws SystemException {
+    public void execute_expensesExceedPayments_displaysLoss() throws SystemException {
         OrderList orders = new OrderList();
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 2.50), 2)));
         order.recordPayment(java.math.BigDecimal.valueOf(5).setScale(2));
@@ -31,14 +31,14 @@ class FinancesCommandTest {
 
         String output = executeReport(orders, expenses);
 
-        assertTrue(output.contains("Total Orders (including unpaid): $5.00"));
-        assertTrue(output.contains("Total Sales: $5.00"));
+        assertTrue(output.contains("Total Active Order Value: $5.00"));
+        assertTrue(output.contains("Total Payments Received: $5.00"));
         assertTrue(output.contains("Total Expenses: $10.00"));
         assertTrue(output.contains("Overall Loss: $5.00"));
     }
 
     @Test
-    public void execute_salesExceedExpenses_displaysProfit() throws SystemException {
+    public void execute_paymentsExceedExpenses_displaysProfit() throws SystemException {
         OrderList orders = new OrderList();
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 10.00), 2)));
         order.recordPayment(java.math.BigDecimal.valueOf(20).setScale(2));
@@ -51,7 +51,7 @@ class FinancesCommandTest {
     }
 
     @Test
-    public void execute_salesEqualExpenses_displaysProfit() throws SystemException {
+    public void execute_paymentsEqualExpenses_displaysProfit() throws SystemException {
         OrderList orders = new OrderList();
         var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 10.00), 1)));
         order.recordPayment(java.math.BigDecimal.valueOf(10).setScale(2));
@@ -64,7 +64,7 @@ class FinancesCommandTest {
     }
 
     @Test
-    public void execute_partialPayment_reportsOnlyPaidAmountAsSales() throws SystemException {
+    public void execute_partialPayment_reportsOnlyPaidAmountAsPaymentsReceived() throws SystemException {
         OrderList orders = new OrderList();
         var order = orders.create("Bob", List.of(new OrderItem(new Product("Apple", 5.00), 999)));
         order.recordPayment(java.math.BigDecimal.valueOf(4000).setScale(2));
@@ -73,9 +73,23 @@ class FinancesCommandTest {
 
         String output = executeReport(orders, expenses);
 
-        assertTrue(output.contains("Total Orders (including unpaid): $4995.00"));
-        assertTrue(output.contains("Total Sales: $4000.00"));
+        assertTrue(output.contains("Total Active Order Value: $4995.00"));
+        assertTrue(output.contains("Total Payments Received: $4000.00"));
         assertTrue(output.contains("Overall Profit: $4000.00"));
+    }
+
+    @Test
+    public void execute_cancelledOrder_isExcludedFromActiveValueAndPayments() throws SystemException {
+        OrderList orders = new OrderList();
+        var order = orders.create("Alice", List.of(new OrderItem(new Product("Apple", 5.00), 1)));
+        order.recordPayment(new java.math.BigDecimal("2.00"));
+        order.cancel();
+        ExpenseList expenses = new ExpenseList();
+
+        String output = executeReport(orders, expenses);
+
+        assertTrue(output.contains("Total Active Order Value: $0.00"));
+        assertTrue(output.contains("Total Payments Received: $0.00"));
     }
 
     private String executeReport(OrderList orders, ExpenseList expenses) throws SystemException {

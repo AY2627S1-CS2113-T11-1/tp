@@ -171,6 +171,18 @@ class EditOrderCommandTest {
     }
 
     @Test
+    public void execute_paidOrder_rejectedWithoutChangingOrder() throws SystemException {
+        Order order = orders.findById(1);
+        order.recordPayment(order.getTotal());
+
+        SystemException e = assertThrows(SystemException.class,
+                () -> new EditOrderCommand(1, "Mei Tan", null, null).execute(products, orders, ui));
+
+        assertTrue(e.getMessage().contains("has received payment"));
+        assertEquals("Jonas Low", order.getCustomer());
+    }
+
+    @Test
     public void execute_unknownOrder_throwsSystemException() {
         EditOrderCommand command = new EditOrderCommand(99, "Mei Tan", null, null);
         assertThrows(SystemException.class, () -> command.execute(products, orders, ui));

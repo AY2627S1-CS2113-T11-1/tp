@@ -45,6 +45,10 @@ public class HelpCommand extends Command {
             commands = List.of(
                     new String[] {"Adds a product to the catalogue with its selling price and zero stock.",
                         "product add p/PRODUCT a/AMOUNT"},
+                    new String[] {"Deletes a product and its stock record. Not allowed while an active order has it.",
+                        "product delete p/PRODUCT"},
+                    new String[] {"Finds products whose name contains the keyword, ignoring case.",
+                        "product find KEYWORD"},
                     new String[] {"Lists products alphabetically with their prices and stock quantities.",
                         "product list"});
             break;
@@ -80,7 +84,7 @@ public class HelpCommand extends Command {
             break;
         case "finances":
             commands = List.<String[]>of(new String[] {
-                "Shows total orders, payments received, expenses and the overall profit or loss.", "finances"});
+                "Shows active order value, payments received, expenses and the overall profit or loss.", "finances"});
             break;
         case "expense":
             commands = List.of(

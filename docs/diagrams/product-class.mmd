@@ -1,0 +1,49 @@
+classDiagram
+    direction LR
+
+    class Command {
+        <<abstract>>
+        +execute(products, orders, expenses, stocks, ui)* void
+    }
+    class AddProductCommand {
+        -String name
+        -BigDecimal price
+    }
+    class ListProductCommand
+    class DeleteProductCommand {
+        -String name
+    }
+    class FindProductCommand {
+        -String keyword
+    }
+    class ProductList {
+        -ArrayList~Product~ products
+        +add(Product) void
+        +remove(Product) void
+        +findByName(String) Product
+        +findByKeyword(String) List~Product~
+        +getSortedByName() List~Product~
+    }
+    class Product {
+        -String name
+        -BigDecimal price
+        -int stock
+    }
+    class OrderList {
+        +findActiveOrderWithProduct(String) Order
+    }
+    class StockList {
+        +removeByProduct(String) boolean
+    }
+
+    Command <|-- AddProductCommand
+    Command <|-- ListProductCommand
+    Command <|-- DeleteProductCommand
+    Command <|-- FindProductCommand
+    ProductList "1" *-- "*" Product
+    AddProductCommand ..> ProductList
+    ListProductCommand ..> ProductList
+    FindProductCommand ..> ProductList
+    DeleteProductCommand ..> ProductList
+    DeleteProductCommand ..> OrderList
+    DeleteProductCommand ..> StockList

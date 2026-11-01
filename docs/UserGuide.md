@@ -1,21 +1,56 @@
 # User Guide
 
+## Contents
+
+* [Introduction](#introduction)
+* [Quick Start](#quick-start)
+* [Features](#features)
+  * [Product catalogue](#1-product-catalogue)
+    * [Adding a product](#11-adding-a-product-product-add)
+    * [Listing products](#12-listing-products-product-list)
+    * [Deleting a product](#13-deleting-a-product-product-delete)
+    * [Finding products](#14-finding-products-product-find)
+  * [Stock inventory](#2-stock-inventory)
+    * [Adding stock](#21-adding-stock-stock-add)
+    * [Removing stock](#22-removing-stock-stock-remove)
+    * [Listing stock](#23-listing-stock-stock-list)
+    * [Viewing low stock](#24-viewing-low-stock-stock-low)
+  * [Orders](#3-orders)
+    * [Adding an order](#31-adding-an-order-order-add)
+    * [Cancelling an order](#32-cancelling-an-order-order-cancel)
+    * [Listing orders](#33-listing-orders-order-list)
+    * [Editing an order](#34-editing-an-order-order-edit)
+    * [Discounting an order](#35-discounting-an-order-order-discount)
+  * [Sales and customer records](#4-sales-and-customer-records)
+    * [Viewing confirmed sales](#41-view-confirmed-sales-sales-list)
+    * [Generating receipts](#42-generating-receipts-generate-receipts)
+    * [Recording a customer's payment](#43-recording-a-customers-payment-order-add-pay)
+    * [Viewing a customer's order details](#44-viewing-a-customers-order-details-order-details)
+  * [Expenses and financial reports](#5-expenses-and-financial-reports)
+    * [Adding an expense](#51-adding-an-expense-expense-add)
+    * [Listing expenses](#52-listing-expenses-expense-list)
+    * [Viewing the financial report](#53-view-financial-report-finances)
+  * [General commands](#6-general-commands)
+    * [Getting command help](#61-getting-command-help-help)
+    * [Exiting the program](#62-exiting-the-program-exit)
+* [FAQ](#faq)
+* [Command Summary](#command-summary)
+
 ## Introduction
 
-{Give a product intro}
-
-BMS can be used to manage products, stocks, orders, sales, and expenses.
+BMS (Business Management System) is a desktop CLI (Command Line Interface) application used by store managers, sales staff, and logistics personnel to administer products, inventory stocks, customer orders, sales revenues, and operating expenses.
 
 ## Quick Start
 
-{Give steps to get started quickly}
-
-1. Ensure that you have Java 25 or above installed.
-2. Download the latest version of `Duke` from [here](http://link.to/duke).
+1. Ensure that you have Java 25 or above installed on your computer.
+2. Download the latest `duke.jar` from our releases page.
+3. Open a terminal or command prompt, navigate (`cd`) to the folder containing `duke.jar`, and run:
+   ```bash
+   java -jar duke.jar
+   ```
+4. When the application starts, you will see a welcome message. Type `help` to see available commands or refer to the [Features](#features) section below.
 
 ## Features
-
-{Give detailed description of each feature}
 
 ### 1. Product catalogue
 
@@ -77,6 +112,65 @@ Example output:
 Products (2):
    Coffee Beans 250g $12.00  stock 0
    Oat Milk 1L       $3.50   stock 0
+```
+
+### 1.3 Deleting a product: `product delete`
+
+Deletes a product from the catalogue, along with its stock record.
+
+Format: `product delete p/PRODUCT`
+
+* `PRODUCT` is the product name. Names are compared ignoring upper and lower case.
+* Only `p/` is accepted. A command that also has `a/` is rejected, so a mistyped `product add` never deletes a product.
+* A product that is still in an active order cannot be deleted. Cancel the order first with `order cancel`.
+* Cancelled orders still show the deleted product's name in their history.
+
+Examples of usage:
+
+`product delete p/Oat Milk 1L`
+
+Deletes Oat Milk 1L and its stock record.
+
+Example output:
+
+```text
+Deleted product Oat Milk 1L
+```
+
+Example output (Oat Milk 1L is in active order 2):
+
+```text
+Sorry! Can't delete Oat Milk 1L, it's still in active order 2. Cancel the order first.
+```
+
+### 1.4 Finding products: `product find`
+
+Finds products whose name contains a keyword.
+
+Format: `product find KEYWORD`
+
+* The keyword can be any part of the name, and upper and lower case are ignored, so `milk` finds both
+  `Oat Milk 1L` and `Almond Milk`.
+* The keyword can contain spaces, e.g. `product find oat milk`.
+* Do not use `p/` or `a/` here. Type the keyword on its own.
+* Matching products are listed in alphabetical order, in the same format as `product list`.
+
+Examples of usage:
+
+`product find milk`
+
+Example output:
+
+```text
+Matching products (2):
+   Almond Milk       $4.20   stock 10
+   Oat Milk 1L       $3.50   stock 20
+```
+
+If nothing matches:
+
+```text
+No products match "bread".
 ```
 
 ### 2. Stock inventory
@@ -292,7 +386,8 @@ Example of usage:
 
 `order cancel 1`
 
-Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
+Cancels order 1. The application displays a confirmation, the quantities restored to stock, the order value
+removed from active totals and the payment refunded. Cancellation assumes a full refund of any payment made.
 
 Expected output (order 1 contained 2 units of Bread at $1.88 each):
 
@@ -306,7 +401,8 @@ Stock restored:
 +---------+----------+------------+----------+
 | Total   |        2 |            |    $3.76 |
 +---------+----------+------------+----------+
-Amount excluded from recorded sales: $3.76
+Order value excluded from active totals: $3.76
+Payment refunded: $0.00
 ```
 
 Expected output (order 1 was already cancelled):
@@ -350,7 +446,7 @@ Updates an active order's customer, product or quantity. The order keeps its ori
 
 Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 
-* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot be edited.
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled or paid/partially paid orders cannot be edited.
 * At least one field must be provided. Fields that are not provided remain unchanged. Fields may be given in any order.
 * Square brackets indicate optional fields and should not be typed.
 * Customer and product names cannot be blank. The product must exist in the catalogue. Product names are case-insensitive.
@@ -433,6 +529,8 @@ Sorry! Discount must be between 0 and 100.
 No changes were made to the order.
 ```
 
+### 4. Sales and customer records
+
 ### 4.1 View confirmed sales: `sales list`
 Shows the complete list of confirmed sales. Cancelled orders are not included because their amounts
 are excluded from recorded sales. The final row and summary show the total amount recorded from the
@@ -478,7 +576,16 @@ Example: `order add pay c/BigChungus a/20.50`
 For an outstanding total of $20.40:
 
 ```text
-    BigChungus has paid $20.50! The change to return is: $0.10.
+    BigChungus has paid $20.50.
+    Change to return: $0.10.
+    Outstanding balance: $0.00.
+```
+
+For a partial payment of $5.00 against an outstanding total of $20.40:
+
+```text
+    BigChungus has paid $5.00.
+    Outstanding balance: $15.40.
 ```
 
 If the customer has no order history:
@@ -488,10 +595,10 @@ If the customer has no order history:
 ```
 
 If the payment is smaller than the outstanding balance, it is applied across eligible orders
-until it is exhausted. Already-paid and cancelled orders are excluded from subsequent payments.
-Any excess is returned as change. If no eligible orders remain, no payment is accepted.
-Payment does not change stock, record an expense, or implement refunds. Payment status is held
-in memory for the current session, like the existing order history.
+until it is exhausted. The application then displays the remaining outstanding balance. Already-paid
+and cancelled orders are excluded from subsequent payments. Any excess is returned as change, while
+an exact payment leaves an outstanding balance of `$0.00`. Payment does not change stock or record an
+expense. Payment status is held in memory for the current session, like the existing order history.
 
 ### 4.4 Viewing a customer's order details: `order details`
 
@@ -509,6 +616,8 @@ Cancelled orders show their original contents and total for reference.
 If no orders match, the app displays `No orders found for You Jie.`
 Viewing details does not change orders, stock or sales. Missing customer names and extra fields
 are rejected with the command format.
+
+### 5. Expenses and financial reports
 
 ### 5.1 Adding an expense: `expense add`
 
@@ -560,19 +669,19 @@ If no expenses have been recorded, the app displays:
 
 ### 5.3 View financial report: `finances`
 
-Calculates and displays the total value of all recorded orders, total payments received, total
-recorded expenses and the overall profit or loss. Total Orders includes unpaid orders. Cancelled
-orders remain in order history and are included in Total Orders, but are excluded from Total Sales.
-Partial payments are included in Total Sales, so an order's full value can be larger than its
-reported sales amount until the remaining balance is paid.
+Calculates and displays the total value of active orders, total payments received, total recorded
+expenses and the overall profit or loss. `Total Active Order Value` includes unpaid orders, but excludes
+cancelled orders. Cancelling an order is treated as a full refund, so its recorded payments are excluded
+from `Total Payments Received`. Partial payments contribute only the amount received, so an order's
+full value can be larger than the payments received until the remaining balance is paid.
 
 Format: `finances`
 
 Example output:
 
 ```text
-Total Orders (including unpaid): $500.00
-Total Sales: $500.00
+Total Active Order Value: $500.00
+Total Payments Received: $500.00
 Total Expenses: $1000.00
 ______________________________
 Overall Loss: $500.00
@@ -581,6 +690,8 @@ Overall Loss: $500.00
 The report uses the same two-decimal currency format as the rest of the application. A zero
 difference is displayed as `Profit`.
 
+
+### 6. General commands
 
 ### 6.1 Getting command help: `help`
 
@@ -609,9 +720,11 @@ Format: `exit`
 
 ## FAQ
 
-**Q**: How do I transfer my data to another computer?
+**Q**: Is my data saved when I exit the application?
 
-**A**: {your answer here}
+**A**: No. The current version stores products, stock, orders, payments and expenses only in memory.
+All data is lost when the application exits, and there is currently no built-in save, load or export command.
+To recreate data in a new session, save the commands you used in a text file and enter them again manually.
 
 ## Command Summary
 
@@ -619,12 +732,15 @@ Format: `exit`
 | --- | --- |
 | **<ins>Product</ins>** | |
 | Add product | `product add p/PRODUCT a/AMOUNT` |
+| Delete product | `product delete p/PRODUCT` |
+| Find products | `product find KEYWORD` |
 | List products | `product list` |
 | | |
 | **<ins>Stock</ins>** | |
 | Add stock | `stock add p/PRODUCT q/QUANTITY` |
 | Remove stock | `stock remove p/PRODUCT [q/QUANTITY]` |
 | List stock | `stock list` |
+| View low stock | `stock low [q/THRESHOLD]` |
 | | |
 | **<ins>Order</ins>** | |
 | Add order | `order add c/CUSTOMER p/PRODUCT q/QUANTITY [p/PRODUCT q/QUANTITY]` |

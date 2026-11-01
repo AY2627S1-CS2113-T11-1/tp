@@ -1,5 +1,6 @@
 package seedu.duke.command;
 
+import seedu.duke.Stock;
 import seedu.duke.StockList;
 import seedu.duke.Order;
 import seedu.duke.OrderItem;
@@ -45,6 +46,12 @@ public class CancelOrderCommand extends Command {
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             product.setStock(product.getStock() + item.getQuantity());
+            if (stocks != null) {
+                Stock stock = stocks.findByProduct(product.getName());
+                if (stock != null) {
+                    stock.setQuantity(product.getStock());
+                }
+            }
         }
         ui.showOrderCancelled(order);
     }

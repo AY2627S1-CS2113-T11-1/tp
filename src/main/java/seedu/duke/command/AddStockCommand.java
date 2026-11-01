@@ -68,13 +68,13 @@ public class AddStockCommand extends Command {
 
         Stock existing = stocks.findByProduct(productName);
         if (existing != null) {
-            existing.quantity = product.getStock();
-            existing.price = product.getPrice();
+            existing.setQuantity(product.getStock());
+            existing.setPrice(product.getPrice());
             logger.info("Updated existing stock for product \"" + productName + "\" to quantity "
                     + product.getStock());
             ui.showStockUpdated(existing);
         } else {
-            Stock created = new Stock(productName, product.getPrice(), product.getStock());
+            Stock created = new Stock(product, product.getStock());
             stocks.add(created);
             logger.info("Created new stock entry for product \"" + productName + "\" with quantity "
                     + product.getStock());

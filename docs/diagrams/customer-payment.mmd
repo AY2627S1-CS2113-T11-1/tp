@@ -1,12 +1,29 @@
 sequenceDiagram
-    %% Main successful flow; validation and alternatives are described in the guide.
-    participant P0 as Duke
-    participant P1 as AddPaymentCommand
-    participant P2 as OrderList
-    participant P3 as Order
-    participant P4 as Ui
-    P0->>P1: execute(...)
-    P1->>P2: getAll()
-    P2-->>P1: Order history
-    P1->>P3: recordPayment(applied)
-    P1->>P4: showPayment(...)
+    %% Partial payments are allocated across eligible orders in creation order.
+    actor D as User
+    participant C as command:AddPaymentCommand
+    participant L as orders:OrderList
+    participant O as order:Order
+    participant U as ui:Ui
+    D->>C: execute(...)
+    activate C
+    C->>L: getAll()
+    activate L
+    L-->>C: order history
+    deactivate L
+    loop Each eligible unpaid order
+        C->>O: getAmountDue()
+        activate O
+        O-->>C: due
+        deactivate O
+        C->>O: recordPayment(min(remaining, due))
+        activate O
+        O-->>C: payment recorded
+        deactivate O
+    end
+    C->>U: showPayment(amount, balance, change)
+    activate U
+    U-->>C: return
+    deactivate U
+    C-->>D: return
+    deactivate C

@@ -3,12 +3,20 @@ package seedu.duke;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+
+import java.util.List;
+
+import seedu.duke.command.AddOrderCommand;
+import seedu.duke.command.CancelOrderCommand;
+import seedu.duke.command.EditOrderCommand;
 
 import org.junit.jupiter.api.Test;
 
@@ -105,6 +113,125 @@ class StockCommandTest {
                 listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), null, new Ui()));
         assertThrows(AssertionError.class, () ->
                 listCommand.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
+    }
+
+    @Test
+    public void execute_orderAddDeductsStockListQuantity() throws SystemException {
+        ProductList products = new ProductList();
+        Product apple = new Product("Apple", 1.50);
+        products.add(apple);
+
+        StockList stocks = new StockList();
+        AddStockCommand restock = new AddStockCommand("Apple", 10);
+        restock.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
+
+        assertEquals(10, stocks.findByProduct("Apple").getQuantity());
+
+        AddOrderCommand orderCmd = new AddOrderCommand("Alice",
+                List.of(new AddOrderCommand.RequestedItem("Apple", 4)));
+        OrderList orders = new OrderList();
+        orderCmd.execute(products, orders, new ExpenseList(), stocks, new Ui());
+
+        assertEquals(6, apple.getStock());
+        assertEquals(6, stocks.findByProduct("Apple").getQuantity());
+        assertEquals(6, stocks.findByProduct("Apple").quantity);
+    }
+
+    @Test
+    public void execute_orderCancelRestoresStockListQuantity() throws SystemException {
+        ProductList products = new ProductList();
+        Product apple = new Product("Apple", 1.50);
+        products.add(apple);
+
+        StockList stocks = new StockList();
+        AddStockCommand restock = new AddStockCommand("Apple", 10);
+        restock.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
+
+        OrderList orders = new OrderList();
+        AddOrderCommand orderCmd = new AddOrderCommand("Alice",
+                List.of(new AddOrderCommand.RequestedItem("Apple", 4)));
+        orderCmd.execute(products, orders, new ExpenseList(), stocks, new Ui());
+
+        assertEquals(6, stocks.findByProduct("Apple").getQuantity());
+
+        CancelOrderCommand cancelCmd = new CancelOrderCommand(1);
+        cancelCmd.execute(products, orders, new ExpenseList(), stocks, new Ui());
+
+        assertEquals(10, apple.getStock());
+        assertEquals(10, stocks.findByProduct("Apple").getQuantity());
+        assertEquals(10, stocks.findByProduct("Apple").quantity);
+    }
+
+    @Test
+    public void execute_orderEditUpdatesStockListQuantity() throws SystemException {
+        ProductList products = new ProductList();
+        Product apple = new Product("Apple", 1.50);
+        products.add(apple);
+
+        StockList stocks = new StockList();
+        AddStockCommand restock = new AddStockCommand("Apple", 10);
+        restock.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
+
+        OrderList orders = new OrderList();
+        AddOrderCommand orderCmd = new AddOrderCommand("Alice",
+                List.of(new AddOrderCommand.RequestedItem("Apple", 2)));
+        orderCmd.execute(products, orders, new ExpenseList(), stocks, new Ui());
+
+        assertEquals(8, stocks.findByProduct("Apple").getQuantity());
+
+        // Edit quantity from 2 to 5 (deducting 3 more)
+        EditOrderCommand editCmd = new EditOrderCommand(1, null, null, 5);
+        editCmd.execute(products, orders, new ExpenseList(), stocks, new Ui());
+
+        assertEquals(5, apple.getStock());
+        assertEquals(5, stocks.findByProduct("Apple").getQuantity());
+        assertEquals(5, stocks.findByProduct("Apple").quantity);
+    }
+
+    @Test
+    public void stock_constructorAndGetters_enforceInvariants() {
+        Product product = new Product("Apple", 2.50);
+        Stock stockWithProduct = new Stock(product, 15);
+        assertEquals("Apple", stockWithProduct.getProduct());
+        assertEquals(BigDecimal.valueOf(2.50).setScale(2), stockWithProduct.getPrice());
+        assertEquals(15, stockWithProduct.getQuantity());
+
+        stockWithProduct.setQuantity(20);
+        assertEquals(20, stockWithProduct.getQuantity());
+        assertEquals(20, product.getStock());
+
+        stockWithProduct.setPrice(3.00);
+        assertEquals(BigDecimal.valueOf(3.00).setScale(2), stockWithProduct.getPrice());
+
+        Stock rawStock = new Stock("Banana", 1.20, 8);
+        assertEquals("Banana", rawStock.getProduct());
+        assertEquals(BigDecimal.valueOf(1.20).setScale(2), rawStock.getPrice());
+        assertEquals(8, rawStock.getQuantity());
+
+        assertThrows(AssertionError.class, () -> new Stock((Product) null, 5));
+        assertThrows(AssertionError.class, () -> new Stock(product, -1));
+        assertThrows(AssertionError.class, () -> new Stock((String) null, 1.0, 5));
+        assertThrows(AssertionError.class, () -> new Stock("   ", 1.0, 5));
+        assertThrows(AssertionError.class, () -> new Stock("Apple", -0.5, 5));
+        assertThrows(AssertionError.class, () -> new Stock("Apple", 1.0, -2));
+    }
+
+    @Test
+    public void stockList_encapsulationAndInvariants() {
+        StockList stockList = new StockList();
+        assertEquals(0, stockList.size());
+        assertThrows(AssertionError.class, () -> stockList.add(null));
+        assertThrows(AssertionError.class, () -> stockList.findByProduct(null));
+
+        Stock stock = new Stock("Apple", 2.0, 5);
+        stockList.add(stock);
+        assertEquals(1, stockList.size());
+        assertNotNull(stockList.findByProduct("apple"));
+        assertNull(stockList.findByProduct("banana"));
+
+        // Verify unmodifiable view protects internal state
+        assertThrows(UnsupportedOperationException.class, () ->
+                stockList.getStocks().add(new Stock("Orange", 3.0, 1)));
     }
 
     @Test
@@ -241,4 +368,3 @@ class StockCommandTest {
                 command.execute(new ProductList(), new OrderList(), new ExpenseList(), new StockList(), null));
     }
 }
-
