@@ -1,10 +1,11 @@
+%%{init: {"themeCSS": ".loopLine { stroke-dasharray: none !important; }"}}%%
 sequenceDiagram
     %% Partial payments are allocated across eligible orders in creation order.
-    actor D as User
-    participant C as command:AddPaymentCommand
-    participant L as orders:OrderList
-    participant O as order:Order
-    participant U as ui:Ui
+    actor D as user : User
+    participant C as command : AddPaymentCommand
+    participant L as orders : OrderList
+    participant O as order : Order
+    participant U as ui : Ui
     D->>C: execute(...)
     activate C
     C->>L: getAll()

@@ -1,13 +1,30 @@
 sequenceDiagram
-    actor User
-    participant D as Duke
-    participant C as ListExpenseCommand
-    participant L as ExpenseList
-    participant U as Ui
+    actor User as user : User
+    participant D as duke : Duke
+    participant P as parser : Parser
+    participant C as listCommand : ListExpenseCommand
+    participant L as expenseList : ExpenseList
+    participant U as ui : Ui
 
+    activate User
     User->>D: expense list
+    activate D
+    D->>P: parse(...)
+    activate P
+    P->>C: <<create>> ListExpenseCommand()
+    activate C
+    P-->>D: ListExpenseCommand
+    deactivate P
     D->>C: execute(...)
     C->>L: getExpenses()
+    activate L
     L-->>C: copy of expense records
+    deactivate L
     C->>U: show expenses
+    activate U
     U-->>User: numbered list
+    deactivate U
+    deactivate C
+    destroy C
+    deactivate D
+    deactivate User
