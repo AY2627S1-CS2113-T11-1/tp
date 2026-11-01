@@ -1,27 +1,18 @@
-%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 4 4; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#f4f4f4", "actorBorder": "#333333", "actorTextColor": "#111111", "actorLineColor": "#666666", "signalColor": "#333333", "signalTextColor": "#111111", "activationBkgColor": "#e0e0e0", "activationBorderColor": "#333333"}}}%%
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 4 4; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#dbeafe", "actorBorder": "#2563eb", "actorTextColor": "#1e3a8a", "actorLineColor": "#60a5fa", "signalColor": "#2563eb", "signalTextColor": "#1e3a8a", "activationBkgColor": "#bfdbfe", "activationBorderColor": "#2563eb"}}}%%
 sequenceDiagram
-    participant D as : Duke
-    participant P as : Parser
-    participant L as : ExpenseList
-    participant U as : Ui
+    participant P as parser : Parser
+    participant C as command : ListExpenseCommand
+    participant L as expenses : ExpenseList
+    participant U as ui : Ui
 
-    activate D
-    D->>P: parse(...)
-    activate P
-    create participant C as : ListExpenseCommand
-    P->>C: create
+    P->>C: create()
     activate C
-    P-->>D: ListExpenseCommand
-    deactivate P
-    D->>C: execute(...)
     C->>L: getExpenses()
     activate L
     L-->>C: copy of expense records
     deactivate L
-    C->>U: show expenses
+    C->>U: showExpenses(expenses)
     activate U
-    U-->>D: numbered list
+    U-->>C: return
     deactivate U
     deactivate C
-    destroy C
-    deactivate D
