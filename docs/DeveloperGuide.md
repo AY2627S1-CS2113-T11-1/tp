@@ -4,25 +4,37 @@
 
 - [1. Acknowledgements](#1-acknowledgements)
 - [2. Design and implementation](#2-design-and-implementation)
-  - [2.1 Orders](#21-orders)
-  - [2.2 Sales and customer commands](#22-sales-and-customer-commands)
-  - [2.3 Expense and financial management](#23-expense-and-financial-management)
-    - [Adding an expense](#adding-an-expense)
-    - [Listing expenses](#listing-expenses)
-    - [Financial report](#financial-report)
-    - [Design considerations and testing](#design-considerations-and-testing)
-  - [2.4 Stock and inventory management](#24-stock-and-inventory-management)
-    - [Design and class structure](#design-and-class-structure)
-    - [Stock representation and tracking](#stock-representation-and-tracking)
-    - [Stock synchronization with Orders](#stock-synchronization-with-orders)
-    - [Adding and removing stock](#adding-and-removing-stock)
-    - [Low stock monitoring](#low-stock-monitoring)
-    - [Design considerations and alternatives](#design-considerations-and-alternatives)
-  - [2.5 Product catalogue](#25-product-catalogue)
-    - [Adding and listing products](#adding-and-listing-products)
-    - [Deleting a product](#deleting-a-product)
-    - [Finding products](#finding-products)
-    - [Product catalogue design considerations](#product-catalogue-design-considerations)
+  - [Feature order](#feature-order)
+    - [2.1 Product catalogue](#21-product-catalogue)
+      - [Adding and listing products](#adding-and-listing-products)
+      - [Deleting a product](#deleting-a-product)
+      - [Finding products](#finding-products)
+      - [Product catalogue design considerations](#product-catalogue-design-considerations)
+    - [2.2 Stock and inventory management](#22-stock-and-inventory-management)
+      - [Design and class structure](#design-and-class-structure)
+      - [Stock representation and tracking](#stock-representation-and-tracking)
+      - [Stock synchronization with Orders](#stock-synchronization-with-orders)
+      - [Adding and removing stock](#adding-and-removing-stock)
+      - [Low stock monitoring](#low-stock-monitoring)
+      - [Design considerations and alternatives](#design-considerations-and-alternatives)
+    - [2.3 Orders](#23-orders)
+      - [Adding an order](#adding-an-order)
+      - [Cancelling an order](#cancelling-an-order)
+      - [Listing orders](#listing-orders)
+      - [Editing an order](#editing-an-order)
+      - [Discounting an order](#discounting-an-order)
+    - [2.4 Sales and customer commands](#24-sales-and-customer-commands)
+      - [Listing sales](#listing-sales)
+      - [Generating receipts](#generating-receipts)
+      - [Recording customer payments](#recording-customer-payments)
+      - [Viewing a customer's order details](#viewing-a-customers-order-details)
+    - [2.5 Expense and financial management](#25-expense-and-financial-management)
+      - [Adding an expense](#adding-an-expense)
+      - [Listing expenses](#listing-expenses)
+      - [Financial report](#financial-report)
+      - [Design considerations and testing](#design-considerations-and-testing)
+    - [2.6 General commands](#26-general-commands)
+      - [Getting command help](#getting-command-help)
 - [3. Product scope](#3-product-scope)
   - [Target user profile](#target-user-profile)
   - [Value proposition](#value-proposition)
@@ -51,7 +63,213 @@
 
 ## 2. Design and implementation
 
-### 2.1 Orders
+### Feature order
+
+The feature documentation is intended to be read in the same order as the User Guide:
+
+1. [Product catalogue](#21-product-catalogue) — define the items the business sells.
+2. [Stock and inventory management](#22-stock-and-inventory-management) — track the available quantities.
+3. [Orders](#23-orders) — record customer purchases using catalogue products and available stock.
+4. [Sales and customer commands](#24-sales-and-customer-commands) — review and manage completed customer activity.
+5. [Expense and financial management](#25-expense-and-financial-management) — record expenses and calculate financial results.
+6. [General commands](#26-general-commands) — use help and other application-wide commands.
+
+The detailed implementation sections below use the same numbering and order, so the page's scrolling order
+matches this contents list.
+
+### 2.1 Product catalogue
+
+The product catalogue holds every item the business sells. Orders and stock records refer to products by
+name, so the catalogue is the first thing a user sets up. It supports four commands: `product add`,
+`product list`, `product delete` and `product find`.
+
+* `Product` holds a name, a unit price and a stock level. The price is a two-decimal `BigDecimal`, and the
+  stock level starts at 0.
+* `ProductList` stores the products in the order they were added. Names identify products and are compared
+  ignoring case, so `ProductList#add` rejects a duplicate name in one place, whichever command adds it.
+* Each command is its own `Command` subclass. `Parser` checks the input format, and each command checks the
+  rules that depend on stored data, such as whether a product exists.
+
+![Product catalogue class diagram](images/product-class.svg)
+
+#### Adding and listing products
+
+`product add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddProduct` and `AddProductCommand`. The parser
+looks for each prefix instead of splitting on spaces, so a name such as `Oat Milk 1L` stays in one piece and
+`p/` and `a/` can be given in either order. `Parser#parsePrice` rejects an empty, negative or non-numeric
+amount and more than two decimal places. It takes the caller's format hint as a parameter, because
+`expense add` uses the same `a/` amount and should show its own format when the amount is missing.
+
+`product list` is handled by `ListProductCommand`, which passes `ProductList#getSortedByName()` to
+`Ui#showProducts`. `getSortedByName()` sorts a copy, so the stored list keeps its insertion order.
+
+#### Deleting a product
+
+`product delete p/PRODUCT` is handled by `Parser#parseDeleteProduct` and `DeleteProductCommand`. The parser
+rejects `a/`, so a mistyped `product add` is reported instead of deleting a product. The command then:
+
+1. Looks the product up with `ProductList#findByName`. If there is none, it throws a `SystemException`.
+2. Asks `OrderList#findActiveOrderWithProduct` for an active order that contains the product. If there is
+   one, it throws a `SystemException` that names the order.
+3. Removes the product with `ProductList#remove`, removes its stock record with `StockList#removeByProduct`,
+   and shows the confirmation with `Ui#showProductDeleted`.
+
+Every check happens before anything is removed, so a failed delete leaves the catalogue and the stock list
+unchanged.
+
+![Product delete sequence diagram](images/product-delete.svg)
+
+An active order can still be cancelled or edited, and both return stock to its products through each
+`OrderItem`'s `Product` reference. If that product had been deleted, the stock would go to an object that is
+no longer in the catalogue or the stock list. A cancelled order cannot change any more, so it keeps its
+reference to the deleted product and still shows the product's name in its history.
+
+#### Finding products
+
+`product find KEYWORD` is handled by `Parser#parseFindProduct` and `FindProductCommand`. The keyword is all
+the text after `find`, so it can contain spaces. Product names cannot contain `p/` or `a/`, so the parser
+rejects a keyword with either prefix instead of searching for something that can never match.
+
+`ProductList#findByKeyword` filters `getSortedByName()` with a stream, keeping the products whose name
+contains the keyword ignoring case. `Ui#showMatchingProducts` prints the matches, or a message when nothing
+matches. It shares `Ui#printProductLines` with `product list`, so both commands print products in the same
+format.
+
+#### Product catalogue design considerations
+
+##### Aspect: Deleting a product that orders refer to
+
+* **Alternative 1 (current choice)**: Refuse to delete a product while an active order contains it.
+  * *Pros*: Stock can never be returned to a deleted product, and the rule is one check before anything is
+    removed.
+  * *Cons*: A product whose sale is still active, even a fully paid one, can only be deleted after that
+    order is cancelled.
+* **Alternative 2**: Archive the product instead of deleting it, hiding it from `product list` and rejecting
+  it in new orders.
+  * *Pros*: Products that have been sold can be retired at any time, and order history stays complete.
+  * *Cons*: Every command that looks up products has to handle the archived state, which adds code and tests
+    across the order and stock features.
+* **Alternative 3**: Delete the product and remove it from every order that contains it.
+  * *Pros*: Simple for the user.
+  * *Cons*: Changes past order totals and receipts, which a business cannot accept.
+
+##### Aspect: How the catalogue is stored
+
+* **Alternative 1 (current choice)**: An `ArrayList` in insertion order, sorted only when listed or searched.
+  * *Pros*: Simple to read and test, and sorting is cheap at the size of a small business's catalogue.
+  * *Cons*: Each lookup scans the list, and each listing sorts a copy.
+* **Alternative 2**: A `TreeMap` keyed by the lower-case name.
+  * *Pros*: Faster lookups, and the products are always in order.
+  * *Cons*: The key and the displayed name have to be kept in step, which is more complex than this
+    catalogue size needs.
+
+The tests cover adding duplicate names in different cases, sorting without changing the stored order,
+deleting with and without stock, deleting a product in an active or a cancelled order, and finding by part
+of a name in a different case.
+
+### 2.2 Stock and inventory management
+
+The stock management subsystem tracks the available physical quantities of catalogued products, handles restocking and stock deductions, and alerts store managers when quantities dip below critical thresholds.
+
+The subsystem supports four primary commands:
+
+* `stock add p/PRODUCT q/QUANTITY`: Adds physical inventory to an existing catalogue item.
+* `stock remove p/PRODUCT [q/QUANTITY]`: Deducts physical inventory, defaulting to 1 unit if omitted.
+* `stock list`: Displays a tabular overview of all recorded stock levels.
+* `stock low [q/THRESHOLD]`: Filters and alerts on items whose available quantity is at or below a threshold (defaulting to 5).
+
+#### Design and class structure
+
+The following class diagram illustrates the architecture of the stock subsystem and its relationships with the catalogue and command layers:
+
+![Stock management class diagram](images/stock-class.svg)
+
+Key design aspects:
+
+* `Command` defines the execution interface that operates on `StockList` and `ProductList`. Each concrete stock command (`AddStockCommand`, `RemoveStockCommand`, `ListStockCommand`, `LowStockCommand`) extends `Command` and manipulates `StockList` and `ProductList` during execution.
+* `Stock` encapsulates an inventory record, storing the product name (`product`), its unit selling price (`price` as `BigDecimal`), and the available quantity (`quantity`). It optionally binds directly to the catalogue `Product` via `productRef`.
+* `StockList` maintains the collection of `Stock` entries. In accordance with defensive programming and encapsulation principles, `StockList#getStocks()` returns an unmodifiable list (`Collections.unmodifiableList`), preventing callers from modifying internal list state directly.
+
+#### Stock representation and tracking
+
+`Stock` encapsulates product identification, unit price, and quantity. It provides three constructors:
+
+1. `Stock(Product product, int quantity)`: Binds directly to a catalogue `Product` reference (`productRef`), synchronising initial quantity and unit price with the product catalogue.
+2. `Stock(String product, BigDecimal price, int quantity)`: The primary standalone constructor ensuring exact decimal accuracy.
+3. `Stock(String product, double price, int quantity)`: A convenience constructor for backward-compatibility with callers providing a floating-point literal.
+
+When a `Stock` instance holds a `Product` reference (`productRef != null`), its `getQuantity()` and `setQuantity(int)` methods automatically synchronise with `Product#getStock()` and `Product#setStock(int)`.
+
+`StockList` wraps an `ArrayList<Stock>` and provides case-insensitive product lookups via `findByProduct(String)`.
+
+#### Stock synchronisation with Orders
+
+Previously, stock quantities were tracked independently in `Product.stock` and `Stock.quantity`. Order management commands (`AddOrderCommand`, `CancelOrderCommand`, `EditOrderCommand`) modified `Product.setStock(...)` directly, which caused `StockList` to fall out of synchronisation.
+
+The system addresses this through a three-layer synchronisation strategy:
+
+1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
+2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
+3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`) or inspecting low inventory (`LowStockCommand`), the commands reconcile each `Stock` entry against `ProductList#findByName` before formatting the display table. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
+
+#### Adding and removing stock
+
+Stock adjustments follow a validation-then-apply pattern:
+
+* **Restocking (`stock add`)**: `AddStockCommand` verifies whether the target product exists in `ProductList`. If the product is not found in the catalogue, execution terminates with a `SystemException`. If found, `StockList#findByProduct` checks if a stock record already exists. If it exists, the new quantity is added to the current balance; otherwise, a new `Stock` entry bound to the `Product` is constructed and added to `StockList`. The product catalogue stock is also updated via `Product#setStock`.
+* **Depleting Stock (`stock remove`)**: `RemoveStockCommand` verifies that the target product exists in the catalogue or stock list. If neither contains the product, an informational message is displayed via `Ui#showStockNotFound()`. When the product is found, the command deducts the requested quantity, clamping the remaining balance at 0 via `Math.max(0, currentStock - quantityToRemove)` so inventory levels can never drop below zero. When `q/` is omitted, the command defaults to deducting 1 unit.
+
+#### Low stock monitoring
+
+Store managers need rapid insight into items nearing depletion. The `stock low [q/THRESHOLD]` command (implemented in `LowStockCommand`) filters products whose remaining quantity satisfies `quantity <= threshold`.
+
+**Parsing.** `Parser#parseLowStock` checks for an optional threshold parameter, which may be supplied with the `q/` prefix (e.g. `stock low q/10`) or as a standalone integer (e.g. `stock low 10`):
+
+* If omitted, it sets the threshold to `LowStockCommand.DEFAULT_THRESHOLD` (5).
+* If present, the threshold is parsed and validated as a non-negative integer using `Parser#parseThreshold`.
+* Negative values, non-integer input, or blank threshold text throw a descriptive `SystemException` explaining the expected format.
+
+**Execution.** When executed, `LowStockCommand`:
+
+1. Retrieves all items via `StockList#getStocks()`.
+2. Reconciles each item against `ProductList#findByName(stock.product)` to verify latest quantities.
+3. Identifies items where `stock.quantity <= threshold` and collects them into a list.
+4. Calls `Ui#showLowStock(lowStocks, threshold, isStockListEmpty)`. The UI displays an aligned table of low stock items, or an informational message if all products have sufficient stock or the stock list is empty.
+
+The following sequence diagram outlines this execution process:
+
+![Stock low sequence diagram](images/stock-low-sequence.svg)
+
+#### Design considerations and alternatives
+
+##### Aspect: Threshold specification in `stock low`
+
+* **Alternative 1 (Current Choice)**: Optional parameter with sensible default (`q/5`).
+  * *Pros*: Streamlines routine managerial checks (`stock low`), while permitting granular inspections (`stock low q/20`).
+  * *Cons*: Requires branch handling in the parser to detect whether the parameter was supplied.
+* **Alternative 2**: Mandatory threshold (`stock low q/THRESHOLD`).
+  * *Pros*: Simpler parser implementation.
+  * *Cons*: Forces users to repeatedly type the threshold even when inspecting standard inventory levels.
+
+##### Aspect: Stock tracking separated from Product catalogue
+
+* **Alternative 1 (Current Choice)**: Dedicated `Stock` and `StockList` classes.
+  * *Pros*: Separates product catalogue definitions (name, price) from physical inventory levels, allowing independent extensions such as supplier tracking or storage locations.
+  * *Cons*: Requires coordination between `ProductList` and `StockList` during stock commands.
+* **Alternative 2**: Tracking stock solely as an integer field within `Product`.
+  * *Pros*: Fewer classes to maintain.
+  * *Cons*: Limits inventory management capabilities and mixes catalogue information with operational inventory tracking.
+
+##### Aspect: Error handling during stock operations
+
+* **Alternative 1 (Current Choice)**: Validation before mutation.
+  * *Pros*: Checks product existence and stock sufficiency before modifying any data. If a check fails, a `SystemException` is thrown and state remains unchanged without needing rollback logic.
+  * *Cons*: Requires lookups prior to applying updates.
+* **Alternative 2**: Apply changes and attempt rollback on failure.
+  * *Pros*: Avoids initial lookup pass.
+  * *Cons*: Highly error-prone; failures during rollback leave inventory counts inconsistent.
+
+### 2.3 Orders
 
 The order feature records what customers buy and keeps stock in step with it. It supports five commands:
 `order add`, `order cancel`, `order list`, `order edit` and `order discount`.
@@ -182,7 +400,7 @@ still adds up. Orders without a discount print exactly as before.
   cleaner but would touch every feature. Prices are limited to two decimal places, so converting at the point of
   calculation gives exact results with a much smaller change.
 
-### 2.2 Sales and customer commands
+### 2.4 Sales and customer commands
 
 These features let users view sales, generate receipts, record customer payments, inspect a customer's
 orders and look up command usage. They use the existing `Command` structure and the shared order history.
@@ -362,37 +580,7 @@ orders match, the UI displays `No orders found for CUSTOMER.` rather than an emp
 order total. This view does not yet show a separate discount breakdown, so its footer can differ from
 the sum of the displayed line costs.
 
-#### Getting command help
-
-`help [AREA]` is handled by `Parser`, `HelpCommand` and `Ui#showHelp`.
-
-**Parsing.** The parser accepts no area or one area and rejects multiple area arguments. `HelpCommand`
-normalises the area using `Locale.ROOT`, so input such as `help STOCK` selects the same area as
-`help stock` without depending on the machine's language settings.
-
-**Execution.** With no area, the command calls `Ui#showHelpOverview` to show the format, available areas
-and an example. Otherwise, a switch selects description-and-syntax pairs for `product`, `stock`, `order`,
-`sales`, `expense`, `generate` or `general`. An unknown area produces an error containing the supported
-areas. Help reads no order data and does not change application state.
-
-![Command help sequence diagram](images/command-help.svg)
-
-**Display.** `Ui` prints the area heading followed by numbered descriptions and command syntax. Optional
-parameters are shown in square brackets. `generate` covers receipts, while `general` covers help and exit.
-The command descriptions use the application's existing indentation through `Ui`.
-
-**Design considerations.**
-
-* *Explicit help entries vs. automatic discovery.* A switch and description-and-syntax pairs are simple
-  for the current number of commands and allow explanations of defaults. Automatic discovery would need
-  shared command metadata that the current parser and command classes do not expose.
-* *Keeping text separate from formatting.* `HelpCommand` supplies the content, while `Ui` numbers and prints
-  it. A layout change therefore does not require modifying every help entry.
-
-Help text is maintained manually. When a command is added or its arguments change, its corresponding
-help entry must also be updated; the parser does not generate these descriptions automatically.
-
-### 2.3 Expense and financial management
+### 2.5 Expense and financial management
 
 These features let the manager add expenses, view them, and compare expenses with payments received.
 Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
@@ -457,197 +645,37 @@ expense data independent from products and orders, while returning a copy protec
 The tests cover valid expenses, name trimming, invalid amounts, insertion order, expense display,
 profit, loss, equal totals, and partial payments.
 
-### 2.4 Stock and inventory management
+### 2.6 General commands
 
-The stock management subsystem tracks the available physical quantities of catalogued products, handles restocking and stock deductions, and alerts store managers when quantities dip below critical thresholds.
+#### Getting command help
 
-The subsystem supports four primary commands:
+`help [AREA]` is handled by `Parser`, `HelpCommand` and `Ui#showHelp`.
 
-* `stock add p/PRODUCT q/QUANTITY`: Adds physical inventory to an existing catalogue item.
-* `stock remove p/PRODUCT [q/QUANTITY]`: Deducts physical inventory, defaulting to 1 unit if omitted.
-* `stock list`: Displays a tabular overview of all recorded stock levels.
-* `stock low [q/THRESHOLD]`: Filters and alerts on items whose available quantity is at or below a threshold (defaulting to 5).
+**Parsing.** The parser accepts no area or one area and rejects multiple area arguments. `HelpCommand`
+normalises the area using `Locale.ROOT`, so input such as `help STOCK` selects the same area as
+`help stock` without depending on the machine's language settings.
 
-#### Design and class structure
+**Execution.** With no area, the command calls `Ui#showHelpOverview` to show the format, available areas
+and an example. Otherwise, a switch selects description-and-syntax pairs for `product`, `stock`, `order`,
+`sales`, `expense`, `generate` or `general`. An unknown area produces an error containing the supported
+areas. Help reads no order data and does not change application state.
 
-The following class diagram illustrates the architecture of the stock subsystem and its relationships with the catalogue and command layers:
+![Command help sequence diagram](images/command-help.svg)
 
-![Stock management class diagram](images/stock-class.svg)
+**Display.** `Ui` prints the area heading followed by numbered descriptions and command syntax. Optional
+parameters are shown in square brackets. `generate` covers receipts, while `general` covers help and exit.
+The command descriptions use the application's existing indentation through `Ui`.
 
-Key design aspects:
+**Design considerations.**
 
-* `Command` defines the execution interface that operates on `StockList` and `ProductList`. Each concrete stock command (`AddStockCommand`, `RemoveStockCommand`, `ListStockCommand`, `LowStockCommand`) extends `Command` and manipulates `StockList` and `ProductList` during execution.
-* `Stock` encapsulates an inventory record, storing the product name (`product`), its unit selling price (`price` as `BigDecimal`), and the available quantity (`quantity`). It optionally binds directly to the catalogue `Product` via `productRef`.
-* `StockList` maintains the collection of `Stock` entries. In accordance with defensive programming and encapsulation principles, `StockList#getStocks()` returns an unmodifiable list (`Collections.unmodifiableList`), preventing callers from modifying internal list state directly.
+* *Explicit help entries vs. automatic discovery.* A switch and description-and-syntax pairs are simple
+  for the current number of commands and allow explanations of defaults. Automatic discovery would need
+  shared command metadata that the current parser and command classes do not expose.
+* *Keeping text separate from formatting.* `HelpCommand` supplies the content, while `Ui` numbers and prints
+  it. A layout change therefore does not require modifying every help entry.
 
-#### Stock representation and tracking
-
-`Stock` encapsulates product identification, unit price, and quantity. It provides three constructors:
-
-1. `Stock(Product product, int quantity)`: Binds directly to a catalogue `Product` reference (`productRef`), synchronising initial quantity and unit price with the product catalogue.
-2. `Stock(String product, BigDecimal price, int quantity)`: The primary standalone constructor ensuring exact decimal accuracy.
-3. `Stock(String product, double price, int quantity)`: A convenience constructor for backward-compatibility with callers providing a floating-point literal.
-
-When a `Stock` instance holds a `Product` reference (`productRef != null`), its `getQuantity()` and `setQuantity(int)` methods automatically synchronise with `Product#getStock()` and `Product#setStock(int)`.
-
-`StockList` wraps an `ArrayList<Stock>` and provides case-insensitive product lookups via `findByProduct(String)`.
-
-#### Stock synchronisation with Orders
-
-Previously, stock quantities were tracked independently in `Product.stock` and `Stock.quantity`. Order management commands (`AddOrderCommand`, `CancelOrderCommand`, `EditOrderCommand`) modified `Product.setStock(...)` directly, which caused `StockList` to fall out of synchronisation.
-
-The system addresses this through a three-layer synchronisation strategy:
-
-1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
-2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
-3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`) or inspecting low inventory (`LowStockCommand`), the commands reconcile each `Stock` entry against `ProductList#findByName` before formatting the display table. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
-
-#### Adding and removing stock
-
-Stock adjustments follow a validation-then-apply pattern:
-
-* **Restocking (`stock add`)**: `AddStockCommand` verifies whether the target product exists in `ProductList`. If the product is not found in the catalogue, execution terminates with a `SystemException`. If found, `StockList#findByProduct` checks if a stock record already exists. If it exists, the new quantity is added to the current balance; otherwise, a new `Stock` entry bound to the `Product` is constructed and added to `StockList`. The product catalogue stock is also updated via `Product#setStock`.
-* **Depleting Stock (`stock remove`)**: `RemoveStockCommand` verifies that the target product exists in the catalogue or stock list. If neither contains the product, an informational message is displayed via `Ui#showStockNotFound()`. When the product is found, the command deducts the requested quantity, clamping the remaining balance at 0 via `Math.max(0, currentStock - quantityToRemove)` so inventory levels can never drop below zero. When `q/` is omitted, the command defaults to deducting 1 unit.
-
-#### Low stock monitoring
-
-Store managers need rapid insight into items nearing depletion. The `stock low [q/THRESHOLD]` command (implemented in `LowStockCommand`) filters products whose remaining quantity satisfies `quantity <= threshold`.
-
-**Parsing.** `Parser#parseLowStock` checks for an optional threshold parameter, which may be supplied with the `q/` prefix (e.g. `stock low q/10`) or as a standalone integer (e.g. `stock low 10`):
-
-* If omitted, it sets the threshold to `LowStockCommand.DEFAULT_THRESHOLD` (5).
-* If present, the threshold is parsed and validated as a non-negative integer using `Parser#parseThreshold`.
-* Negative values, non-integer input, or blank threshold text throw a descriptive `SystemException` explaining the expected format.
-
-**Execution.** When executed, `LowStockCommand`:
-
-1. Retrieves all items via `StockList#getStocks()`.
-2. Reconciles each item against `ProductList#findByName(stock.product)` to verify latest quantities.
-3. Identifies items where `stock.quantity <= threshold` and collects them into a list.
-4. Calls `Ui#showLowStock(lowStocks, threshold, isStockListEmpty)`. The UI displays an aligned table of low stock items, or an informational message if all products have sufficient stock or the stock list is empty.
-
-The following sequence diagram outlines this execution process:
-
-![Stock low sequence diagram](images/stock-low-sequence.svg)
-
-#### Design considerations and alternatives
-
-##### Aspect: Threshold specification in `stock low`
-
-* **Alternative 1 (Current Choice)**: Optional parameter with sensible default (`q/5`).
-  * *Pros*: Streamlines routine managerial checks (`stock low`), while permitting granular inspections (`stock low q/20`).
-  * *Cons*: Requires branch handling in the parser to detect whether the parameter was supplied.
-* **Alternative 2**: Mandatory threshold (`stock low q/THRESHOLD`).
-  * *Pros*: Simpler parser implementation.
-  * *Cons*: Forces users to repeatedly type the threshold even when inspecting standard inventory levels.
-
-##### Aspect: Stock tracking separated from Product catalogue
-
-* **Alternative 1 (Current Choice)**: Dedicated `Stock` and `StockList` classes.
-  * *Pros*: Separates product catalogue definitions (name, price) from physical inventory levels, allowing independent extensions such as supplier tracking or storage locations.
-  * *Cons*: Requires coordination between `ProductList` and `StockList` during stock commands.
-* **Alternative 2**: Tracking stock solely as an integer field within `Product`.
-  * *Pros*: Fewer classes to maintain.
-  * *Cons*: Limits inventory management capabilities and mixes catalogue information with operational inventory tracking.
-
-##### Aspect: Error handling during stock operations
-
-* **Alternative 1 (Current Choice)**: Validation before mutation.
-  * *Pros*: Checks product existence and stock sufficiency before modifying any data. If a check fails, a `SystemException` is thrown and state remains unchanged without needing rollback logic.
-  * *Cons*: Requires lookups prior to applying updates.
-* **Alternative 2**: Apply changes and attempt rollback on failure.
-  * *Pros*: Avoids initial lookup pass.
-  * *Cons*: Highly error-prone; failures during rollback leave inventory counts inconsistent.
-
-### 2.5 Product catalogue
-
-The product catalogue holds every item the business sells. Orders and stock records refer to products by
-name, so the catalogue is the first thing a user sets up. It supports four commands: `product add`,
-`product list`, `product delete` and `product find`.
-
-* `Product` holds a name, a unit price and a stock level. The price is a two-decimal `BigDecimal`, and the
-  stock level starts at 0.
-* `ProductList` stores the products in the order they were added. Names identify products and are compared
-  ignoring case, so `ProductList#add` rejects a duplicate name in one place, whichever command adds it.
-* Each command is its own `Command` subclass. `Parser` checks the input format, and each command checks the
-  rules that depend on stored data, such as whether a product exists.
-
-![Product catalogue class diagram](images/product-class.svg)
-
-#### Adding and listing products
-
-`product add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddProduct` and `AddProductCommand`. The parser
-looks for each prefix instead of splitting on spaces, so a name such as `Oat Milk 1L` stays in one piece and
-`p/` and `a/` can be given in either order. `Parser#parsePrice` rejects an empty, negative or non-numeric
-amount and more than two decimal places. It takes the caller's format hint as a parameter, because
-`expense add` uses the same `a/` amount and should show its own format when the amount is missing.
-
-`product list` is handled by `ListProductCommand`, which passes `ProductList#getSortedByName()` to
-`Ui#showProducts`. `getSortedByName()` sorts a copy, so the stored list keeps its insertion order.
-
-#### Deleting a product
-
-`product delete p/PRODUCT` is handled by `Parser#parseDeleteProduct` and `DeleteProductCommand`. The parser
-rejects `a/`, so a mistyped `product add` is reported instead of deleting a product. The command then:
-
-1. Looks the product up with `ProductList#findByName`. If there is none, it throws a `SystemException`.
-2. Asks `OrderList#findActiveOrderWithProduct` for an active order that contains the product. If there is
-   one, it throws a `SystemException` that names the order.
-3. Removes the product with `ProductList#remove`, removes its stock record with `StockList#removeByProduct`,
-   and shows the confirmation with `Ui#showProductDeleted`.
-
-Every check happens before anything is removed, so a failed delete leaves the catalogue and the stock list
-unchanged.
-
-![Product delete sequence diagram](images/product-delete.svg)
-
-An active order can still be cancelled or edited, and both return stock to its products through each
-`OrderItem`'s `Product` reference. If that product had been deleted, the stock would go to an object that is
-no longer in the catalogue or the stock list. A cancelled order cannot change any more, so it keeps its
-reference to the deleted product and still shows the product's name in its history.
-
-#### Finding products
-
-`product find KEYWORD` is handled by `Parser#parseFindProduct` and `FindProductCommand`. The keyword is all
-the text after `find`, so it can contain spaces. Product names cannot contain `p/` or `a/`, so the parser
-rejects a keyword with either prefix instead of searching for something that can never match.
-
-`ProductList#findByKeyword` filters `getSortedByName()` with a stream, keeping the products whose name
-contains the keyword ignoring case. `Ui#showMatchingProducts` prints the matches, or a message when nothing
-matches. It shares `Ui#printProductLines` with `product list`, so both commands print products in the same
-format.
-
-#### Product catalogue design considerations
-
-##### Aspect: Deleting a product that orders refer to
-
-* **Alternative 1 (current choice)**: Refuse to delete a product while an active order contains it.
-  * *Pros*: Stock can never be returned to a deleted product, and the rule is one check before anything is
-    removed.
-  * *Cons*: A product whose sale is still active, even a fully paid one, can only be deleted after that
-    order is cancelled.
-* **Alternative 2**: Archive the product instead of deleting it, hiding it from `product list` and rejecting
-  it in new orders.
-  * *Pros*: Products that have been sold can be retired at any time, and order history stays complete.
-  * *Cons*: Every command that looks up products has to handle the archived state, which adds code and tests
-    across the order and stock features.
-* **Alternative 3**: Delete the product and remove it from every order that contains it.
-  * *Pros*: Simple for the user.
-  * *Cons*: Changes past order totals and receipts, which a business cannot accept.
-
-##### Aspect: How the catalogue is stored
-
-* **Alternative 1 (current choice)**: An `ArrayList` in insertion order, sorted only when listed or searched.
-  * *Pros*: Simple to read and test, and sorting is cheap at the size of a small business's catalogue.
-  * *Cons*: Each lookup scans the list, and each listing sorts a copy.
-* **Alternative 2**: A `TreeMap` keyed by the lower-case name.
-  * *Pros*: Faster lookups, and the products are always in order.
-  * *Cons*: The key and the displayed name have to be kept in step, which is more complex than this
-    catalogue size needs.
-
-The tests cover adding duplicate names in different cases, sorting without changing the stored order,
-deleting with and without stock, deleting a product in an active or a cancelled order, and finding by part
-of a name in a different case.
+Help text is maintained manually. When a command is added or its arguments change, its corresponding
+help entry must also be updated; the parser does not generate these descriptions automatically.
 
 ## 3. Product scope
 
