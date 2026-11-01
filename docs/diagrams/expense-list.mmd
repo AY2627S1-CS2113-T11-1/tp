@@ -1,13 +1,10 @@
-%%{init: {"themeVariables": {"fontSize": "20px"}}}%%
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 4 4; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#f4f4f4", "actorBorder": "#333333", "actorTextColor": "#111111", "actorLineColor": "#666666", "signalColor": "#333333", "signalTextColor": "#111111", "activationBkgColor": "#e0e0e0", "activationBorderColor": "#333333"}}}%%
 sequenceDiagram
-    actor User as : User
     participant D as : Duke
     participant P as : Parser
     participant L as : ExpenseList
     participant U as : Ui
 
-    activate User
-    User->>D: expense list
     activate D
     D->>P: parse(...)
     activate P
@@ -23,10 +20,8 @@ sequenceDiagram
     deactivate L
     C->>U: show expenses
     activate U
-    U-->>User: numbered list
+    U-->>D: numbered list
     deactivate U
     deactivate C
     destroy C
-    D-xC: destroy
     deactivate D
-    deactivate User

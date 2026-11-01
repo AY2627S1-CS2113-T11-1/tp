@@ -1,12 +1,10 @@
-%%{init: {"themeCSS": ".loopLine { stroke-dasharray: none !important; }"}}%%
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 4 4; } .loopLine { stroke-dasharray: none !important; }", "themeVariables": {"actorBkg": "#f4f4f4", "actorBorder": "#333333", "actorTextColor": "#111111", "actorLineColor": "#666666", "signalColor": "#333333", "signalTextColor": "#111111", "activationBkgColor": "#e0e0e0", "activationBorderColor": "#333333"}}}%%
 sequenceDiagram
     %% Partial payments are allocated across eligible orders in creation order.
-    actor D as user : User
     participant C as command : AddPaymentCommand
     participant L as orders : OrderList
     participant O as order : Order
     participant U as ui : Ui
-    D->>C: execute(...)
     activate C
     C->>L: getAll()
     activate L
@@ -26,5 +24,4 @@ sequenceDiagram
     activate U
     U-->>C: return
     deactivate U
-    C-->>D: return
     deactivate C
