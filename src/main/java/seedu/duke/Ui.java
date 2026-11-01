@@ -268,8 +268,8 @@ public class Ui {
     }
 
     /**
-     * Shows the confirmation for a cancelled order, including the stock restored
-     * and the amount excluded from recorded sales.
+     * Shows the confirmation for a cancelled order, including the stock restored,
+     * the order value removed from active totals and the assumed refund.
      *
      * @param order the order that was cancelled
      */
@@ -277,7 +277,8 @@ public class Ui {
         printIndent("Order " + order.getId() + " for " + order.getCustomer() + " cancelled.");
         printIndent("Stock restored:");
         printOrderTable(order, "Restored");
-        printIndent("Amount excluded from recorded sales: " + formatMoney(order.getTotal()));
+        printIndent("Order value excluded from active totals: " + formatMoney(order.getTotal()));
+        printIndent("Payment refunded: " + formatMoney(order.getPaidAmount()));
     }
 
     /**
@@ -370,10 +371,10 @@ public class Ui {
     }
 
     /**
-     * Shows the total order value, payments received, total expenses and overall profit or loss.
+     * Shows the active order value, payments received, total expenses and overall profit or loss.
      *
-     * @param orders   all recorded orders, including unpaid and cancelled orders
-     * @param sales    orders with recorded payments, excluding cancelled orders
+     * @param orders   active orders, including unpaid orders
+     * @param sales    active orders with recorded payments
      * @param expenses recorded operating expenses
      */
     public void showFinances(List<Order> orders, List<Order> sales, List<Expense> expenses) {
@@ -394,8 +395,8 @@ public class Ui {
 
         BigDecimal difference = totalSales.subtract(totalExpenses);
         String result = difference.signum() >= 0 ? "Profit" : "Loss";
-        printIndent("Total Orders (including unpaid): " + formatMoney(totalOrders));
-        printIndent("Total Sales: " + formatMoney(totalSales));
+        printIndent("Total Active Order Value: " + formatMoney(totalOrders));
+        printIndent("Total Payments Received: " + formatMoney(totalSales));
         printIndent("Total Expenses: " + formatMoney(totalExpenses));
         printIndent("______________________________");
         printIndent("Overall " + result + ": " + formatMoney(difference.abs()));
@@ -516,15 +517,19 @@ public class Ui {
     }
 
     /**
-     * Displays the payment amount and change to return to the customer.
+     * Displays a payment and either its remaining balance or change.
      *
      * @param customer customer who paid
      * @param amount amount received, in dollars
+     * @param outstanding balance still owed after applying the payment
      * @param change change to return, in dollars
      */
-    public void showPayment(String customer, BigDecimal amount, BigDecimal change) {
-        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString()
-                + "! The change to return is: $" + change.setScale(2).toPlainString() + ".");
+    public void showPayment(String customer, BigDecimal amount, BigDecimal outstanding, BigDecimal change) {
+        printIndent(customer + " has paid $" + amount.setScale(2).toPlainString() + ".");
+        if (change.signum() > 0) {
+            printIndent("Change to return: $" + change.setScale(2).toPlainString() + ".");
+        }
+        printIndent("Outstanding balance: $" + outstanding.setScale(2).toPlainString() + ".");
     }
 
     /**

@@ -95,6 +95,9 @@ public class EditOrderCommand extends Command {
             logger.fine(() -> "Order edit rejected: order " + orderId + " is cancelled");
             throw reject("Order " + orderId + " is cancelled and cannot be edited.");
         }
+        if (order.getPaidAmount().signum() > 0) {
+            throw reject("Order " + orderId + " has received payment and cannot be edited.");
+        }
 
         String customer = newCustomer == null ? order.getCustomer() : newCustomer;
         boolean isChangingLines = newProductName != null || newQuantity != null;

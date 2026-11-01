@@ -386,7 +386,8 @@ Example of usage:
 
 `order cancel 1`
 
-Cancels order 1. The application displays a confirmation, the quantities restored to stock and the amount excluded from recorded sales.
+Cancels order 1. The application displays a confirmation, the quantities restored to stock, the order value
+removed from active totals and the payment refunded. Cancellation assumes a full refund of any payment made.
 
 Expected output (order 1 contained 2 units of Bread at $1.88 each):
 
@@ -400,7 +401,8 @@ Stock restored:
 +---------+----------+------------+----------+
 | Total   |        2 |            |    $3.76 |
 +---------+----------+------------+----------+
-Amount excluded from recorded sales: $3.76
+Order value excluded from active totals: $3.76
+Payment refunded: $0.00
 ```
 
 Expected output (order 1 was already cancelled):
@@ -444,7 +446,7 @@ Updates an active order's customer, product or quantity. The order keeps its ori
 
 Format: `order edit ORDER_NUMBER [c/CUSTOMER] [p/PRODUCT] [q/QUANTITY]`
 
-* `ORDER_NUMBER` must refer to an existing, active order. Cancelled orders cannot be edited.
+* `ORDER_NUMBER` must refer to an existing, active order. Cancelled or paid/partially paid orders cannot be edited.
 * At least one field must be provided. Fields that are not provided remain unchanged. Fields may be given in any order.
 * Square brackets indicate optional fields and should not be typed.
 * Customer and product names cannot be blank. The product must exist in the catalogue. Product names are case-insensitive.
@@ -574,7 +576,16 @@ Example: `order add pay c/BigChungus a/20.50`
 For an outstanding total of $20.40:
 
 ```text
-    BigChungus has paid $20.50! The change to return is: $0.10.
+    BigChungus has paid $20.50.
+    Change to return: $0.10.
+    Outstanding balance: $0.00.
+```
+
+For a partial payment of $5.00 against an outstanding total of $20.40:
+
+```text
+    BigChungus has paid $5.00.
+    Outstanding balance: $15.40.
 ```
 
 If the customer has no order history:
@@ -584,10 +595,10 @@ If the customer has no order history:
 ```
 
 If the payment is smaller than the outstanding balance, it is applied across eligible orders
-until it is exhausted. Already-paid and cancelled orders are excluded from subsequent payments.
-Any excess is returned as change. If no eligible orders remain, no payment is accepted.
-Payment does not change stock, record an expense, or implement refunds. Payment status is held
-in memory for the current session, like the existing order history.
+until it is exhausted. The application then displays the remaining outstanding balance. Already-paid
+and cancelled orders are excluded from subsequent payments. Any excess is returned as change, while
+an exact payment leaves an outstanding balance of `$0.00`. Payment does not change stock or record an
+expense. Payment status is held in memory for the current session, like the existing order history.
 
 ### 4.4 Viewing a customer's order details: `order details`
 
@@ -658,19 +669,19 @@ If no expenses have been recorded, the app displays:
 
 ### 5.3 View financial report: `finances`
 
-Calculates and displays the total value of all recorded orders, total payments received, total
-recorded expenses and the overall profit or loss. Total Orders includes unpaid orders. Cancelled
-orders remain in order history and are included in Total Orders, but are excluded from Total Sales.
-Partial payments are included in Total Sales, so an order's full value can be larger than its
-reported sales amount until the remaining balance is paid.
+Calculates and displays the total value of active orders, total payments received, total recorded
+expenses and the overall profit or loss. `Total Active Order Value` includes unpaid orders, but excludes
+cancelled orders. Cancelling an order is treated as a full refund, so its recorded payments are excluded
+from `Total Payments Received`. Partial payments contribute only the amount received, so an order's
+full value can be larger than the payments received until the remaining balance is paid.
 
 Format: `finances`
 
 Example output:
 
 ```text
-Total Orders (including unpaid): $500.00
-Total Sales: $500.00
+Total Active Order Value: $500.00
+Total Payments Received: $500.00
 Total Expenses: $1000.00
 ______________________________
 Overall Loss: $500.00

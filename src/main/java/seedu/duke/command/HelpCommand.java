@@ -84,7 +84,7 @@ public class HelpCommand extends Command {
             break;
         case "finances":
             commands = List.<String[]>of(new String[] {
-                "Shows total orders, payments received, expenses and the overall profit or loss.", "finances"});
+                "Shows active order value, payments received, expenses and the overall profit or loss.", "finances"});
             break;
         case "expense":
             commands = List.of(

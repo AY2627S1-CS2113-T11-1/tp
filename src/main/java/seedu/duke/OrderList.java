@@ -56,7 +56,7 @@ public class OrderList {
      * Returns orders that still count as confirmed sales.
      *
      * Cancelled orders remain in {@link #getAll()} for order-history purposes, but are not included
-     * in sales figures because their amount has been excluded from recorded sales.
+     * in active order value and payment figures because cancellation is treated as a refund.
      */
     public List<Order> getConfirmedSales() {
         List<Order> confirmedSales = new ArrayList<>();
@@ -71,7 +71,7 @@ public class OrderList {
     /**
      * Returns active orders that have received at least one payment.
      *
-     * @return orders contributing to cash-received sales
+     * @return orders contributing to payments received
      */
     public List<Order> getPaidSales() {
         List<Order> paidSales = new ArrayList<>();

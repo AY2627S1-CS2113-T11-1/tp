@@ -68,6 +68,11 @@ public class DiscountOrderCommand extends Command {
             throw new SystemException("Order " + orderId + " is cancelled and cannot receive a discount.\n"
                     + NO_CHANGES_MESSAGE);
         }
+        if (order.getPaidAmount().signum() > 0) {
+            logger.fine(() -> "Discount rejected: order " + orderId + " has received payment");
+            throw new SystemException("Order " + orderId + " has received payment and cannot be discounted.\n"
+                    + NO_CHANGES_MESSAGE);
+        }
 
         BigDecimal subtotalBefore = order.getSubtotal();
         order.setDiscountPercent(percent);

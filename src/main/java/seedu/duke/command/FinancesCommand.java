@@ -23,7 +23,7 @@ public class FinancesCommand extends Command {
         assert orders != null : "Financial report requires the shared order history";
         assert expenses != null : "Financial report requires the shared expense list";
         assert ui != null : "UI must be available for the financial report";
-        List<Order> allOrders = orders.getAll();
+        List<Order> allOrders = orders.getConfirmedSales();
         List<Order> paidSales = orders.getPaidSales();
         ui.showFinances(allOrders, paidSales, expenses.getExpenses());
         logger.fine(() -> "Displayed financial report for " + allOrders.size()

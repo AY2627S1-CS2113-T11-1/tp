@@ -293,22 +293,25 @@ A positive payment may cover only part of the outstanding balance. The command w
    `Order#recordPayment(applied)` when the applied amount is positive or the amount due is zero.
    Subtract the applied amount from the remaining payment. Once no payment remains, skip orders with
    a positive balance but continue marking zero-balance orders paid.
-   Finally, pass the amount received and calculated change to `Ui#showPayment`.
+   Finally, pass the amount received, remaining balance and calculated change to `Ui#showPayment`.
 
 ![Customer payment sequence diagram](images/customer-payment.svg)
 
 **Money and state.** `getAmountDue` uses `Order#getTotal()` and subtracts `Order#getPaidAmount()`,
 so the remaining balance includes the order's discount and previous payments. Invalid saved prices
-are rejected before payment is applied. Change is `max(amount received - outstanding amount, 0)`, so a
-partial payment returns no change. `Ui` displays both payment and change to two decimals.
+are rejected before payment is applied. Change is `max(amount received - outstanding amount, 0)`.
+After a partial payment, `Ui` displays the remaining outstanding balance; after an overpayment it
+displays the change and a zero balance.
 
 `Order#recordPayment` adds to the order's accumulated paid amount. `Order#isPaid()` becomes true only
 when a payment has been recorded and that amount reaches the order total. Partially paid orders remain
 eligible for later payments; cancelled and fully paid orders are excluded. Financial reporting counts
 the amount actually recorded on non-cancelled orders, including partial payments.
 
-Payment updates in-memory order state. It does not change stock, create an expense, store a payment
-ledger or implement refunds. Restarting the application does not preserve this payment state.
+Payment updates in-memory order state. It does not change stock, create an expense or store a payment
+ledger. Restarting the application does not preserve this payment state. Cancelling an order is treated
+as a full refund of any payment recorded against that order, so cancelled orders are excluded from both
+active order value and payments received.
 
 **Design considerations.**
 
@@ -316,6 +319,8 @@ ledger or implement refunds. Restarting the application does not preserve this p
   so it allocates payment to older eligible orders first. Selecting one order would require an additional identifier.
 * *Accumulated amount vs. a paid flag alone.* Recording the amount paid supports instalments and lets
   financial reporting count money received before an order is fully paid.
+* *Editing after payment.* Active orders cannot be edited or discounted after receiving payment, because
+  changing their total would make the recorded payment and outstanding balance ambiguous.
 * *Decimal arithmetic vs. floating-point subtraction.* Parsing money directly as `BigDecimal` avoids
   binary rounding errors when checking payment sufficiency and calculating change.
 
@@ -430,15 +435,16 @@ passes them to `Ui#showFinances`.
 The report uses these calculations:
 
 ```text
-Total Orders = sum of every order total, including unpaid and cancelled orders
-Total Sales = sum of recorded payments from non-cancelled orders
+Total Active Order Value = sum of every non-cancelled order total, including unpaid orders
+Total Payments Received = sum of recorded payments from non-cancelled orders
 Total Expenses = sum of recorded expenses
-Profit/Loss = Total Sales - Total Expenses
+Profit/Loss = Total Payments Received - Total Expenses
 ```
 
-Total Orders shows the value of all orders, including unpaid and cancelled orders. Total Sales shows
-money received from paid, non-cancelled orders. Therefore, partial payments contribute only the amount
-paid. A zero or positive difference is labelled `Profit`; a negative difference is labelled `Loss`.
+Total Active Order Value shows the value of active orders, including unpaid orders. Total Payments
+Received shows money recorded against active orders, so partial payments contribute only the amount paid.
+Cancelled orders and their payments are treated as refunded and excluded. A zero or positive difference
+is labelled `Profit`; a negative difference is labelled `Loss`.
 
 ![Financial report sequence diagram](images/finances.svg)
 
@@ -872,7 +878,7 @@ These tests verify that `Product.stock` and `Stock.quantity` remain strictly syn
 2. **Viewing net financial standing**:
    * Test case: `finances`
      * *Expected*: Displays financial report:
-       * Total Sales: $2.70
+       * Total Payments Received: $2.70
        * Total Expenses: $5.00
        * Net Standing: Net Loss (-$2.30) calculated to 2 decimal places.
 

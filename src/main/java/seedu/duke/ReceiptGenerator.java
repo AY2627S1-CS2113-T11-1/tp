@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 /**
  * Selects a customer's confirmed purchases for individual receipts without changing order history.
- * The current sales model records payment when an order is created; cancelled orders are excluded.
+ * The current sales model records payments separately from order creation; cancelled orders are excluded.
  */
 public class ReceiptGenerator {
     private static final Logger logger = Logger.getLogger(ReceiptGenerator.class.getName());
