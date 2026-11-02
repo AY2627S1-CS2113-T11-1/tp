@@ -548,7 +548,8 @@ Format: `generate receipts c/CUSTOMER`
 * Use the full customer name. Names are case-insensitive and may contain spaces.
 * Each receipt shows the order number, customer name, products, quantities, prices paid, subtotals and total.
 * Receipts use the same table layout as the output of `order add`.
-* Creating an order records a confirmed purchase. There is no separate payment command.
+* Receipts include non-cancelled orders whether or not they have been paid. Record payments separately
+  with `order add pay c/CUSTOMER a/AMOUNT`; generating a receipt does not record a payment.
 * A customer with no order history receives `Sorry! Customer not in database.`
 * A customer whose orders are all cancelled receives `No paid, non-cancelled orders found for this customer.`
 * Generating receipts does not change orders, stock or recorded sales. The command can be repeated.
