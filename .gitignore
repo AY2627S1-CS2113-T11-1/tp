@@ -17,5 +17,8 @@ bin/
 # Temp files
 _temp/
 
+# Runtime diagnostic logs
+/logs/
+
 /text-ui-test/ACTUAL.TXT
 text-ui-test/EXPECTED-UNIX.TXT
