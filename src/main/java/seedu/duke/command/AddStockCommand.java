@@ -19,6 +19,8 @@ import seedu.duke.Ui;
 public class AddStockCommand extends Command {
     /** Records stock modification events for debugging and auditing. */
     private static final Logger logger = Logger.getLogger(AddStockCommand.class.getName());
+    /** Stock levels are ints, so this is the most a product can hold. */
+    private static final int MAX_STOCK = Integer.MAX_VALUE;
 
     private final String productName;
     private final int quantity;
@@ -46,7 +48,8 @@ public class AddStockCommand extends Command {
      * @param expenses the shared expense list
      * @param stocks   the stock list
      * @param ui       the user interface
-     * @throws SystemException if the product does not exist in the catalogue
+     * @throws SystemException if the product does not exist in the catalogue, or if adding the quantity would
+     *                         take its stock past {@code Integer.MAX_VALUE}
      */
     @Override
     public void execute(ProductList products, OrderList orders, ExpenseList expenses, StockList stocks, Ui ui)
@@ -63,6 +66,14 @@ public class AddStockCommand extends Command {
         }
 
         int previousStock = product.getStock();
+        // Adding two ints past Integer.MAX_VALUE wraps to a negative stock level, so the sum is checked as a
+        // long and an oversized restock is rejected before anything changes.
+        if ((long) previousStock + quantity > MAX_STOCK) {
+            logger.warning("Stock addition rejected: " + quantity + " more units would overflow the stock of \""
+                    + productName + "\" (" + previousStock + ")");
+            throw new SystemException("Can't add " + quantity + " to the stock of " + productName + ": it already has "
+                    + previousStock + ", and stock can be at most " + MAX_STOCK + ".");
+        }
         product.setStock(previousStock + quantity);
         assert product.getStock() >= quantity : "Updated stock must be at least the added quantity";
 
