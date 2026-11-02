@@ -1,13 +1,11 @@
 %%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 5 5; } .loopLine { stroke-dasharray: none; stroke-width: 1.5px; }", "themeVariables": {"fontSize": "16px", "actorBkg": "#eef4fb", "actorBorder": "#40566f", "actorTextColor": "#1f2933", "actorLineColor": "#8a98a8", "signalColor": "#40566f", "signalTextColor": "#1f2933", "activationBkgColor": "#ffffff", "activationBorderColor": "#40566f", "labelBoxBkgColor": "#ffffff", "labelBoxBorderColor": "#40566f", "labelTextColor": "#1f2933", "loopTextColor": "#1f2933"}}}%%
 sequenceDiagram
     %% Deleting "Bread" with `product delete p/Bread`.
-    %% Mermaid cannot draw UML's destroy marker, so docs/diagrams/render.py adds the X where
-    %% :DeleteProductCommand's lifeline ends. Re-render with: python3 docs/diagrams/render.py product-delete
-    actor User
+    %% Mermaid cannot draw UML's destroy marker, so after rendering, the X at the end of
+    %% :DeleteProductCommand's lifeline (and the end of its last activation bar) was added to the SVG by hand.
     participant D as :Duke
     participant P as :Parser
 
-    User->>D: product delete p/Bread
     activate D
     D->>P: parse("product delete p/Bread")
     activate P
