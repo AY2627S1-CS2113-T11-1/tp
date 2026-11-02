@@ -1,8 +1,8 @@
 # Business Management System (BMS)
 
-This product is for growing business owners who currently lack a central enterprise software to maintain the overhead of logistics and sales for their business.
+This product is for small retail business owners who handle day-to-day operations themselves and need a simple way to keep track of their business.
 
-It provides an easy to use platform to maintain and oversee the status of a business. It allows control over the system by recording the status of supply chain operations like procurement, as well as sales and inventory of the branch. Users include managers, logisticians and sales employees.
+It brings product, inventory, customer order, payment and expense records together in one application, helping owners monitor stock, sales and financial summaries. It is designed for users who type quickly and prefer entering commands to navigating graphical menus.
 
 Useful links:
 * [User Guide](UserGuide.md)

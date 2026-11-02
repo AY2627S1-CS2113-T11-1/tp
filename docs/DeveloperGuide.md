@@ -57,6 +57,10 @@
 * **AI assistance (Brian Yang, @zechby):** Claude (Anthropic) was used to add the assertions and logging in
   `Product`, `ProductList` and `AddProductCommand`, the related `ProductTest` cases, and the first draft of the
   product catalogue sections of the User Guide.
+* **AI assistance (Tham You Jie, @DemiSushi):** ChatGPT/Codex was used to assist with
+  implementing sales listing, receipt generation, customer payments, order details
+  and command help; writing related JUnit tests; adding assertions and logging for
+  sales and receipts. It also assisted with drafting and revising my User Guide and sequence diagrams.
 * **Developer Guide structure:** The organisation of this Developer Guide, including its contents section and
   section hierarchy, was adapted from the [AddressBook-Level3 Developer Guide](https://se-education.org/addressbook-level3/DeveloperGuide.html)
   from SE-EDUCATION.
@@ -413,7 +417,7 @@ orders and look up command usage. They use the existing `Command` structure and 
   using the full name, ignoring case, rather than by partial matches.
 * `Ui` handles messages and tables. Commands select or update data without constructing table borders.
 
-The sequence diagrams below show the main successful execution path after parsing. `Duke` represents
+The sequence diagrams in this section show the main successful execution path after parsing. `Duke` represents
 the application's command loop. Validation, error paths and repeated calls are omitted for readability;
 the surrounding text describes alternatives. The payment diagram shows one `recordPayment` call;
 the command repeats this step for eligible orders while payment remains.
@@ -562,7 +566,11 @@ them in creation order. Unlike receipt selection, it retains cancelled orders be
 the customer's order history. It passes the requested customer and matching orders to the UI without
 changing any order, stock quantity or payment status.
 
-![Customer order details sequence diagram](images/order-details.svg)
+The class diagram shows how `OrderDetailsCommand` extends `Command` and uses the order history and UI.
+`OrderList` owns the stored orders; orders refer to item lines, which retain references to catalogue
+products. `Ui` reads these records to display customer names, product names, quantities and totals.
+
+![Customer order details class diagram](images/order-details.svg)
 
 **Display.** Each order has its own heading with the original ID and `Active` or `Cancelled` status.
 Its table shows product names, quantities and line costs. The footer gives the item count and
@@ -660,6 +668,9 @@ and an example. Otherwise, a switch selects description-and-syntax pairs for `pr
 `sales`, `expense`, `generate` or `general`. An unknown area produces an error containing the supported
 areas. Help reads no order data and does not change application state.
 
+The sequence diagram shows a supported-area request after parsing. `Duke` executes `HelpCommand`,
+which passes the heading and command descriptions to `Ui` for display.
+
 ![Command help sequence diagram](images/command-help.svg)
 
 **Display.** `Ui` prints the area heading followed by numbered descriptions and command syntax. Optional
@@ -681,7 +692,7 @@ help entry must also be updated; the parser does not generate these descriptions
 
 ### Target user profile
 
-Retail store managers, logistics personnel, sales staff, and small business owners who prefer a fast, keyboard-driven Command-Line Interface (CLI) over graphical applications to administer catalogue products, track warehouse inventory, process customer orders, and oversee branch financial health.
+Small retail business owners who handle day-to-day operations themselves and prefer typed commands.
 
 ### Value proposition
 

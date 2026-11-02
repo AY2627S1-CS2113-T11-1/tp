@@ -38,7 +38,7 @@
 
 ## Introduction
 
-BMS (Business Management System) is a desktop CLI (Command Line Interface) application used by store managers, sales staff, and logistics personnel to administer products, inventory stocks, customer orders, sales revenues, and operating expenses.
+BMS (Business Management System) is a command-line application for small retail business owners who handle day-to-day operations themselves. Designed for users who type quickly and prefer typed commands, it brings product, stock, order, payment and expense tracking together in one application.
 
 ## Quick Start
 

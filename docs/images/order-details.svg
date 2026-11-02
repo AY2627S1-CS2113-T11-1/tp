@@ -1,44 +1,123 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="740" height="380" viewBox="0 0 740 380" role="img" aria-labelledby="title desc">
-  <title id="title">Order Details sequence</title>
-  <desc id="desc">Main successful execution flow. Validation and alternatives are described in the Developer Guide.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1040" viewBox="0 0 1320 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Order Details Class Diagram</title>
+  <desc id="desc">Command inheritance, order history, item and product associations, and UI dependencies for customer order details.</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#40566f"/></marker>
+    <marker id="extension" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><polygon points="1,1 13,7 1,13" fill="white" stroke="#40566f"/></marker>
+    <marker id="composition" markerWidth="16" markerHeight="14" refX="1" refY="7" orient="auto"><polygon points="1,7 8,2 15,7 8,12" fill="#40566f"/></marker>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><polyline points="1,1 9,5 1,9" fill="none" stroke="#40566f"/></marker>
     <style>
-      .head { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; }
-      .name { fill:#1f2933; font:14px Arial,sans-serif; text-anchor:middle; }
-      .life { stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 5; }
-      .msg { stroke:#40566f; stroke-width:1.3; marker-end:url(#arrow); }
-      .text { fill:#1f2933; font:13px Arial,sans-serif; text-anchor:middle; }
-      .activation { fill:#ffffff; stroke:#40566f; stroke-width:1.2; }
+      .cls-box { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; }
+      .cls-title { fill:#1f2933; font:bold 14px Arial,sans-serif; text-anchor:middle; }
+      .cls-annot { fill:#52606d; font:italic 11px Arial,sans-serif; text-anchor:middle; }
+      .cls-divider { stroke:#8a98a8; stroke-width:1; }
+      .cls-member { fill:#1f2933; font:12px Arial,sans-serif; }
+      .cls-abstract { font-style:italic; }
+      .cls-static { text-decoration:underline; }
+      .rel-line { stroke:#40566f; stroke-width:1.3; fill:none; }
+      .rel-dash { stroke:#40566f; stroke-width:1.3; stroke-dasharray:5 4; fill:none; marker-end:url(#arrow); }
+      .rel-text { fill:#52606d; font:12px Arial,sans-serif; }
     </style>
   </defs>
-  <rect width="740" height="380" fill="white"/>
-  <rect class="head" x="22" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="100" y="49">Duke</tspan></text>
-  <line class="life" x1="100" y1="68" x2="100" y2="365"/>
-  <rect class="head" x="202" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="280" y="40">OrderDetails</tspan><tspan x="280" y="57">Command</tspan></text>
-  <line class="life" x1="280" y1="68" x2="280" y2="365"/>
-  <rect class="head" x="382" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="460" y="49">OrderList</tspan></text>
-  <line class="life" x1="460" y1="68" x2="460" y2="365"/>
-  <rect class="head" x="562" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="640" y="49">Ui</tspan></text>
-  <line class="life" x1="640" y1="68" x2="640" y2="365"/>
-  <rect class="activation" x="95" y="95" width="10" height="230"/>
-  <rect class="activation" x="455" y="150" width="10" height="40"/>
-  <rect class="activation" x="635" y="230" width="10" height="40"/>
-  <rect class="activation" x="275" y="110" width="10" height="200"/>
-  <line class="msg" x1="105" y1="110" x2="275" y2="110"/>
-  <text class="text" x="190" y="101">execute(...)</text>
-  <line class="msg" x1="285" y1="150" x2="455" y2="150"/>
-  <text class="text" x="370" y="141">getAll()</text>
-  <line class="msg" x1="455" y1="190" x2="285" y2="190" stroke-dasharray="5 4"/>
-  <text class="text" x="370" y="181">Order history</text>
-  <line class="msg" x1="285" y1="230" x2="635" y2="230"/>
-  <text class="text" x="460" y="221">showOrderDetails(...)</text>
-  <line class="msg" x1="635" y1="270" x2="285" y2="270" stroke-dasharray="5 4"/>
-  <text class="text" x="460" y="261">return</text>
-  <line class="msg" x1="275" y1="310" x2="105" y2="310" stroke-dasharray="5 4"/>
-  <text class="text" x="190" y="301">return</text>
+  <rect width="1320" height="1040" fill="white"/>
+  <g id='class-Command'>
+    <rect class='cls-box' x='30' y='25' width='430' height='104' rx='4'/>
+    <text class='cls-annot' x='245' y='42'>&lt;&lt;abstract&gt;&gt;</text>
+    <text class='cls-title' x='245' y='68'>Command</text>
+    <path class='cls-divider' d='M30 80 h430 M30 95 h430'/>
+    <text class='cls-member cls-abstract' x='42' y='117'>+ execute(products, orders, expenses, stocks, ui): void</text>
+  </g>
+  <g id='class-OrderDetailsCommand'>
+    <rect class='cls-box' x='30' y='180' width='430' height='147' rx='4'/>
+    <text class='cls-title' x='245' y='203'>OrderDetailsCommand</text>
+    <path class='cls-divider' d='M30 215 h430 M30 271 h430'/>
+    <text class='cls-member cls-static' x='42' y='237'>- logger: Logger</text>
+    <text class='cls-member' x='42' y='259'>- customer: String</text>
+    <text class='cls-member' x='42' y='293'>+ OrderDetailsCommand(String)</text>
+    <text class='cls-member' x='42' y='315'>+ execute(products, orders, expenses, stocks, ui): void</text>
+  </g>
+  <g id='class-Ui'>
+    <rect class='cls-box' x='900' y='180' width='390' height='84' rx='4'/>
+    <text class='cls-title' x='1095' y='203'>Ui</text>
+    <path class='cls-divider' d='M900 215 h390 M900 230 h390'/>
+    <text class='cls-member' x='912' y='252'>+ showOrderDetails(String, List&lt;Order&gt;): void</text>
+  </g>
+  <g id='class-OrderList'>
+    <rect class='cls-box' x='30' y='440' width='300' height='169' rx='4'/>
+    <text class='cls-title' x='180' y='463'>OrderList</text>
+    <path class='cls-divider' d='M30 475 h300 M30 509 h300'/>
+    <text class='cls-member' x='42' y='497'>- nextId: int</text>
+    <text class='cls-member' x='42' y='531'>+ create(String, List&lt;OrderItem&gt;): Order</text>
+    <text class='cls-member' x='42' y='553'>+ findById(int): Order</text>
+    <text class='cls-member' x='42' y='575'>+ getAll(): List&lt;Order&gt;</text>
+    <text class='cls-member' x='42' y='597'>+ size(): int</text>
+  </g>
+  <g id='class-Order'>
+    <rect class='cls-box' x='460' y='440' width='340' height='367' rx='4'/>
+    <text class='cls-title' x='630' y='463'>Order</text>
+    <path class='cls-divider' d='M460 475 h340 M460 575 h340'/>
+    <text class='cls-member' x='472' y='497'>- id: int</text>
+    <text class='cls-member' x='472' y='519'>- customer: String</text>
+    <text class='cls-member' x='472' y='541'>- isCancelled: boolean</text>
+    <text class='cls-member' x='472' y='563'>- discountPercent: BigDecimal</text>
+    <text class='cls-member' x='472' y='597'>+ Order(int, String, List&lt;OrderItem&gt;)</text>
+    <text class='cls-member' x='472' y='619'>+ getId(): int</text>
+    <text class='cls-member' x='472' y='641'>+ getCustomer(): String</text>
+    <text class='cls-member' x='472' y='663'>+ getItems(): List&lt;OrderItem&gt;</text>
+    <text class='cls-member' x='472' y='685'>+ isCancelled(): boolean</text>
+    <text class='cls-member' x='472' y='707'>+ getTotalUnits(): int</text>
+    <text class='cls-member' x='472' y='729'>+ getSubtotal(): BigDecimal</text>
+    <text class='cls-member' x='472' y='751'>+ getDiscountPercent(): BigDecimal</text>
+    <text class='cls-member' x='472' y='773'>+ getDiscountAmount(): BigDecimal</text>
+    <text class='cls-member' x='472' y='795'>+ getTotal(): BigDecimal</text>
+  </g>
+  <g id='class-OrderItem'>
+    <rect class='cls-box' x='940' y='440' width='350' height='257' rx='4'/>
+    <text class='cls-title' x='1115' y='463'>OrderItem</text>
+    <path class='cls-divider' d='M940 475 h350 M940 531 h350'/>
+    <text class='cls-member' x='952' y='497'>- quantity: int</text>
+    <text class='cls-member' x='952' y='519'>- unitPrice: BigDecimal</text>
+    <text class='cls-member' x='952' y='553'>+ OrderItem(Product, int)</text>
+    <text class='cls-member' x='952' y='575'>+ OrderItem(Product, int, BigDecimal)</text>
+    <text class='cls-member' x='952' y='597'>+ OrderItem(Product, int, double)</text>
+    <text class='cls-member' x='952' y='619'>+ getProduct(): Product</text>
+    <text class='cls-member' x='952' y='641'>+ getQuantity(): int</text>
+    <text class='cls-member' x='952' y='663'>+ getUnitPrice(): BigDecimal</text>
+    <text class='cls-member' x='952' y='685'>+ getSubtotal(): BigDecimal</text>
+  </g>
+  <g id='class-Product'>
+    <rect class='cls-box' x='940' y='815' width='350' height='191' rx='4'/>
+    <text class='cls-title' x='1115' y='838'>Product</text>
+    <path class='cls-divider' d='M940 850 h350 M940 928 h350'/>
+    <text class='cls-member' x='952' y='872'>- name: String</text>
+    <text class='cls-member' x='952' y='894'>- price: BigDecimal</text>
+    <text class='cls-member' x='952' y='916'>- stock: int</text>
+    <text class='cls-member' x='952' y='950'>+ getName(): String</text>
+    <text class='cls-member' x='952' y='972'>+ getPrice(): BigDecimal</text>
+    <text class='cls-member' x='952' y='994'>+ getStock(): int</text>
+  </g>
+  <path class="rel-line" d="M245 180 V129" marker-end="url(#extension)"/>
+  <path class="rel-dash" d="M180 327 V440"/>
+  <text class="rel-text" x="190" y="387">reads</text>
+  <path class="rel-dash" d="M460 245 H900"/>
+  <text class="rel-text" x="650" y="232">displays</text>
+  <path class="rel-dash" d="M460 290 H630 V440"/>
+  <text class="rel-text" x="640" y="375">matches customer</text>
+  <path class="rel-line" d="M330 540 H460" marker-start="url(#composition)"/>
+  <text class="rel-text" x="375" y="523">orders</text>
+  <text class="rel-text" x="348" y="559">1</text>
+  <text class="rel-text" x="425" y="559">0..*</text>
+  <path class="rel-line" d="M800 560 H940" marker-end="url(#arrow)"/>
+  <text class="rel-text" x="855" y="543">items</text>
+  <text class="rel-text" x="810" y="580">0..*</text>
+  <text class="rel-text" x="905" y="580">1..*</text>
+  <path class="rel-line" d="M1115 697 V815" marker-end="url(#arrow)"/>
+  <text class="rel-text" x="1127" y="733">0..*</text>
+  <text class="rel-text" x="1127" y="800">1</text>
+  <text class="rel-text" x="1050" y="765">product</text>
+  <path class="rel-dash" d="M920 264 V370 H775 V440"/>
+  <text class="rel-text" x="805" y="355">reads details</text>
+  <path class="rel-dash" d="M1060 264 V440"/>
+  <text class="rel-text" x="1072" y="390">reads lines</text>
+  <path class="rel-dash" d="M1250 264 H1305 V910 H1290"/>
+  <text class="rel-text" x="1190" y="285">reads name</text>
 </svg>
