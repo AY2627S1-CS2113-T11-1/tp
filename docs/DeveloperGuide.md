@@ -791,7 +791,7 @@ Given below are instructions to test the application manually. These instruction
 3. **Starting the application**:
    * Open a terminal, navigate to the folder containing `duke.jar`, and run:
      ```bash
-     java -jar build/libs/duke.jar
+     java -jar duke.jar
      ```
    * *Expected*: The welcome banner is displayed along with a prompt waiting for user input.
 4. **Exiting the application**:
@@ -843,6 +843,10 @@ Given below are instructions to test the application manually. These instruction
 ---
 
 ### 7.3 Stock and inventory management
+
+Start a fresh application session after Section 7.2, which deletes products and creates order history.
+Add `product add p/Apple a/1.50` and `product add p/Banana a/2.00` before the tests below.
+Continue Sections 7.3 to 7.7 in the same session so their stock levels and order numbers match.
 
 1. **Adding physical stock**:
    * Test case: `stock add p/Apple q/10`
@@ -935,10 +939,14 @@ These tests verify that `Product.stock` and `Stock.quantity` remain strictly syn
      * *Expected*: Tabular view showing recorded expenses.
 2. **Viewing net financial standing**:
    * Test case: `finances`
-     * *Expected*: Displays financial report:
-       * Total Payments Received: $2.70
-       * Total Expenses: $5.00
-       * Net Standing: Net Loss (-$2.30) calculated to 2 decimal places.
+     * *Expected*: Displays the following financial report (with the application's usual indentation):
+       ```text
+       Total Active Order Value: $2.70
+       Total Payments Received: $2.70
+       Total Expenses: $5.00
+       ______________________________
+       Overall Loss: $2.30
+       ```
 
 ---
 
@@ -949,4 +957,5 @@ These tests verify that `Product.stock` and `Stock.quantity` remain strictly syn
      * *Expected*: Displays available command areas (`product`, `stock`, `order`, `sales`, `expense`, `generate`, `finances`, `general`).
 2. **Context-specific help**:
    * Test case: `help stock`
-     * *Expected*: Displays detailed syntax, options, and examples for `stock add`, `stock remove`, `stock list`, and `stock low`.
+     * *Expected*: Displays descriptions and command syntax for `stock add`, `stock remove`,
+       `stock list`, and `stock low`, including optional quantities and the default low-stock threshold.
