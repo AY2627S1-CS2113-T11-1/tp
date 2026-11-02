@@ -1,0 +1,2 @@
+# Preserve the PPP PDF bytes when Git checks out files on Windows.
+output/pdf/demisushi-ppp.pdf binary

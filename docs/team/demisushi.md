@@ -18,7 +18,8 @@ commands they need, together with documenting these features for future develope
     * Justification: gives the owner a sales summary without manually adding individual order amounts.
     * Highlights: uses the shared order history so cancellations are reflected in subsequent listings.
       Fixed the display numbering to remain consecutive after cancellation while preserving the original
-      order IDs, and updated the regression test
+      order IDs, and updated the regression test. Later reused the shared long-valued unit total to
+      prevent sales quantities overflowing into negative numbers
       ([#27](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/27),
       [#67](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/67)).
 
@@ -35,10 +36,11 @@ commands they need, together with documenting these features for future develope
     * What it does: introduced customer payment recording, change calculation and paid-order status.
     * Justification: separates recording an order from recording the customer's payment.
     * Highlights: implemented a dedicated parser requiring the customer before a valid monetary amount,
-      with decimal arithmetic for payment and change. My original implementation checked the full balance
-      before marking eligible orders paid, rejecting insufficient payment without changing their status
-      ([#64](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/64)). Partial-payment support was subsequently
-      added by a teammate; I do not claim that extension as my implementation.
+      with decimal arithmetic for payment and change
+      ([#64](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/64)). After a teammate added partial payments,
+      fixed discounted outstanding balances, settlement of multiple free orders and payment-log accuracy,
+      with regression tests ([#102](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/102)).
+      Partial-payment support itself was the teammate's contribution.
 
 * **Feature: Viewing customer order details** (`order details c/CUSTOMER`)
     * What it does: displays each matching order with its products, quantities, costs and status.
@@ -61,8 +63,8 @@ commands they need, together with documenting these features for future develope
 * **Documentation**:
     * User Guide: contributed the sections for sales listing, receipt generation, customer payments,
       individual order details and help, including syntax, validation rules and examples.
-    * Developer Guide: wrote the Sales and customer commands section, describing all five features,
-      responsibilities, execution flows, alternatives and integration limitations. Initially added five sequence
+    * Developer Guide: contributed the Sales and customer commands sections and command-help documentation,
+      covering responsibilities, execution flows, alternatives and integration limitations. Initially added five sequence
       diagrams ([#75](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/75)); later replaced the order-details
       sequence diagram with a class diagram and refined UML notation following review feedback.
 
@@ -81,3 +83,9 @@ commands they need, together with documenting these features for future develope
       ([review](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/78#discussion_r4389685233)).
     * Reviewed assertion readability in expense tests
       ([review](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/77#discussion_r4389660046)).
+
+* **Contributions beyond the project team**:
+    * Reported a data-loss bug in another team's JobSeek application: ending input during a notes edit
+      erased existing notes and persisted the deletion. Provided reproduction steps, expected and actual
+      behaviour, impact and a suggested fix
+      ([bug report](https://github.com/AY2627S1-CS2113-T10-2/tp/issues/75)).

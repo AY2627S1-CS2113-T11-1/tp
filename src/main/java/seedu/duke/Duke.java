@@ -18,6 +18,7 @@ public class Duke {
      * @param args command line arguments, which the system does not use
      */
     public static void main(String[] args) {
+        Logging.configure();
         Scanner scanner = new Scanner(System.in);
         boolean isRunning = true;
 
