@@ -1,44 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="740" height="380" viewBox="0 0 740 380" role="img" aria-labelledby="title desc">
-  <title id="title">Order Details sequence</title>
-  <desc id="desc">Main successful execution flow. Validation and alternatives are described in the Developer Guide.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="740" viewBox="0 0 1100 740" role="img" aria-labelledby="title desc">
+  <title id="title">Order details class diagram</title>
+  <desc id="desc">The command reads order history and sends matching orders to the UI. Order records refer to item lines and catalogue products.</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#40566f"/></marker>
+    <marker id="extension" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><polygon points="1,1 13,7 1,13" fill="white" stroke="#40566f"/></marker>
+    <marker id="composition" markerWidth="16" markerHeight="14" refX="1" refY="7" orient="auto"><polygon points="1,7 8,2 15,7 8,12" fill="#40566f"/></marker>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><polyline points="1,1 9,5 1,9" fill="none" stroke="#40566f"/></marker>
     <style>
-      .head { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; }
-      .name { fill:#1f2933; font:14px Arial,sans-serif; text-anchor:middle; }
-      .life { stroke:#8a98a8; stroke-width:1.2; stroke-dasharray:5 5; }
-      .msg { stroke:#40566f; stroke-width:1.3; marker-end:url(#arrow); }
-      .text { fill:#1f2933; font:13px Arial,sans-serif; text-anchor:middle; }
-      .activation { fill:#ffffff; stroke:#40566f; stroke-width:1.2; }
+      .box { fill:#eef4fb; stroke:#40566f; stroke-width:1.3; }
+      .name { fill:#1f2933; font:bold 14px Arial,sans-serif; text-anchor:middle; }
+      .text { fill:#1f2933; font:13px Arial,sans-serif; }
+      .abstract { font-style:italic; }
+      .divider { stroke:#8a98a8; stroke-width:1; }
+      .line { stroke:#40566f; stroke-width:1.3; fill:none; }
+      .dependency { stroke:#40566f; stroke-width:1.3; stroke-dasharray:5 4; fill:none; marker-end:url(#arrow); }
     </style>
   </defs>
-  <rect width="740" height="380" fill="white"/>
-  <rect class="head" x="22" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="100" y="49">Duke</tspan></text>
-  <line class="life" x1="100" y1="68" x2="100" y2="365"/>
-  <rect class="head" x="202" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="280" y="40">OrderDetails</tspan><tspan x="280" y="57">Command</tspan></text>
-  <line class="life" x1="280" y1="68" x2="280" y2="365"/>
-  <rect class="head" x="382" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="460" y="49">OrderList</tspan></text>
-  <line class="life" x1="460" y1="68" x2="460" y2="365"/>
-  <rect class="head" x="562" y="20" width="156" height="48" rx="5"/>
-  <text class="name"><tspan x="640" y="49">Ui</tspan></text>
-  <line class="life" x1="640" y1="68" x2="640" y2="365"/>
-  <rect class="activation" x="95" y="95" width="10" height="230"/>
-  <rect class="activation" x="455" y="150" width="10" height="40"/>
-  <rect class="activation" x="635" y="230" width="10" height="40"/>
-  <rect class="activation" x="275" y="110" width="10" height="200"/>
-  <line class="msg" x1="105" y1="110" x2="275" y2="110"/>
-  <text class="text" x="190" y="101">execute(...)</text>
-  <line class="msg" x1="285" y1="150" x2="455" y2="150"/>
-  <text class="text" x="370" y="141">getAll()</text>
-  <line class="msg" x1="455" y1="190" x2="285" y2="190" stroke-dasharray="5 4"/>
-  <text class="text" x="370" y="181">Order history</text>
-  <line class="msg" x1="285" y1="230" x2="635" y2="230"/>
-  <text class="text" x="460" y="221">showOrderDetails(...)</text>
-  <line class="msg" x1="635" y1="270" x2="285" y2="270" stroke-dasharray="5 4"/>
-  <text class="text" x="460" y="261">return</text>
-  <line class="msg" x1="275" y1="310" x2="105" y2="310" stroke-dasharray="5 4"/>
-  <text class="text" x="190" y="301">return</text>
+  <rect width="1100" height="740" fill="white"/>
+  <rect class='box' x='20' y='20' width='430' height='72' rx='4'/>
+  <text class='name abstract' x='235' y='44'>Command</text>
+  <path class='divider' d='M20 56 h430'/>
+  <text class='text abstract' x='30' y='78'>+ execute(products, orders, expenses, stocks, ui): void</text>
+  <rect class='box' x='20' y='150' width='270' height='104' rx='4'/>
+  <text class='name' x='155' y='174'>OrderDetailsCommand</text>
+  <path class='divider' d='M20 186 h270'/>
+  <text class='text' x='30' y='208'>- customer: String</text>
+  <path class='divider' d='M20 218 h270'/>
+  <text class='text' x='30' y='240'>+ execute(...): void</text>
+  <rect class='box' x='750' y='150' width='320' height='72' rx='4'/>
+  <text class='name' x='910' y='174'>Ui</text>
+  <path class='divider' d='M750 186 h320'/>
+  <text class='text' x='760' y='208'>+ showOrderDetails(customer, orders): void</text>
+  <rect class='box' x='20' y='370' width='245' height='72' rx='4'/>
+  <text class='name' x='142.5' y='394'>OrderList</text>
+  <path class='divider' d='M20 406 h245'/>
+  <text class='text' x='30' y='428'>+ getAll(): List&lt;Order&gt;</text>
+  <rect class='box' x='380' y='370' width='260' height='168' rx='4'/>
+  <text class='name' x='510' y='394'>Order</text>
+  <path class='divider' d='M380 406 h260'/>
+  <text class='text' x='390' y='428'>+ getId(): int</text>
+  <text class='text' x='390' y='452'>+ getCustomer(): String</text>
+  <text class='text' x='390' y='476'>+ getItems(): List&lt;OrderItem&gt;</text>
+  <text class='text' x='390' y='500'>+ isCancelled(): boolean</text>
+  <text class='text' x='390' y='524'>+ getTotal(): BigDecimal</text>
+  <rect class='box' x='770' y='370' width='300' height='120' rx='4'/>
+  <text class='name' x='920' y='394'>OrderItem</text>
+  <path class='divider' d='M770 406 h300'/>
+  <text class='text' x='780' y='428'>+ getProduct(): Product</text>
+  <text class='text' x='780' y='452'>+ getQuantity(): int</text>
+  <text class='text' x='780' y='476'>+ getSubtotal(): BigDecimal</text>
+  <rect class='box' x='770' y='630' width='300' height='72' rx='4'/>
+  <text class='name' x='920' y='654'>Product</text>
+  <path class='divider' d='M770 666 h300'/>
+  <text class='text' x='780' y='688'>+ getName(): String</text>
+  <path class="line" d="M155 150 V92" marker-end="url(#extension)"/>
+  <path class="dependency" d="M155 254 V370"/>
+  <text class="text" x="165" y="318">reads</text>
+  <path class="dependency" d="M290 182 H750"/>
+  <text class="text" x="485" y="170">displays</text>
+  <path class="dependency" d="M290 232 H510 V370"/>
+  <text class="text" x="390" y="310">matches customer</text>
+  <path class="line" d="M265 412 H380" marker-start="url(#composition)"/>
+  <text class="text" x="299" y="400">orders</text>
+  <text class="text" x="282" y="435">1</text>
+  <text class="text" x="345" y="435">0..*</text>
+  <path class="line" d="M640 440 H770" marker-end="url(#arrow)"/>
+  <text class="text" x="682" y="428">items</text>
+  <text class="text" x="652" y="463">0..*</text>
+  <text class="text" x="733" y="463">1..*</text>
+  <path class="line" d="M920 490 V630" marker-end="url(#arrow)"/>
+  <text class="text" x="932" y="516">0..*</text>
+  <text class="text" x="932" y="616">1</text>
+  <text class="text" x="850" y="565">product</text>
+  <path class="dependency" d="M780 222 V300 H615 V370"/>
+  <text class="text" x="650" y="289">reads details</text>
+  <path class="dependency" d="M920 222 V370"/>
+  <text class="text" x="932" y="320">reads lines</text>
+  <path class="dependency" d="M1040 222 H1085 V666 H1070"/>
+  <text class="text" x="970" y="248">reads name</text>
 </svg>

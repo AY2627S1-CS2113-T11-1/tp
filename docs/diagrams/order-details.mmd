@@ -1,20 +1,41 @@
-sequenceDiagram
-    %% Main successful flow; validation and alternatives are described in the guide.
-    participant P0 as Duke
-    participant P1 as OrderDetailsCommand
-    participant P2 as OrderList
-    participant P3 as Ui
-    activate P0
-    P0->>P1: execute(...)
-    activate P1
-    P1->>P2: getAll()
-    activate P2
-    P2-->>P1: Order history
-    deactivate P2
-    P1->>P3: showOrderDetails(...)
-    activate P3
-    P3-->>P1: return
-    deactivate P3
-    P1-->>P0: return
-    deactivate P1
-    deactivate P0
+classDiagram
+    direction TB
+    class Command {
+        +execute(products, orders, expenses, stocks, ui)* void
+    }
+    class OrderDetailsCommand {
+        -String customer
+        +execute(...) void
+    }
+    class OrderList {
+        +getAll() List~Order~
+    }
+    class Order {
+        +getId() int
+        +getCustomer() String
+        +getItems() List~OrderItem~
+        +isCancelled() boolean
+        +getTotal() BigDecimal
+    }
+    class OrderItem {
+        +getProduct() Product
+        +getQuantity() int
+        +getSubtotal() BigDecimal
+    }
+    class Product {
+        +getName() String
+    }
+    class Ui {
+        +showOrderDetails(customer, orders) void
+    }
+    Command <|-- OrderDetailsCommand
+    OrderDetailsCommand ..> OrderList : reads
+    OrderDetailsCommand ..> Order : matches customer
+    OrderDetailsCommand ..> Ui : displays
+    OrderList "1" *-- "0..*" Order : orders
+    Order "0..*" --> "1..*" OrderItem : items
+    OrderItem "0..*" --> "1" Product : product
+    Ui ..> Order : reads details
+    Ui ..> OrderItem : reads lines
+    Ui ..> Product : reads name
+    style Command font-style:italic
