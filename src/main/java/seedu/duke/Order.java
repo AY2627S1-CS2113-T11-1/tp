@@ -102,11 +102,13 @@ public class Order {
     }
 
     /**
-     * Returns the total cost of the order, summed over all its lines.
      * Returns the number of units bought, summed over all lines of the order.
+     *
+     * Each line holds at most {@code Integer.MAX_VALUE} units, but two such lines together do not fit in an
+     * int, so the total is a long to stop it wrapping round to a negative number.
      */
-    public int getTotalUnits() {
-        int units = 0;
+    public long getTotalUnits() {
+        long units = 0;
         for (OrderItem item : items) {
             units += item.getQuantity();
         }

@@ -324,12 +324,9 @@ public class Ui {
 
         List<String[]> rows = new ArrayList<>();
         for (Order order : orders) {
-            int units = 0;
-            for (OrderItem item : order.getItems()) {
-                units += item.getQuantity();
-            }
-            rows.add(new String[] {String.valueOf(order.getId()), order.getCustomer(), String.valueOf(units),
-                formatMoney(order.getTotal()), order.isCancelled() ? "Cancelled" : "Active"});
+            rows.add(new String[] {String.valueOf(order.getId()), order.getCustomer(),
+                    String.valueOf(order.getTotalUnits()),
+                    formatMoney(order.getTotal()), order.isCancelled() ? "Cancelled" : "Active"});
         }
         String[] headers = {"No.", "Customer", "Units", "Total", "Status"};
         boolean[] isLeftAligned = {false, true, false, false, true};
@@ -361,7 +358,7 @@ public class Ui {
             }
             totalSales = totalSales.add(sale.getTotal());
             rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
-                formatMoney(sale.getTotal())});
+                    formatMoney(sale.getTotal())});
         }
         String[] headers = {"No.", "Customer", "Units", "Subtotal"};
         String[] totalRow = {"Total", "", "", formatMoney(totalSales)};
@@ -411,15 +408,14 @@ public class Ui {
      */
     private void printOrderTable(Order order, String quantityHeader) {
         List<String[]> rows = new ArrayList<>();
-        int totalUnits = 0;
         for (OrderItem item : order.getItems()) {
             rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
-                formatMoney(item.getUnitPrice()), formatMoney(item.getSubtotal())});
-            totalUnits += item.getQuantity();
+                    formatMoney(item.getUnitPrice()), formatMoney(item.getSubtotal())});
         }
         String[] headers = {"Product", quantityHeader, "Unit price", "Subtotal"};
         String footerLabel = order.hasDiscount() ? "Subtotal" : "Total";
-        String[] totalRow = {footerLabel, String.valueOf(totalUnits), "", formatMoney(order.getSubtotal())};
+        String[] totalRow = {footerLabel, String.valueOf(order.getTotalUnits()), "",
+                formatMoney(order.getSubtotal())};
         boolean[] isLeftAligned = {true, false, false, false};
         printTable(headers, rows, totalRow, isLeftAligned);
         if (order.hasDiscount()) {
@@ -551,7 +547,7 @@ public class Ui {
             long totalUnits = 0;
             for (OrderItem item : order.getItems()) {
                 rows.add(new String[] {item.getProduct().getName(), String.valueOf(item.getQuantity()),
-                    formatMoney(item.getSubtotal())});
+                        formatMoney(item.getSubtotal())});
                 totalUnits += item.getQuantity();
             }
             String[] headers = {"Product", "Qty", "Cost"};
