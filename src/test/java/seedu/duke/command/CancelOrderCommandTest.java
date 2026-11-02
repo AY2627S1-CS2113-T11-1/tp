@@ -1,6 +1,7 @@
 package seedu.duke.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,6 +65,30 @@ class CancelOrderCommandTest {
         CancelOrderCommand again = new CancelOrderCommand(1);
         assertThrows(SystemException.class, () -> again.execute(products, orders, ui));
         assertEquals(10, apple.getStock());
+    }
+
+    @Test
+    public void execute_restockedToMaximum_rejectsWithoutChangingAnything() throws SystemException {
+        // Order 1 holds 3 apples; restocking to the maximum leaves no room to take them back.
+        apple.setStock(Integer.MAX_VALUE);
+
+        CancelOrderCommand command = new CancelOrderCommand(1);
+        SystemException e = assertThrows(SystemException.class, () -> command.execute(products, orders, ui));
+
+        assertTrue(e.getMessage().contains("Apple"));
+        assertEquals(Integer.MAX_VALUE, apple.getStock());
+        assertEquals(4, carrot.getStock());
+        assertFalse(orders.findById(1).isCancelled());
+    }
+
+    @Test
+    public void execute_returnsExactlyToMaximum_succeeds() throws SystemException {
+        apple.setStock(Integer.MAX_VALUE - 3);
+
+        new CancelOrderCommand(1).execute(products, orders, ui);
+
+        assertEquals(Integer.MAX_VALUE, apple.getStock());
+        assertTrue(orders.findById(1).isCancelled());
     }
 
     @Test
