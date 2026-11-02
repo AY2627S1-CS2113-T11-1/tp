@@ -45,7 +45,7 @@
   - [7.1 Initial launch and shutdown](#71-initial-launch-and-shutdown)
   - [7.2 Product catalogue management](#72-product-catalogue-management)
   - [7.3 Stock and inventory management](#73-stock-and-inventory-management)
-  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization-issue-68-verification)
+  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization)
   - [7.5 Customer payments, receipts, and sales](#75-customer-payments-receipts-and-sales)
   - [7.6 Operating expenses and financial report](#76-operating-expenses-and-financial-report)
   - [7.7 Help documentation](#77-help-documentation)
@@ -363,8 +363,9 @@ Because nothing changes until every check has passed, a failed edit needs no rol
 stock movement checks that units were only moved, never created or lost.
 
 The unit price follows the product. An unchanged product keeps the price stored on the order line (through the
-`OrderItem(Product, int, double)` constructor), so a customer is not re-priced by an edit. A replacement product
-uses its current catalogue price.
+`OrderItem(Product, int, BigDecimal)` constructor), so a customer is not re-priced by an edit. A replacement product
+uses its current catalogue price. The `double` overload is retained only as a compatibility convenience and converts
+immediately to `BigDecimal`.
 
 **Design considerations.**
 
@@ -387,10 +388,10 @@ replaces the old one, and `0` removes it.
 
 **Money uses `BigDecimal`.** The discount amount must be rounded to the cent with half a cent rounded up.
 A `double` cannot hold values such as $1.175 (12.5% of $9.40) exactly: it stores 1.17499..., which would round
-down to $1.17. `Order` therefore converts each stored unit price with `BigDecimal.valueOf`, calculates
-`subtotal × percent ÷ 100`, and rounds with `RoundingMode.HALF_UP`. The public getters still return `double`,
-so existing callers (order list, sales, receipts) did not need to change. The parser also keeps the percentage
-as a `BigDecimal`, so 12.5 is never approximated.
+down to $1.17. `Order` therefore keeps monetary values as `BigDecimal`, calculates `subtotal × percent ÷ 100`,
+and rounds with `RoundingMode.HALF_UP`. The parser also keeps the percentage as a `BigDecimal`, so 12.5 is never
+approximated. The remaining `double` overloads are compatibility boundaries only; they convert immediately to
+`BigDecimal`.
 
 **Display.** Order tables (receipts, cancellations) sum the line subtotals in their last row. When a discount
 applies, that row is labelled `Subtotal`, followed by a `Discount:` line and a `Total:` line, so the column
@@ -400,9 +401,9 @@ still adds up. Orders without a discount print exactly as before.
 
 * *Storing the percentage vs. the amount.* Storing a fixed dollar amount would need recalculating after every
   edit and could exceed a reduced subtotal. Storing the percentage avoids both problems.
-* *`BigDecimal` everywhere vs. only for discounts.* Converting every price in the system to `BigDecimal` would be
-  cleaner but would touch every feature. Prices are limited to two decimal places, so converting at the point of
-  calculation gives exact results with a much smaller change.
+* *Strict `BigDecimal` APIs vs. compatibility overloads.* Keeping a few `double` constructor overloads supports
+  existing callers, while each overload immediately converts through `BigDecimal.valueOf`; all stored and calculated
+  monetary values remain `BigDecimal`.
 
 ### 2.4 Sales and customer commands
 
@@ -593,7 +594,7 @@ the sum of the displayed line costs.
 These features let the manager add expenses, view them, and compare expenses with payments received.
 Expenses are stored in a separate `ExpenseList`. `Duke` creates this list and passes it to commands.
 
-The overall flow is:
+The architecture of the expense and financial management components is shown below:
 
 ![Expense and financial management architecture](images/expense-finance-architecture.svg)
 
@@ -752,13 +753,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Catalogue Product**: A master product entry defined by a unique product name and base unit price. It acts as the reference for physical stock and customer orders.
 * **Command-Line Interface (CLI)**: A text-based user interface where the user types commands line-by-line via the terminal.
 * **Discount**: A percentage deduction applied to an order's subtotal, calculated using exact decimal arithmetic rounded half-up to two decimal places.
-* **Expense**: A recorded business cash outflow specifying the product or expense item and the monetary amount incurred.
+* **Expense / Operating Expense**: A recorded business cash outflow specifying the product or expense item and the monetary amount incurred.
+* **Financial Report**: A summary of active order value, payments received, recorded expenses, and the resulting profit or loss.
 * **Low Stock Threshold**: The cutoff quantity (default: 5 units) at or below which an inventory item is flagged by `stock low` as requiring replenishment.
+* **Net Standing**: The financial result calculated as total payments received minus total recorded operating expenses.
 * **Order**: A recorded customer purchase transaction containing a unique sequential order ID, customer name, one or more order items, discount percentage, and payment status.
 * **Order Item**: A single line in an order capturing the product, ordered quantity, and the unit price locked at the time of purchase.
-* **Profit / Loss**: The net financial performance of the business, calculated as total sales revenue received minus total recorded operating expenses.
+* **Profit / Loss**: The net financial performance of the business, calculated as total payments received minus total recorded operating expenses.
 * **Stock**: The physical quantity of a catalogued product currently available on hand in the storage or warehouse system.
 * **Subtotal**: The monetary sum of all items in an order before discounts are applied.
+* **Total Active Order Value**: The sum of the totals of all non-cancelled orders, including orders that have not been fully paid.
+* **Total Payments Received**: The sum of payments recorded against non-cancelled orders, including partial payments.
 
 ## 7. Instructions for manual testing
 
@@ -852,7 +857,7 @@ Given below are instructions to test the application manually. These instruction
 
 ---
 
-### 7.4 Order operations and stock synchronization (Issue #68 verification)
+### 7.4 Order operations and stock synchronization
 
 These tests verify that `Product.stock` and `Stock.quantity` remain strictly synchronized across all order operations.
 

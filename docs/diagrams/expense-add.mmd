@@ -1,15 +1,21 @@
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 5 5; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#eef4fb", "actorBorder": "#40566f", "actorTextColor": "#1f2933", "actorLineColor": "#8a98a8", "signalColor": "#40566f", "signalTextColor": "#1f2933", "activationBkgColor": "#ffffff", "activationBorderColor": "#40566f"}}}%%
 sequenceDiagram
-    actor User
-    participant D as Duke
-    participant P as Parser
-    participant C as AddExpenseCommand
-    participant L as ExpenseList
-    participant U as Ui
+    participant C as command : AddExpenseCommand
+    participant L as expenses : ExpenseList
+    participant U as ui : Ui
 
-    User->>D: expense add p/Bread a/100.50
-    D->>P: parse(...)
-    P-->>D: AddExpenseCommand
-    D->>C: execute(...)
-    C->>L: add Expense
-    C->>U: show confirmation
-    U-->>User: Expense added
+    activate C
+    create participant E as expense : Expense
+    C->>E: new Expense(productName, amount)
+    activate E
+    E-->>C: created expense
+    deactivate E
+    C->>L: add(expense)
+    activate L
+    L-->>C: added
+    deactivate L
+    C->>U: showExpenseAdded(expense)
+    activate U
+    U-->>C: confirmation displayed
+    deactivate U
+    deactivate C

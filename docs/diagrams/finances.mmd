@@ -1,31 +1,24 @@
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 5 5; }", "themeVariables": {"fontSize": "20px", "actorBkg": "#eef4fb", "actorBorder": "#40566f", "actorTextColor": "#1f2933", "actorLineColor": "#8a98a8", "signalColor": "#40566f", "signalTextColor": "#1f2933", "activationBkgColor": "#ffffff", "activationBorderColor": "#40566f"}}}%%
 sequenceDiagram
-    actor User
-    participant P as Parser
-    participant C as FinancesCommand
-    participant O as OrderList
-    participant E as ExpenseList
-    participant U as Ui
-    activate User
-    User->>P: finances
-    activate P
-    P-->>C: FinancesCommand
-    deactivate P
+    participant C as command : FinancesCommand
+    participant O as orders : OrderList
+    participant E as expenses : ExpenseList
+    participant U as ui : Ui
     activate C
-    C->>O: getAll()
+    C->>O: getConfirmedSales()
     activate O
-    O-->>C: active orders
+    O-->>C: confirmed orders
     deactivate O
     C->>O: getPaidSales()
     activate O
-    O-->>C: active orders with payments
+    O-->>C: paid sales
     deactivate O
     C->>E: getExpenses()
     activate E
     E-->>C: expense records
     deactivate E
-    C->>U: show financial report
+    C->>U: showFinances(orders, paidSales, expenses)
     activate U
-    U-->>User: financial report
+    U-->>C: report displayed
     deactivate U
     deactivate C
-    deactivate User
