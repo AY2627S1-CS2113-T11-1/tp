@@ -1,7 +1,48 @@
-flowchart LR
-    User --> Duke
-    Duke --> Parser
-    Parser --> Commands
-    Commands --> ExpenseList
-    Commands --> OrderList
-    Commands --> Ui
+%% Mermaid has no native objectDiagram type; concrete instances are represented
+%% with classDiagram object notation (instance name : Type).
+classDiagram
+    direction LR
+    class "addExpense : AddExpenseCommand" as addExpense {
+        productName = "Packaging"
+        amount = 25.00
+    }
+    class "listExpenses : ListExpenseCommand" as listExpenses
+    class "showFinances : FinancesCommand" as showFinances
+    class "expenses : ExpenseList" as expenses
+    class "packagingExpense : Expense" as packagingExpense {
+        productName = "Packaging"
+        amount = 25.00
+    }
+    class "utilitiesExpense : Expense" as utilitiesExpense {
+        productName = "Utilities"
+        amount = 80.00
+    }
+    class "orders : OrderList" as orders
+    class "order1 : Order" as order1 {
+        id = 1
+        customer = "Alex"
+        paidAmount = 12.00
+        isCancelled = false
+    }
+    class "item1 : OrderItem" as item1 {
+        quantity = 2
+        unitPrice = 6.00
+    }
+    class "coffee : Product" as coffee {
+        name = "Coffee"
+        price = 6.00
+        stock = 8
+    }
+    class "ui : Ui" as ui
+
+    addExpense --> packagingExpense : creates
+    addExpense --> expenses : adds to
+    listExpenses --> expenses : reads
+    showFinances --> expenses : reads
+    showFinances --> orders : reads
+    showFinances --> ui : displays report
+    expenses --> packagingExpense : contains
+    expenses --> utilitiesExpense : contains
+    orders --> order1 : contains
+    order1 --> item1 : contains
+    item1 --> coffee : refers to
