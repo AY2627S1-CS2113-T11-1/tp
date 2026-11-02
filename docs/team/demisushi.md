@@ -2,9 +2,10 @@
 
 ## Overview
 
-Business Management System (BMS) is a Java command-line application for small, growing businesses.
-It brings product catalogues, stock, customer orders, sales and expenses into one application.
-My contributions focus on helping users inspect customer purchases, record payments and find the
+Business Management System (BMS) is a Java command-line application for small retail business owners
+who handle day-to-day operations themselves. Designed for users who type quickly and prefer typed
+commands, it brings product, stock, order, payment and expense tracking together in one application.
+My contributions focus on helping these owners inspect customer purchases, record payments and find the
 commands they need, together with documenting these features for future developers.
 
 ### Summary of Contributions
@@ -14,7 +15,7 @@ commands they need, together with documenting these features for future develope
 
 * **Feature: Listing sales** (`sales list`)
     * What it does: displays non-cancelled orders and their combined sales value.
-    * Justification: gives users a summary without manually adding individual order amounts.
+    * Justification: gives the owner a sales summary without manually adding individual order amounts.
     * Highlights: uses the shared order history so cancellations are reflected in subsequent listings.
       Fixed the display numbering to remain consecutive after cancellation while preserving the original
       order IDs, and updated the regression test
@@ -23,7 +24,8 @@ commands they need, together with documenting these features for future develope
 
 * **Feature: Generating receipts** (`generate receipts c/CUSTOMER`)
     * What it does: displays individual receipts for a customer's non-cancelled orders.
-    * Justification: lets users retrieve purchase details without searching the complete order list.
+    * Justification: lets the owner retrieve purchase details when serving a customer without searching
+      the complete order list.
     * Highlights: separates customer lookup and receipt selection from UI formatting, supports full names
       containing spaces and case-insensitive matching, and distinguishes an unknown customer from one whose
       orders are all cancelled. Reuses the order table layout and returns an unmodifiable result list
@@ -60,8 +62,9 @@ commands they need, together with documenting these features for future develope
     * User Guide: contributed the sections for sales listing, receipt generation, customer payments,
       individual order details and help, including syntax, validation rules and examples.
     * Developer Guide: wrote the Sales and customer commands section, describing all five features,
-      responsibilities, execution flows, alternatives and integration limitations. Added five sequence
-      diagrams, one per feature ([#75](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/75)).
+      responsibilities, execution flows, alternatives and integration limitations. Initially added five sequence
+      diagrams ([#75](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/75)); later replaced the order-details
+      sequence diagram with a class diagram and refined UML notation following review feedback.
 
 * **Contributions to team-based tasks**:
     * Helped resolve UI output/test indentation mismatches and command-signature integration problems

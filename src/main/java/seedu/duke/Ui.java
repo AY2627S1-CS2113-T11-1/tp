@@ -352,10 +352,7 @@ public class Ui {
         List<String[]> rows = new ArrayList<>();
         BigDecimal totalSales = BigDecimal.ZERO;
         for (Order sale : sales) {
-            int units = 0;
-            for (OrderItem item : sale.getItems()) {
-                units += item.getQuantity();
-            }
+            long units = sale.getTotalUnits();
             totalSales = totalSales.add(sale.getTotal());
             rows.add(new String[] {String.valueOf(rows.size() + 1), sale.getCustomer(), String.valueOf(units),
                     formatMoney(sale.getTotal())});
