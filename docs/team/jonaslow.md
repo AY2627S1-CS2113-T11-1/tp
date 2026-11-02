@@ -43,7 +43,7 @@ order. It is written in Java and has about 6 kLoC, including tests.
       `BigDecimal` and rounded half-up to the cent, because a `double` stores 12.5% of $9.40 as 1.17499... and
       would round it down.
 
-* **Testing**: wrote 34 JUnit tests for the order commands (`AddOrderCommandTest`, `CancelOrderCommandTest`,
+* **Testing**: wrote 36 JUnit tests for the order commands (`AddOrderCommandTest`, `CancelOrderCommandTest`,
   `EditOrderCommandTest`, `DiscountOrderCommandTest`), covering stock movement, rejected input leaving state
   unchanged, and rounding edge cases. Added assertions to `AddOrderCommand`.
 
@@ -64,6 +64,3 @@ order. It is written in Java and has about 6 kLoC, including tests.
     * Reviewed and merged PRs
       [#70](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/70) (stock low command; resolved its merge conflict
       with master) and [#71](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/71) (DG user stories).
-
-* **Contributions beyond the project team**:
-    * TODO: add bugs you report in other teams' products during the PE dry run, and any forum posts.
