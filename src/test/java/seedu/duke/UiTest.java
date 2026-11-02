@@ -1,6 +1,8 @@
 package seedu.duke;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +33,19 @@ class UiTest {
         ui.showProductAdded(new Product("Oat Milk", 3.50));
 
         assertEquals(indentedLines("Added product Oat Milk", "Price: $3.50", "Stock: 0"), outputLines());
+    }
+
+    @Test
+    public void showOrders_unitsPastIntRange_showsTrueTotalNotNegative() throws SystemException {
+        OrderList orders = new OrderList();
+        orders.create("Alice", List.of(new OrderItem(new Product("Apple", 0.01), Integer.MAX_VALUE),
+                new OrderItem(new Product("Pear", 0.01), 1)));
+
+        ui.showOrders(orders.getAll());
+
+        String output = captured.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("2147483648"));
+        assertFalse(output.contains("-2147483648"));
     }
 
     @Test
