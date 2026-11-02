@@ -56,8 +56,8 @@ public class DeleteProductCommand extends Command {
         }
 
         products.remove(product);
-        boolean hadStockEntry = stocks.removeByProduct(product.getName());
-        logger.fine("Deleted product " + product.getName() + (hadStockEntry ? " and its stock entry" : "")
+        boolean isStockEntryRemoved = stocks.removeByProduct(product.getName());
+        logger.fine("Deleted product " + product.getName() + (isStockEntryRemoved ? " and its stock entry" : "")
                 + "; catalogue size is now " + products.size());
         ui.showProductDeleted(product);
     }

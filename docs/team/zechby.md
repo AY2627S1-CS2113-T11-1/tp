@@ -45,7 +45,7 @@ version of the command structure that the rest of the team built their features 
   share `Parser#parsePrice`; it now takes the caller's format hint
   ([#93](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/93)). Prices written with an exponent, such as
   `1e-3`, crashed the application; they are now rejected with an error message
-  ([#PR](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/PR)).
+  ([#121](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/121)).
 
 * **Testing**: wrote 59 JUnit tests for the parser, catalogue and product commands, covering duplicate names in
   different cases, sorting without changing the stored order, and deleting a product with or without stock and
