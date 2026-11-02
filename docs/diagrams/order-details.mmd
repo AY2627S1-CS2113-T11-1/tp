@@ -1,59 +1,32 @@
 classDiagram
     direction TB
     class Command {
-        <<abstract>>
         +execute(products, orders, expenses, stocks, ui)* void
     }
     class OrderDetailsCommand {
-        -Logger logger$
         -String customer
-        +OrderDetailsCommand(String)
-        +execute(products, orders, expenses, stocks, ui) void
+        +execute(...) void
     }
     class OrderList {
-        -int nextId
-        +create(String, List~OrderItem~) Order
-        +findById(int) Order
         +getAll() List~Order~
-        +size() int
     }
     class Order {
-        -int id
-        -String customer
-        -boolean isCancelled
-        -BigDecimal discountPercent
-        +Order(int, String, List~OrderItem~)
         +getId() int
         +getCustomer() String
         +getItems() List~OrderItem~
         +isCancelled() boolean
-        +getTotalUnits() int
-        +getSubtotal() BigDecimal
-        +getDiscountPercent() BigDecimal
-        +getDiscountAmount() BigDecimal
         +getTotal() BigDecimal
     }
     class OrderItem {
-        -int quantity
-        -BigDecimal unitPrice
-        +OrderItem(Product, int)
-        +OrderItem(Product, int, BigDecimal)
-        +OrderItem(Product, int, double)
         +getProduct() Product
         +getQuantity() int
-        +getUnitPrice() BigDecimal
         +getSubtotal() BigDecimal
     }
     class Product {
-        -String name
-        -BigDecimal price
-        -int stock
         +getName() String
-        +getPrice() BigDecimal
-        +getStock() int
     }
     class Ui {
-        +showOrderDetails(String, List~Order~) void
+        +showOrderDetails(customer, orders) void
     }
     Command <|-- OrderDetailsCommand
     OrderDetailsCommand ..> OrderList : reads
@@ -65,3 +38,4 @@ classDiagram
     Ui ..> Order : reads details
     Ui ..> OrderItem : reads lines
     Ui ..> Product : reads name
+    style Command font-style:italic
