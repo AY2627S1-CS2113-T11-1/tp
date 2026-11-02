@@ -45,7 +45,7 @@ sequenceDiagram
         deactivate PL
         C->>SL: removeByProduct("Bread")
         activate SL
-        SL-->>C: hadStockEntry
+        SL-->>C: isStockEntryRemoved
         deactivate SL
         C->>UI: showProductDeleted(product)
         activate UI
