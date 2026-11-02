@@ -693,11 +693,17 @@ public class Parser {
      *
      * @param priceText  the text after the a/ prefix, e.g. "3.50"
      * @param formatHint the command format shown when the amount is empty, e.g. {@code ADD_FORMAT}
-     * @throws SystemException if the text is empty, not a number, negative, or has too many decimals
+     * @throws SystemException if the text is empty, not a plain decimal number (so no exponent such as 1e-3),
+     *                         negative, or has too many decimals
      */
     private BigDecimal parsePrice(String priceText, String formatHint) throws SystemException {
         if (priceText.isEmpty()) {
             throw new SystemException("The price cannot be empty. " + formatHint);
+        }
+        // BigDecimal also accepts forms like 1e-3 and 1e999999999, which slip past the decimal-place
+        // check below and then make setScale throw, so only plain digits with an optional fraction pass.
+        if (!DECIMAL_NUMBER_PATTERN.matcher(priceText).matches()) {
+            throw new SystemException("The price must be a number such as 3.50, but I got: " + priceText);
         }
 
         int pointIndex = priceText.indexOf('.');

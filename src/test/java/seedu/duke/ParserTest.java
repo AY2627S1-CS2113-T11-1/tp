@@ -103,6 +103,21 @@ class ParserTest {
     }
 
     @Test
+    public void parse_priceInScientificNotation_throwsSystemException() {
+        // Before the fix these reached BigDecimal#setScale and crashed the app with ArithmeticException.
+        for (String amount : new String[] {"1e-3", "1E2", "1e999999999", "2.5e1"}) {
+            SystemException exception = assertThrows(SystemException.class,
+                    () -> parser.parse("product add p/Cola a/" + amount));
+            assertTrue(exception.getMessage().startsWith("The price must be a number"));
+        }
+    }
+
+    @Test
+    public void parse_expenseAmountInScientificNotation_throwsSystemException() {
+        assertThrows(SystemException.class, () -> parser.parse("expense add p/Test a/1e-3"));
+    }
+
+    @Test
     public void parse_validExpenseAdd_returnsAddExpenseCommand() throws SystemException {
         AddExpenseCommand command = assertInstanceOf(AddExpenseCommand.class,
                 parser.parse("expense add p/Bread a/100.50"));

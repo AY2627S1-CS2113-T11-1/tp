@@ -107,7 +107,9 @@ of holding them.
 `product add p/PRODUCT a/AMOUNT` is handled by `Parser#parseAddProduct` and `AddProductCommand`. The parser
 looks for each prefix instead of splitting on spaces, so a name such as `Oat Milk 1L` stays in one piece and
 `p/` and `a/` can be given in either order. `Parser#parsePrice` rejects an empty, negative or non-numeric
-amount and more than two decimal places. It takes the caller's format hint as a parameter, because
+amount and more than two decimal places. It accepts only plain digits with an optional fraction, because
+`BigDecimal` would also accept an exponent such as `1e-3`, which gets past the decimal-place check and then
+fails when the price is rounded to cents. It takes the caller's format hint as a parameter, because
 `expense add` uses the same `a/` amount and should show its own format when the amount is missing.
 
 `product list` is handled by `ListProductCommand`, which passes `ProductList#getSortedByName()` to

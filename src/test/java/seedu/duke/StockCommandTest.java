@@ -63,6 +63,23 @@ class StockCommandTest {
     }
 
     @Test
+    public void execute_addStockPastIntegerMax_throwsAndLeavesStockUnchanged() throws SystemException {
+        // Before the fix, adding 1 unit to 2147483647 wrapped the stock round to -2147483648 (issue #116).
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+        products.add(new Product("Bread", 2.50));
+        new AddStockCommand("Bread", Integer.MAX_VALUE).execute(products, new OrderList(), new ExpenseList(),
+                stocks, new Ui());
+
+        AddStockCommand oneMore = new AddStockCommand("Bread", 1);
+        assertThrows(SystemException.class,
+                () -> oneMore.execute(products, new OrderList(), new ExpenseList(), stocks, new Ui()));
+
+        assertEquals(Integer.MAX_VALUE, products.findByName("Bread").getStock());
+        assertEquals(Integer.MAX_VALUE, stocks.findByProduct("Bread").quantity);
+    }
+
+    @Test
     public void execute_removeStock_success() throws SystemException {
         StockList stocks = new StockList();
         ProductList products = new ProductList();

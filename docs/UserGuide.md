@@ -73,7 +73,7 @@ Format: `product add p/PRODUCT a/AMOUNT`
 
 * `PRODUCT` is the product name. It cannot be empty, and it cannot contain `p/` or `a/`.
 * `AMOUNT` is the unit price. It must be a number that is 0 or more, with at most 2 decimal places.
-  Type the number only, without a `$` sign.
+  Type the number only, without a `$` sign, and write it out in full (for example `1e-3` is rejected).
 * `p/` and `a/` can be given in either order.
 * Spaces at the start and end of a value are ignored.
 * A product whose name is already in the catalogue is rejected, and the catalogue stays unchanged.
@@ -625,7 +625,8 @@ Records an operating expense.
 
 Format: `expense add p/PRODUCT a/AMOUNT`
 
-The amount must be a non-negative amount in dollars with at most two decimal places.
+The amount must be a non-negative amount in dollars with at most two decimal places, written out in full
+(for example `1e-3` is rejected).
 Amounts are stored using decimal arithmetic so that currency calculations do not depend on
 floating-point approximations.
 
