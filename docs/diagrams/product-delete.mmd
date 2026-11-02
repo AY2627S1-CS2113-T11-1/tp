@@ -1,37 +1,62 @@
+%%{init: {"sequence": {"mirrorActors": false}, "themeCSS": ".actor-line { stroke-dasharray: 5 5; } .loopLine { stroke-dasharray: none; stroke-width: 1.5px; }", "themeVariables": {"fontSize": "16px", "actorBkg": "#eef4fb", "actorBorder": "#40566f", "actorTextColor": "#1f2933", "actorLineColor": "#8a98a8", "signalColor": "#40566f", "signalTextColor": "#1f2933", "activationBkgColor": "#ffffff", "activationBorderColor": "#40566f", "labelBoxBkgColor": "#ffffff", "labelBoxBorderColor": "#40566f", "labelTextColor": "#1f2933", "loopTextColor": "#1f2933"}}}%%
 sequenceDiagram
-    participant C as DeleteProductCommand
-    participant PL as ProductList
-    participant OL as OrderList
-    participant SL as StockList
-    participant U as Ui
+    %% Deleting "Bread" with `product delete p/Bread`.
+    %% Mermaid cannot draw UML's destroy marker, so after rendering, the X at the end of
+    %% :DeleteProductCommand's lifeline (and the end of its last activation bar) was added to the SVG by hand.
+    participant D as :Duke
+    participant P as :Parser
 
+    activate D
+    D->>P: parse("product delete p/Bread")
+    activate P
+    P->>P: parseDeleteProduct("p/Bread")
+    activate P
+    create participant C as :DeleteProductCommand
+    P->>C: DeleteProductCommand("Bread")
     activate C
+    C-->>P: 
+    deactivate C
+    P-->>P: command
+    deactivate P
+    P-->>D: command
+    deactivate P
+
+    D->>C: execute(products, orders, expenses, stocks, ui)
+    activate C
+    participant PL as :ProductList
+    participant OL as :OrderList
+    participant SL as :StockList
+    participant UI as :Ui
     C->>PL: findByName("Bread")
     activate PL
     PL-->>C: product
     deactivate PL
-
     C->>OL: findActiveOrderWithProduct("Bread")
     activate OL
     OL-->>C: activeOrder
     deactivate OL
 
     alt activeOrder != null
-        C-->>C: throw SystemException
-    else no active order has the product
+        C-->>D: SystemException
+    else else
         C->>PL: remove(product)
         activate PL
         PL-->>C: 
         deactivate PL
-
         C->>SL: removeByProduct("Bread")
         activate SL
         SL-->>C: hadStockEntry
         deactivate SL
-
-        C->>U: showProductDeleted(product)
-        activate U
-        U-->>C: 
-        deactivate U
+        C->>UI: showProductDeleted(product)
+        activate UI
+        UI-->>C: 
+        deactivate UI
+        C-->>D: 
     end
     deactivate C
+    D->>C: isExit()
+    activate C
+    destroy C
+    C-->>D: false
+    deactivate C
+    deactivate D

@@ -90,7 +90,13 @@ name, so the catalogue is the first thing a user sets up. It supports four comma
 * Each command is its own `Command` subclass. `Parser` checks the input format, and each command checks the
   rules that depend on stored data, such as whether a product exists.
 
+Figure 1 shows the catalogue's classes. `OrderList` and `StockList` show only the methods that `product delete`
+uses, and the lists are passed to `Command#execute` rather than stored, so the commands depend on them instead
+of holding them.
+
 ![Product catalogue class diagram](images/product-class.svg)
+
+*Figure 1: Product catalogue classes*
 
 #### Adding and listing products
 
@@ -117,7 +123,13 @@ rejects `a/`, so a mistyped `product add` is reported instead of deleting a prod
 Every check happens before anything is removed, so a failed delete leaves the catalogue and the stock list
 unchanged.
 
+Figure 2 follows `product delete p/Bread` from parsing to the confirmation. The `alt` frame shows step 2; step 1
+fails in the same way and is left out to keep the diagram readable. After `execute` returns, `Duke` only asks
+the command whether it ends the program and then discards it, so the command's lifeline ends there.
+
 ![Product delete sequence diagram](images/product-delete.svg)
+
+*Figure 2: Deleting a product*
 
 An active order can still be cancelled or edited, and both return stock to its products through each
 `OrderItem`'s `Product` reference. If that product had been deleted, the stock would go to an object that is
