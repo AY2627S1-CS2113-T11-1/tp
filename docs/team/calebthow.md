@@ -61,15 +61,21 @@ and the documentation needed to explain these features to users and future devel
 * **Contributions to the Developer Guide**:
     * Wrote and reorganised the Expense and financial management section, documenting the command flow, class
       responsibilities, financial calculations, `BigDecimal` design choice, data-protection boundary and testing.
-    * Added the expense/finance architecture diagram and sequence diagrams for adding an expense, listing expenses,
-      and generating the financial report. Converted the diagrams to portable SVG assets and added contents and
-      attribution structure to the guide ([#79](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/79),
+    * Designed and refined the expense/finance UML object and sequence diagrams for adding an expense, listing
+      expenses, and generating the financial report. Corrected activation-bar placement, message alignment and UML
+      notation across several iterations, then converted the final diagrams into portable SVG assets. Added contents
+      and attribution structure to the guide ([#79](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/79),
       [#80](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/80),
       [#81](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/81)).
 
 * **Contributions to team-based tasks**:
-    * Updated the team profile and project documentation, removed obsolete placeholder command documentation,
-      and fixed documentation/build compatibility issues when features were integrated.
+    * Helped establish and organise the team's GitHub organisation and repository workflow by enabling issue tracking
+      and configuring labels so that work could be categorised and monitored consistently.
+    * Maintained the issue tracker, helped the team track deadlines and coordinate outstanding tasks, and supported
+      release planning so that deliverables stayed on schedule through to completion.
+    * Updated team-wide project documentation, removed obsolete placeholder command documentation, and fixed
+      documentation/build compatibility issues when features were integrated. Contributed general implementation and
+      documentation changes across the project, and helped review and close pull requests.
     * Coordinated cross-feature changes so payment, order, product, stock, help and finance code continued to use
       consistent money types and command names.
 
@@ -79,5 +85,8 @@ and the documentation needed to explain these features to users and future devel
       [#77](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/77) and [#78](https://github.com/AY2627S1-CS2113-T11-1/tp/pull/78).
 
 * **Contributions beyond the project team**:
-    * To be updated with evidence from the Practical Exam dry run, forum contributions, or bug reports to other teams.
+    * Performed exploratory testing, raised issues for bugs discovered during development, and helped verify that fixes
+      addressed the reported behaviour.
+    * Reviewed another group's project, focusing mainly on the Developer Guide, and provided comments on its
+      organisation, clarity and technical documentation in [PR #6](https://github.com/NUS-CS2113-AY2627-S1/tp/pull/6).
 
