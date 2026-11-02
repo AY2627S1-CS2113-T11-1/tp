@@ -1,5 +1,8 @@
 package seedu.duke.command;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import seedu.duke.Stock;
 import seedu.duke.StockList;
 import seedu.duke.Order;
@@ -18,6 +21,9 @@ import seedu.duke.Ui;
  * cancelled, so its number is not reused and sales reporting can leave its total out.
  */
 public class CancelOrderCommand extends Command {
+    /** Stock levels are ints, so this is the most a product can hold. */
+    private static final int MAX_STOCK = Integer.MAX_VALUE;
+
     private final int orderId;
 
     /**
@@ -41,6 +47,11 @@ public class CancelOrderCommand extends Command {
             throw new SystemException("    There is no order " + orderId + ".");
         }
 
+        // An already-cancelled order is left for order.cancel() to reject with its own message.
+        if (!order.isCancelled()) {
+            checkStockCanTakeBack(order);
+        }
+
         // Cancel first: if the order was already cancelled this throws before stock is restored twice.
         order.cancel();
         for (OrderItem item : order.getItems()) {
@@ -54,5 +65,33 @@ public class CancelOrderCommand extends Command {
             }
         }
         ui.showOrderCancelled(order);
+    }
+
+    /**
+     * Rejects the cancellation if putting the order's units back would push any product's stock
+     * past {@link #MAX_STOCK}.
+     *
+     * Stock can be restocked up to the maximum while an order holds some units, so returning those
+     * units on cancel could overflow the int and wrap to a negative stock level. Units are totaled
+     * per product as longs (in case one product appears on more than one line) and everything is
+     * checked before any stock changes, so a rejected cancel leaves the order and stock untouched.
+     *
+     * @param order the active order about to be canceled
+     * @throws SystemException if any product would end up with more than {@link #MAX_STOCK} units
+     */
+    private static void checkStockCanTakeBack(Order order) throws SystemException {
+        Map<Product, Long> unitsToReturn = new LinkedHashMap<>();
+        for (OrderItem item : order.getItems()) {
+            unitsToReturn.merge(item.getProduct(), (long) item.getQuantity(), Long::sum);
+        }
+        for (Map.Entry<Product, Long> entry : unitsToReturn.entrySet()) {
+            Product product = entry.getKey();
+            long returned = entry.getValue();
+            if (product.getStock() + returned > MAX_STOCK) {
+                throw new SystemException("Can't cancel order " + order.getId() + ": returning " + returned
+                        + " of " + product.getName() + " would take its stock past " + MAX_STOCK
+                        + " (it has " + product.getStock() + ").\nNothing was changed.");
+            }
+        }
     }
 }
