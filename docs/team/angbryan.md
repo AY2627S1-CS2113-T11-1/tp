@@ -41,4 +41,3 @@ My primary contribution was designing and developing the **Stock & Inventory Man
 * **Contributions beyond the project team**:
 
   * Reviewed team CS2113-W14-3's Developer Guide against course UML standards, advising on colon notation for sequence diagram lifelines ([#12](https://github.com/NUS-CS2113-AY2627-S1/tp/pull/12#discussion_r4408466119)), eliminating redundant attributes already modelled as associations ([#12](https://github.com/NUS-CS2113-AY2627-S1/tp/pull/12#discussion_r4408501475)), enforcing class diagram attribute compartments ([#12](https://github.com/NUS-CS2113-AY2627-S1/tp/pull/12#discussion_r4408564325)), and specifying explicit `void` return types ([#12](https://github.com/NUS-CS2113-AY2627-S1/tp/pull/12#discussion_r4408578706)).
-  * *(To be updated: bugs reported during Practical Exam Dry Run / forum contributions)*.
