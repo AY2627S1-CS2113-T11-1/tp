@@ -549,9 +549,14 @@ public class Ui {
             }
             String[] headers = {"Product", "Qty", "Cost"};
             String unitLabel = totalUnits == 1 ? " item" : " items";
-            String[] totalRow = {"Total", totalUnits + unitLabel, formatMoney(order.getTotal())};
+            String footerLabel = order.hasDiscount() ? "Subtotal" : "Total";
+            String[] totalRow = {footerLabel, totalUnits + unitLabel, formatMoney(order.getSubtotal())};
             boolean[] isLeftAligned = {true, false, false};
             printTable(headers, rows, totalRow, isLeftAligned);
+            if (order.hasDiscount()) {
+                printIndent(discountLine(order));
+                printIndent("Total: " + formatMoney(order.getTotal()));
+            }
         }
     }
 

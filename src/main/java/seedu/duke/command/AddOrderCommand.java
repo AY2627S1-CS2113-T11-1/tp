@@ -92,6 +92,13 @@ public class AddOrderCommand extends Command {
                                 + "\". No order was created.");
             }
 
+            // Catalogue lookup can resolve different Unicode spellings to the same product.
+            // Check the resolved product before any deductions, as text-based checks can miss this.
+            if (matchedProducts.contains(product)) {
+                throw new SystemException("\"" + requested.productName()
+                        + "\" appears more than once in this order. Put the full quantity in a single q/ instead.");
+            }
+
             if (requested.quantity() > product.getStock()) {
                 logger.warning("Order creation rejected: insufficient stock");
                 throw new SystemException(

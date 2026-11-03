@@ -21,6 +21,9 @@ import seedu.duke.OrderItem;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.ExpenseList;
+import seedu.duke.Stock;
+import seedu.duke.StockList;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
@@ -210,6 +213,57 @@ class EditOrderCommandTest {
 
         assertEquals("Raj s/o Kumar", orders.findById(2).getCustomer());
         assertEquals(2, orders.findById(2).getItems().size());
+    }
+
+    @Test
+    public void execute_decreaseWouldOverflow_rejectsWithoutChangingOrderOrStock() throws SystemException {
+        carrot.setStock(Integer.MAX_VALUE);
+        StockList stocks = new StockList();
+        stocks.add(new Stock(carrot, carrot.getStock()));
+
+        SystemException error = assertThrows(SystemException.class,
+                () -> new EditOrderCommand(1, "Mei Tan", null, 3)
+                        .execute(products, orders, new ExpenseList(), stocks, ui));
+
+        assertTrue(error.getMessage().contains(EditOrderCommand.NO_CHANGES_MESSAGE));
+        assertEquals(Integer.MAX_VALUE, carrot.getStock());
+        assertEquals(Integer.MAX_VALUE, stocks.findByProduct("Carrot").getQuantity());
+        assertEquals(4, orders.findById(1).getTotalUnits());
+        assertEquals("Jonas Low", orders.findById(1).getCustomer());
+    }
+
+    @Test
+    public void execute_replacementWouldOverflow_rejectsBeforeDeductingNewStock() {
+        carrot.setStock(Integer.MAX_VALUE);
+
+        assertThrows(SystemException.class,
+                () -> new EditOrderCommand(1, "Mei Tan", "Apple", 3).execute(products, orders, ui));
+
+        assertEquals(Integer.MAX_VALUE, carrot.getStock());
+        assertEquals(10, apple.getStock());
+        assertSame(carrot, orders.findById(1).getItems().get(0).getProduct());
+        assertEquals(4, orders.findById(1).getTotalUnits());
+        assertEquals("Jonas Low", orders.findById(1).getCustomer());
+    }
+
+    @Test
+    public void execute_sameQuantityAtMaximum_avoidsIntermediateOverflow() throws SystemException {
+        carrot.setStock(Integer.MAX_VALUE);
+
+        new EditOrderCommand(1, null, null, 4).execute(products, orders, ui);
+
+        assertEquals(Integer.MAX_VALUE, carrot.getStock());
+        assertEquals(4, orders.findById(1).getTotalUnits());
+    }
+
+    @Test
+    public void execute_decreaseReturnsExactlyToMaximum_succeeds() throws SystemException {
+        carrot.setStock(Integer.MAX_VALUE - 1);
+
+        new EditOrderCommand(1, null, null, 3).execute(products, orders, ui);
+
+        assertEquals(Integer.MAX_VALUE, carrot.getStock());
+        assertEquals(3, orders.findById(1).getTotalUnits());
     }
 
     /**

@@ -1,7 +1,5 @@
 package seedu.duke;
 
-import java.util.regex.Pattern;
-
 import seedu.duke.command.OrderDetailsCommand;
 
 /**
@@ -9,7 +7,6 @@ import seedu.duke.command.OrderDetailsCommand;
  */
 public class OrderDetailsParser {
     private static final String FORMAT = "Format: order details c/CUSTOMER";
-    private static final Pattern EXTRA_PREFIX = Pattern.compile("(?:^|\\s)[a-zA-Z]/");
 
     /**
      * Creates a details command with one non-empty customer name.
@@ -27,9 +24,7 @@ public class OrderDetailsParser {
         if (customer.isEmpty()) {
             throw new SystemException("The customer name cannot be empty. " + FORMAT);
         }
-        if (EXTRA_PREFIX.matcher(customer).find()) {
-            throw new SystemException("Provide exactly one customer and no other fields. " + FORMAT);
-        }
+        CustomerNameValidator.validate(customer, FORMAT);
         return new OrderDetailsCommand(customer);
     }
 }

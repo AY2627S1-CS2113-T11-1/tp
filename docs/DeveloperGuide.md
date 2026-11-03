@@ -434,6 +434,9 @@ still adds up. Orders without a discount print exactly as before.
 
 ### 2.4 Sales and customer commands
 
+Customer names are checked by `CustomerNameValidator` in creation, editing, payment, details and
+receipt parsing. It rejects extra prefix-shaped fields while allowing the name abbreviation `s/o`.
+
 These features let users view sales, generate receipts, record customer payments, inspect a customer's
 orders and look up command usage. They use the existing `Command` structure and the shared order history.
 
@@ -602,7 +605,9 @@ products. `Ui` reads these records to display customer names, product names, qua
 
 **Display.** Each order has its own heading with the original ID and `Active` or `Cancelled` status.
 Its table shows product names, quantities and line costs. The footer gives the item count and
-`Order#getTotal()`. The shared `printTable` helper sizes the columns and aligns numeric values. When no
+`Order#getSubtotal()`. For discounted orders, it is labelled `Subtotal`, followed by the shared
+`discountLine` output and `Order#getTotal()`; otherwise it is labelled `Total`.
+The shared `printTable` helper sizes the columns and aligns numeric values. When no
 orders match, the UI displays `No orders found for CUSTOMER.` rather than an empty table.
 
 **Design considerations.**
@@ -612,9 +617,8 @@ orders match, the UI displays `No orders found for CUSTOMER.` rather than an emp
 * *Keeping cancelled history vs. hiding it.* Showing status alongside the original ID makes the view useful
   for tracing past orders. Sales and receipts apply their own eligibility rules instead.
 
-**Current limitation.** Line costs are undiscounted, while the footer uses the potentially discounted
-order total. This view does not yet show a separate discount breakdown, so its footer can differ from
-the sum of the displayed line costs.
+**Discount display.** The subtotal matches the sum of the displayed line costs. Showing the discount
+and final total separately explains any reduction without changing the stored item prices.
 
 ### 2.5 Expense and financial management
 
