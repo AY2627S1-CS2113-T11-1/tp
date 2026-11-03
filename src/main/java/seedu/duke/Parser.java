@@ -298,6 +298,7 @@ public class Parser {
         if (customer.isEmpty()) {
             throw new SystemException("The customer name cannot be empty. " + ORDER_ADD_FORMAT);
         }
+        CustomerNameValidator.validate(customer, ORDER_ADD_FORMAT);
 
         List<String[]> itemPairs = pairs.subList(1, pairs.size());
         if (itemPairs.isEmpty()) {
@@ -460,6 +461,7 @@ public class Parser {
                 if (value.isEmpty()) {
                     throw new SystemException("The customer name cannot be blank. " + ORDER_EDIT_FORMAT);
                 }
+                CustomerNameValidator.validate(value, ORDER_EDIT_FORMAT);
                 customer = value;
                 break;
             case NAME_PREFIX:

@@ -159,6 +159,13 @@ public class EditOrderCommand extends Command {
             throw reject("Unable to edit order: insufficient stock.");
         }
 
+        long restoredStock = (long) oldProduct.getStock() + oldLine.getQuantity()
+                - (isSameProduct ? quantity : 0);
+        if (restoredStock > Integer.MAX_VALUE) {
+            throw reject("Unable to edit order: returning stock for " + oldProduct.getName()
+                    + " would exceed " + Integer.MAX_VALUE + " units.");
+        }
+
         // An unchanged product keeps the price the customer was quoted; a replacement uses today's price.
         return isSameProduct
                 ? new OrderItem(product, quantity, oldLine.getUnitPrice())
@@ -168,16 +175,22 @@ public class EditOrderCommand extends Command {
     /**
      * Returns the old line's units to stock and takes the new line's units out of stock.
      *
-     * For an unchanged product the two steps cancel out except for the difference, which is exactly
-     * "increase deducts the extra units, decrease returns the difference".
+     * For an unchanged product, applies only the net difference so an intermediate restoration
+     * cannot overflow. Final stock levels have already been checked by {@code planLineChange}.
      */
     private static void moveStock(OrderItem oldLine, OrderItem newLine, StockList stocks) {
         Product oldProduct = oldLine.getProduct();
         Product newProduct = newLine.getProduct();
-        int combinedStockBefore = oldProduct.getStock() + (oldProduct == newProduct ? 0 : newProduct.getStock());
+        long combinedStockBefore = (long) oldProduct.getStock()
+                + (oldProduct == newProduct ? 0 : newProduct.getStock());
 
-        oldProduct.setStock(oldProduct.getStock() + oldLine.getQuantity());
-        newProduct.setStock(newProduct.getStock() - newLine.getQuantity());
+        if (oldProduct == newProduct) {
+            long updatedStock = (long) oldProduct.getStock() + oldLine.getQuantity() - newLine.getQuantity();
+            oldProduct.setStock((int) updatedStock);
+        } else {
+            oldProduct.setStock((int) ((long) oldProduct.getStock() + oldLine.getQuantity()));
+            newProduct.setStock(newProduct.getStock() - newLine.getQuantity());
+        }
 
         if (stocks != null) {
             Stock oldStock = stocks.findByProduct(oldProduct.getName());
@@ -191,7 +204,8 @@ public class EditOrderCommand extends Command {
         }
 
         // Units are only moved between the order and the shelf, never created or lost.
-        int combinedStockAfter = oldProduct.getStock() + (oldProduct == newProduct ? 0 : newProduct.getStock());
+        long combinedStockAfter = (long) oldProduct.getStock()
+                + (oldProduct == newProduct ? 0 : newProduct.getStock());
         assert combinedStockAfter == combinedStockBefore + oldLine.getQuantity() - newLine.getQuantity()
                 : "Editing an order must conserve the total number of units";
     }

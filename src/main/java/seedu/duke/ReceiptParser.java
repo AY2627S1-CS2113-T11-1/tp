@@ -11,7 +11,6 @@ import seedu.duke.command.GenerateReceiptsCommand;
 public class ReceiptParser {
     private static final String FORMAT = "Format: generate receipts c/CUSTOMER";
     private static final Pattern COMMAND = Pattern.compile("(?i:generate\\s+receipts)\\s+c/(.*)");
-    private static final Pattern EXTRA_PREFIX = Pattern.compile("(?:^|\\s)[a-zA-Z]/");
 
     /**
      * Parses a complete receipt command with exactly one nonempty customer field.
@@ -28,9 +27,7 @@ public class ReceiptParser {
         if (customer.isEmpty()) {
             throw new SystemException("The customer name cannot be empty. " + FORMAT);
         }
-        if (EXTRA_PREFIX.matcher(customer).find()) {
-            throw new SystemException("Specify exactly one customer and no other fields. " + FORMAT);
-        }
+        CustomerNameValidator.validate(customer, FORMAT);
         return new GenerateReceiptsCommand(customer);
     }
 }

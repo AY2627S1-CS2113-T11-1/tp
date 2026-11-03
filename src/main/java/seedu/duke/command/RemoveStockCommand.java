@@ -69,6 +69,7 @@ public class RemoveStockCommand extends Command {
 
         int currentStock = product != null ? product.getStock() : existing.getQuantity();
         int newStock = Math.max(0, currentStock - quantityToRemove);
+        int quantityRemoved = currentStock - newStock;
         assert newStock >= 0 : "Calculated stock after removal must not be negative";
 
         if (product != null) {
@@ -78,9 +79,9 @@ public class RemoveStockCommand extends Command {
             existing.setQuantity(newStock);
         }
 
-        logger.info("Removed " + quantityToRemove + " unit(s) of \"" + productName
+        logger.info("Removed " + quantityRemoved + " unit(s) of \"" + productName
                 + "\", remaining stock: " + newStock);
-        ui.showStockRemoved(productName, quantityToRemove, defaultBehavior);
+        ui.showStockRemoved(productName, quantityRemoved, defaultBehavior && quantityRemoved == 1);
     }
 
     public String getProductName() {

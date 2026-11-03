@@ -94,6 +94,29 @@ class OrderDetailsTest {
     }
 
     @Test
+    public void execute_discountedOrder_explainsSubtotalDiscountAndTotal() throws SystemException {
+        Order order = orders.create("Bob", List.of(new OrderItem(new Product("A", 1), 2)));
+        order.setDiscountPercent(new BigDecimal("10"));
+
+        runDetails("Bob");
+
+        assertEquals(List.of(
+                "    Here are Bob's order details:",
+                "    Order 1 (Active):",
+                "    +----------+---------+-------+",
+                "    | Product  |     Qty |  Cost |",
+                "    +----------+---------+-------+",
+                "    | A        |       2 | $2.00 |",
+                "    +----------+---------+-------+",
+                "    | Subtotal | 2 items | $2.00 |",
+                "    +----------+---------+-------+",
+                "    Discount: 10% ($0.20)",
+                "    Total: $1.80"), output.toString(StandardCharsets.UTF_8).lines().toList());
+        assertEquals(new BigDecimal("1.80"), order.getTotal());
+        assertEquals(new BigDecimal("0.00"), order.getPaidAmount());
+    }
+
+    @Test
     public void execute_missingCustomer_displaysHelpfulMessage() throws SystemException {
         orders.create("You Jie", List.of());
         runDetails("You");

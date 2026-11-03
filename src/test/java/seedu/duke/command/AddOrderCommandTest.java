@@ -18,6 +18,7 @@ import seedu.duke.Order;
 import seedu.duke.OrderList;
 import seedu.duke.Product;
 import seedu.duke.ProductList;
+import seedu.duke.Parser;
 import seedu.duke.SystemException;
 import seedu.duke.Ui;
 
@@ -102,6 +103,30 @@ class AddOrderCommandTest {
 
     private static AddOrderCommand orderOf(AddOrderCommand.RequestedItem... items) {
         return new AddOrderCommand("Jonas Low", List.of(items));
+    }
+
+    @Test
+    public void execute_unicodeDuplicateProduct_rejectsBeforeChangingStock() throws SystemException {
+        Product product = new Product("I", 1);
+        product.setStock(3);
+        products.add(product);
+
+        assertThrows(SystemException.class, () -> new Parser()
+                .parse("order add c/Bob p/I q/2 p/\u0131 q/2").execute(products, orders, ui));
+
+        assertEquals(3, product.getStock());
+        assertEquals(0, orders.size());
+    }
+
+    @Test
+    public void execute_duplicateResolvedProduct_keepsEarlierProductUnchanged() {
+        AddOrderCommand command = orderOf(item("Carrot", 1), item("Apple", 1), item("APPLE", 1));
+
+        assertThrows(SystemException.class, () -> command.execute(products, orders, ui));
+
+        assertEquals(10, apple.getStock());
+        assertEquals(5, carrot.getStock());
+        assertEquals(0, orders.size());
     }
 
     private static AddOrderCommand.RequestedItem item(String name, int quantity) {

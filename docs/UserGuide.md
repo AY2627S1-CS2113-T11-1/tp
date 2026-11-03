@@ -320,7 +320,9 @@ Each order has:
 
 * **Order number**: assigned automatically, starting from 1. Numbers are never reused, so a number always
   refers to the same order, even after it is cancelled.
-* **Customer**: the name of the customer who placed the order.
+* **Customer**: the name of the customer who placed the order. Names may contain spaces and the
+  abbreviation `s/o`, as in `Raj s/o Kumar`. Extra fields such as `x/1` cannot be part of a name.
+  The same rule applies when editing a name, recording payment or retrieving customer records.
 * **Items**: one or more products, each with a quantity and the unit price at the time of the order.
 * **Status**: `Active`, or `Cancelled` once the order is cancelled.
 
@@ -611,7 +613,8 @@ Example: `order details c/You Jie`
 
 Use the customer's full name. Names may contain spaces and are matched without case sensitivity.
 Each order has its own order number, Active or Cancelled status, and a table of products,
-quantities and line costs. The final row shows the total item count and cost for that order.
+quantities and line costs. The final row shows the item count and subtotal. For discounted orders,
+separate discount and final-total lines explain the reduction; otherwise the row is labelled `Total`.
 Cancelled orders show their original contents and total for reference.
 
 If no orders match, the app displays `No orders found for You Jie.`
