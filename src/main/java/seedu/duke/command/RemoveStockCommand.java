@@ -79,9 +79,11 @@ public class RemoveStockCommand extends Command {
             existing.setQuantity(newStock);
         }
 
-        logger.info("Removed " + quantityRemoved + " unit(s) of \"" + productName
+        // Report the stored name (e.g. "Bread"), not the user's casing (e.g. "bread"), since lookups ignore case.
+        String displayName = product != null ? product.getName() : existing.getProduct();
+        logger.info("Removed " + quantityRemoved + " unit(s) of \"" + displayName
                 + "\", remaining stock: " + newStock);
-        ui.showStockRemoved(productName, quantityRemoved, defaultBehavior && quantityRemoved == 1);
+        ui.showStockRemoved(displayName, quantityRemoved, defaultBehavior && quantityRemoved == 1);
     }
 
     public String getProductName() {

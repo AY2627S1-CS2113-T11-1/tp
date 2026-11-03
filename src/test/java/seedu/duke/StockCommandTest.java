@@ -369,6 +369,27 @@ class StockCommandTest {
     }
 
     @Test
+    public void execute_lowStockProductNeverStocked_isReported() throws SystemException {
+        // Bread was added to the catalogue but never given stock, so it has no stock entry at all.
+        StockList stocks = new StockList();
+        ProductList products = new ProductList();
+        products.add(new Product("Bread", 2.00));
+        products.add(new Product("Milk", 3.00));
+        new AddStockCommand("Milk", 10).execute(products, new OrderList(), new ExpenseList(), stocks, new Ui());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Ui testUi = new Ui(System.in, new PrintStream(out, true, StandardCharsets.UTF_8));
+        new LowStockCommand().execute(products, new OrderList(), new ExpenseList(), stocks, testUi);
+
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Low stock items (quantity <= 5):"));
+        assertTrue(output.contains("Bread"));
+        assertTrue(!output.contains("Milk"));
+        // Checking low stock must not create stock entries as a side effect.
+        assertEquals(1, stocks.size());
+    }
+
+    @Test
     public void lowStock_invalidConstructorArguments_failAssertions() {
         assertThrows(AssertionError.class, () -> new LowStockCommand(-1));
         assertThrows(AssertionError.class, () -> new LowStockCommand(-10));
