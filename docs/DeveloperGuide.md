@@ -69,6 +69,11 @@
   implementing sales listing, receipt generation, customer payments, order details
   and command help; writing related JUnit tests; adding assertions and logging for
   sales and receipts. It also assisted with drafting and revising my User Guide and sequence diagrams.
+* **AI assistance (Caleb Thow, @CalebThow):** ChatGPT/Codex was used to assist with
+  implementing and refining expense management, financial reporting, payment handling
+  and currency calculations; writing related tests and assertions; debugging integration
+  issues; and drafting and revising the User Guide, Developer Guide, UML diagrams and
+  Project Portfolio Page.
 * **Developer Guide structure:** The organisation of this Developer Guide, including its contents section and
   section hierarchy, was adapted from the [AddressBook-Level3 Developer Guide](https://se-education.org/addressbook-level3/DeveloperGuide.html)
   from SE-EDUCATION.
