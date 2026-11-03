@@ -74,6 +74,9 @@
   and currency calculations; writing related tests and assertions; debugging integration
   issues; and drafting and revising the User Guide, Developer Guide, UML diagrams and
   Project Portfolio Page.
+* **AI assistance (Jonas Low, @JonasLow):** Claude (Anthropic) was used to assist with drafting and revising
+  Section 3 (Orders) of the User Guide, and to review my Project Portfolio Page against the module guidelines
+  and suggest edits to it.
 * **Developer Guide structure:** The organisation of this Developer Guide, including its contents section and
   section hierarchy, was adapted from the [AddressBook-Level3 Developer Guide](https://se-education.org/addressbook-level3/DeveloperGuide.html)
   from SE-EDUCATION.
