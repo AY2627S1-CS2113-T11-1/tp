@@ -242,7 +242,7 @@ The system addresses this through a three-layer synchronisation strategy:
 
 1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
 2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
-3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`) or inspecting low inventory (`LowStockCommand`), the commands reconcile each `Stock` entry against `ProductList#findByName` before formatting the display table. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
+3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`), the command reconciles each `Stock` entry against `ProductList#findByName` before formatting the display table. When inspecting low inventory (`LowStockCommand`), the command iterates over the catalogue (`ProductList#getSortedByName()`) and synchronises matching entries in `StockList` via `findByProduct`. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
 
 #### Adding and removing stock
 
