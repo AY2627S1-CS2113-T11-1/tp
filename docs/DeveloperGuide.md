@@ -2,21 +2,28 @@
 
 ## Contents
 
-- [1. Acknowledgements](#1-acknowledgements)
-- [2. Design and implementation](#2-design-and-implementation)
-  - [Feature order](#feature-order)
+- [Developer Guide](#developer-guide)
+  - [Contents](#contents)
+  - [1. Acknowledgements](#1-acknowledgements)
+  - [2. Design and implementation](#2-design-and-implementation)
+    - [Feature order](#feature-order)
     - [2.1 Product catalogue](#21-product-catalogue)
       - [Adding and listing products](#adding-and-listing-products)
       - [Deleting a product](#deleting-a-product)
       - [Finding products](#finding-products)
       - [Product catalogue design considerations](#product-catalogue-design-considerations)
+        - [Aspect: Deleting a product that orders refer to](#aspect-deleting-a-product-that-orders-refer-to)
+        - [Aspect: How the catalogue is stored](#aspect-how-the-catalogue-is-stored)
     - [2.2 Stock and inventory management](#22-stock-and-inventory-management)
       - [Design and class structure](#design-and-class-structure)
       - [Stock representation and tracking](#stock-representation-and-tracking)
-      - [Stock synchronization with Orders](#stock-synchronization-with-orders)
+      - [Stock synchronisation with Orders](#stock-synchronisation-with-orders)
       - [Adding and removing stock](#adding-and-removing-stock)
       - [Low stock monitoring](#low-stock-monitoring)
       - [Design considerations and alternatives](#design-considerations-and-alternatives)
+        - [Aspect: Threshold specification in `stock low`](#aspect-threshold-specification-in-stock-low)
+        - [Aspect: Stock tracking separated from Product catalogue](#aspect-stock-tracking-separated-from-product-catalogue)
+        - [Aspect: Error handling during stock operations](#aspect-error-handling-during-stock-operations)
     - [2.3 Orders](#23-orders)
       - [Adding an order](#adding-an-order)
       - [Cancelling an order](#cancelling-an-order)
@@ -35,28 +42,29 @@
       - [Design considerations and testing](#design-considerations-and-testing)
     - [2.6 General commands](#26-general-commands)
       - [Getting command help](#getting-command-help)
-- [3. Product scope](#3-product-scope)
-  - [Target user profile](#target-user-profile)
-  - [Value proposition](#value-proposition)
-- [4. User stories](#4-user-stories)
-- [5. Non-functional requirements](#5-non-functional-requirements)
-- [6. Glossary](#6-glossary)
-- [7. Instructions for manual testing](#7-instructions-for-manual-testing)
-  - [7.1 Initial launch and shutdown](#71-initial-launch-and-shutdown)
-  - [7.2 Product catalogue management](#72-product-catalogue-management)
-  - [7.3 Stock and inventory management](#73-stock-and-inventory-management)
-  - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization)
-  - [7.5 Customer payments, receipts, and sales](#75-customer-payments-receipts-and-sales)
-  - [7.6 Operating expenses and financial report](#76-operating-expenses-and-financial-report)
-  - [7.7 Help documentation](#77-help-documentation)
+  - [3. Product scope](#3-product-scope)
+    - [Target user profile](#target-user-profile)
+    - [Value proposition](#value-proposition)
+  - [4. User stories](#4-user-stories)
+  - [5. Non-functional requirements](#5-non-functional-requirements)
+  - [6. Glossary](#6-glossary)
+  - [7. Instructions for manual testing](#7-instructions-for-manual-testing)
+    - [7.1 Initial launch and shutdown](#71-initial-launch-and-shutdown)
+    - [7.2 Product catalogue management](#72-product-catalogue-management)
+    - [7.3 Stock and inventory management](#73-stock-and-inventory-management)
+    - [7.4 Order operations and stock synchronization](#74-order-operations-and-stock-synchronization)
+    - [7.5 Customer payments, receipts, and sales](#75-customer-payments-receipts-and-sales)
+    - [7.6 Operating expenses and financial report](#76-operating-expenses-and-financial-report)
+    - [7.7 Help documentation](#77-help-documentation)
 
 ## 1. Acknowledgements
 
 * **Stock and inventory management:** Mermaid diagrams and AI assistance were
   used in structuring the stock management design, UML diagrams, and documentation for Section 2.4.
 * **AI assistance (Brian Yang, @zechby):** Claude (Anthropic) was used to add the assertions and logging in
-  `Product`, `ProductList` and `AddProductCommand`, the related `ProductTest` cases, and the first draft of the
-  product catalogue sections of the User Guide.
+  `Product`, `ProductList` and `AddProductCommand` and the related `ProductTest` cases; to draft the product
+  catalogue sections of the User Guide; assisting with drafting relevant diagrams in the developer guide; debugging overall and to draft my
+  Project Portfolio Page.
 * **AI assistance (Tham You Jie, @DemiSushi):** ChatGPT/Codex was used to assist with
   implementing sales listing, receipt generation, customer payments, order details
   and command help; writing related JUnit tests; adding assertions and logging for
