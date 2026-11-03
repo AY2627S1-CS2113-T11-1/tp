@@ -59,8 +59,9 @@
 
 ## 1. Acknowledgements
 
-* **Stock and inventory management:** Mermaid diagrams and AI assistance were
-  used in structuring the stock management design, UML diagrams, and documentation for Section 2.4.
+* **Stock and inventory management (Bryan @AngBryan):** Mermaid diagrams and AI assistance were
+  used in the stock management design (`stock add`, `stock remove`, `stock list` and `stock low`),
+  UML diagrams, and documentation.
 * **AI assistance (Brian Yang, @zechby):** Claude (Anthropic) was used to add the assertions and logging in
   `Product`, `ProductList` and `AddProductCommand` and the related `ProductTest` cases; to draft the product
   catalogue sections of the User Guide; assisting with drafting relevant diagrams in the developer guide; debugging overall and to draft my
@@ -244,7 +245,7 @@ The system addresses this through a three-layer synchronisation strategy:
 
 1. **Direct Reference Binding**: `Stock` instances can bind directly to their underlying `Product` via `productRef`. Any updates made through `Stock#setQuantity` propagate directly to the product catalogue.
 2. **Order Command Synchronous Updates**: When an order is placed (`AddOrderCommand`), cancelled (`CancelOrderCommand`), or edited (`EditOrderCommand`), the commands explicitly query both `ProductList` and `StockList` to ensure that physical stock deductions and restorations are mirrored in both collections in lockstep.
-3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`) or inspecting low inventory (`LowStockCommand`), the commands reconcile each `Stock` entry against `ProductList#findByName` before formatting the display table. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
+3. **Defensive Reconciliation**: When listing stock (`ListStockCommand`), the command reconciles each `Stock` entry against `ProductList#findByName` before formatting the display table. When inspecting low inventory (`LowStockCommand`), the command iterates over the catalogue (`ProductList#getSortedByName()`) and synchronises matching entries in `StockList` via `findByProduct`. This ensures that `stock list`, `stock low`, and `product list` never present conflicting quantities.
 
 #### Adding and removing stock
 
@@ -265,10 +266,10 @@ Store managers need rapid insight into items nearing depletion. The `stock low [
 
 **Execution.** When executed, `LowStockCommand`:
 
-1. Retrieves all items via `StockList#getStocks()`.
-2. Reconciles each item against `ProductList#findByName(stock.product)` to verify latest quantities.
-3. Identifies items where `stock.quantity <= threshold` and collects them into a list.
-4. Calls `Ui#showLowStock(lowStocks, threshold, isStockListEmpty)`. The UI displays an aligned table of low stock items, or an informational message if all products have sufficient stock or the stock list is empty.
+1. Retrieves every product in the catalogue via `ProductList#getSortedByName()`. The catalogue is used instead of `StockList`, because a product only gets a `Stock` entry after its first `stock add`; a product that was never stocked has 0 units and must still be reported.
+2. Keeps products where `product.getStock() <= threshold`.
+3. For each such product, reuses its `Stock` entry (synced to the catalogue quantity) if one exists, or otherwise builds a display-only `Stock` that is not added to the stock list.
+4. Calls `Ui#showLowStock(lowStocks, threshold, isCatalogueEmpty)`. The UI displays an aligned table of low stock items, or an informational message if all products have sufficient stock or the catalogue is empty.
 
 The following sequence diagram outlines this execution process:
 

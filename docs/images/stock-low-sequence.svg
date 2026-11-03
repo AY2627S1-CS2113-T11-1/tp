@@ -39,7 +39,7 @@
   <rect class="loopbox" x="370" y="348" width="500" height="92" rx="4"/>
   <polygon points="370,348 425,348 425,368 413,374 370,374" class="looptag"/>
   <text class="loophead" x="397" y="365">loop</text>
-  <text class="loopcond" x="480" y="365">[for each stock in allStocks]</text>
+  <text class="loopcond" x="480" y="365">[for each product with stock &lt;= threshold]</text>
 
   <!-- Layer 3: Activation Bars -->
   <!-- :Duke activation -->
@@ -50,9 +50,9 @@
   <rect class="activation" x="455" y="140" width="10" height="35"/>
   <!-- :LowStockCommand execute activation -->
   <rect class="activation" x="455" y="250" width="10" height="295"/>
-  <!-- :StockList activation -->
-  <rect class="activation" x="635" y="285" width="10" height="40"/>
   <!-- :ProductList activation -->
+  <rect class="activation" x="635" y="285" width="10" height="40"/>
+  <!-- :StockList activation -->
   <rect class="activation" x="815" y="380" width="10" height="40"/>
   <!-- :Ui activation -->
   <rect class="activation" x="995" y="470" width="10" height="40"/>
@@ -73,20 +73,20 @@
     <tspan x="460" y="57">Command</tspan>
   </text>
 
-  <!-- Participant 4: :StockList -->
+  <!-- Participant 4: :ProductList -->
   <rect class="head" x="562" y="20" width="156" height="48"/>
-  <text class="name" x="640" y="49">:StockList</text>
+  <text class="name" x="640" y="49">:ProductList</text>
 
-  <!-- Participant 5: :ProductList -->
+  <!-- Participant 5: :StockList -->
   <rect class="head" x="742" y="20" width="156" height="48"/>
-  <text class="name" x="820" y="49">:ProductList</text>
+  <text class="name" x="820" y="49">:StockList</text>
 
   <!-- Participant 6: :Ui -->
   <rect class="head" x="922" y="20" width="156" height="48"/>
   <text class="name" x="1000" y="49">:Ui</text>
 
   <!-- Layer 5: Messages & Labels -->
-  <!-- 1. Duke -> Parser : parse(command) from Duke.java:42 -->
+  <!-- 1. Duke -> Parser : parse(command) from Duke.java:43 -->
   <line class="msg-call" x1="105" y1="105" x2="275" y2="105"/>
   <text class="text" x="190" y="96">parse(command)</text>
 
@@ -102,29 +102,29 @@
   <line class="msg-reply" x1="275" y1="215" x2="105" y2="215"/>
   <text class="text" x="190" y="206">parsedCommand</text>
 
-  <!-- 5. Duke -> LowStockCommand : execute(...) from Duke.java:43 -->
+  <!-- 5. Duke -> LowStockCommand : execute(...) from Duke.java:44 -->
   <line class="msg-call" x1="105" y1="250" x2="455" y2="250"/>
   <text class="text" x="280" y="241">execute(...)</text>
 
-  <!-- 6. LowStockCommand -> StockList : getStocks() from LowStockCommand.java:70 -->
+  <!-- 6. LowStockCommand -> ProductList : getSortedByName() from LowStockCommand.java:77 -->
   <line class="msg-call" x1="465" y1="285" x2="635" y2="285"/>
-  <text class="text" x="550" y="276">getStocks()</text>
+  <text class="text" x="550" y="276">getSortedByName()</text>
 
-  <!-- 7. StockList -->> LowStockCommand : allStocks from LowStockCommand.java:70 -->
+  <!-- 7. ProductList -->> LowStockCommand : sortedProducts from LowStockCommand.java:77 -->
   <line class="msg-reply" x1="635" y1="325" x2="465" y2="325"/>
-  <text class="text" x="550" y="316">allStocks</text>
+  <text class="text" x="550" y="316">sortedProducts</text>
 
-  <!-- 8. LowStockCommand -> ProductList : findByName(stock.product) from LowStockCommand.java:75 -->
+  <!-- 8. LowStockCommand -> StockList : findByProduct(product.getName()) from LowStockCommand.java:81 -->
   <line class="msg-call" x1="465" y1="385" x2="815" y2="385"/>
-  <text class="text" x="640" y="376">findByName(stock.product)</text>
+  <text class="text" x="640" y="376">findByProduct(product.getName())</text>
 
-  <!-- 9. ProductList -->> LowStockCommand : product from LowStockCommand.java:75 -->
+  <!-- 9. StockList -->> LowStockCommand : existing from LowStockCommand.java:81 -->
   <line class="msg-reply" x1="815" y1="420" x2="465" y2="420"/>
-  <text class="text" x="640" y="411">product</text>
+  <text class="text" x="640" y="411">existing</text>
 
-  <!-- 10. LowStockCommand -> Ui : showLowStock(lowStocks, threshold, isStockListEmpty) from LowStockCommand.java:85 -->
+  <!-- 10. LowStockCommand -> Ui : showLowStock(lowStocks, threshold, isCatalogueEmpty) from LowStockCommand.java:93 -->
   <line class="msg-call" x1="465" y1="470" x2="995" y2="470"/>
-  <text class="text" x="730" y="461">showLowStock(lowStocks, threshold, isStockListEmpty)</text>
+  <text class="text" x="730" y="461">showLowStock(lowStocks, threshold, isCatalogueEmpty)</text>
 
   <!-- 11. Ui -->> LowStockCommand : return -->
   <line class="msg-reply" x1="995" y1="510" x2="465" y2="510"/>

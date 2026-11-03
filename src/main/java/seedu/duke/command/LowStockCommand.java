@@ -48,7 +48,8 @@ public class LowStockCommand extends Command {
     }
 
     /**
-     * Identifies products in stock with quantity at or below the threshold and displays them.
+     * Identifies catalogue products with quantity at or below the threshold, including products that
+     * were never stocked, and displays them in alphabetical order.
      *
      * @param products the product catalogue
      * @param orders   the order list
@@ -67,22 +68,29 @@ public class LowStockCommand extends Command {
 
         logger.info("Executing LowStockCommand with threshold=" + threshold);
 
-        List<Stock> allStocks = stocks.getStocks();
-        boolean isStockListEmpty = allStocks.isEmpty();
+        // The catalogue is checked rather than the stock list, because a product only gets a stock entry
+        // after its first "stock add". A product that was never stocked has 0 units and is the most
+        // urgent to restock, so it must not be skipped.
+        boolean isCatalogueEmpty = products.size() == 0;
         List<Stock> lowStocks = new ArrayList<>();
 
-        for (Stock stock : allStocks) {
-            Product product = products.findByName(stock.product);
-            if (product != null) {
-                stock.quantity = product.getStock();
+        for (Product product : products.getSortedByName()) {
+            if (product.getStock() > threshold) {
+                continue;
             }
-            if (stock.quantity <= threshold) {
-                lowStocks.add(stock);
+            Stock existing = stocks.findByProduct(product.getName());
+            if (existing != null) {
+                // Keep the stored entry in step with the catalogue before it is displayed.
+                existing.setQuantity(product.getStock());
+                lowStocks.add(existing);
+            } else {
+                // Display-only entry; it is not added to the stock list, so "stock list" is unchanged.
+                lowStocks.add(new Stock(product.getName(), product.getPrice(), product.getStock()));
             }
         }
 
         logger.info("Found " + lowStocks.size() + " low stock items (threshold=" + threshold + ")");
-        ui.showLowStock(lowStocks, threshold, isStockListEmpty);
+        ui.showLowStock(lowStocks, threshold, isCatalogueEmpty);
     }
 }
 

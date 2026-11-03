@@ -30,9 +30,20 @@ class RemoveStockReportingTest {
         checkRemoval(3, 1, true, "Removes 1 unit (default behaviour) of Bread", 2);
     }
 
+    @Test
+    public void execute_differentCaseName_reportsCatalogueName() throws SystemException {
+        checkRemoval("bread", 3, 2, false, "Removes 2 units of Bread", 1);
+    }
+
     /** Runs a removal and checks its message and both inventory representations. */
     private void checkRemoval(int initial, int requested, boolean isDefault, String message, int expected)
             throws SystemException {
+        checkRemoval("Bread", initial, requested, isDefault, message, expected);
+    }
+
+    /** Runs a removal using the given typed name and checks its message and both inventory representations. */
+    private void checkRemoval(String typedName, int initial, int requested, boolean isDefault, String message,
+            int expected) throws SystemException {
         ProductList products = new ProductList();
         Product bread = new Product("Bread", 2);
         bread.setStock(initial);
@@ -43,7 +54,7 @@ class RemoveStockReportingTest {
         Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
                 new PrintStream(output, true, StandardCharsets.UTF_8));
 
-        new RemoveStockCommand("Bread", requested, isDefault)
+        new RemoveStockCommand(typedName, requested, isDefault)
                 .execute(products, new OrderList(), new ExpenseList(), stocks, ui);
 
         assertEquals("    " + message + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
